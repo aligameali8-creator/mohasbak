@@ -1289,7 +1289,7 @@ function save(now) {
   clearTimeout(saveTimer);
   const run = async () => {
     if (!state) return;
-    try { envCache = await buildEnv(); writeLocal(envCache); if (cloudOn()) cloudPush(envCache); }
+    try { envCache = await buildEnv(); writeLocal(envCache); if (cloudOn()) cloudPush(envCache); if (window.__nativeSync) window.__nativeSync(); }
     catch (e) { console.error(e); toast('تعذر الحفظ: ' + e.message); }
   };
   if (now) return run();
@@ -1334,6 +1334,7 @@ async function cloudDelete() { if (cloud.ref) { try { await cloud.ref.delete(); 
 
 /* ───────── التنزيلات (قدرة المنصة أو رابط عادي خارجها) ───────── */
 async function saveFile(filename, data, mime) {
+  if (window.__nativeSaveFile) { try { return await window.__nativeSaveFile(filename, data); } catch (e) { return toast('تعذر حفظ الملف: ' + (e.message || e)); } }
   try {
     if (window.claude && window.claude.use) {
       const dl = await window.claude.use('downloads');
@@ -1486,6 +1487,7 @@ function render() {
   const root = $('#root');
   if (!$('.app')) unlockScroll();
   if (ui.locked) { unlockScroll(); root.innerHTML = lockScreen(); return; }
+  if (ui.bioLocked) { unlockScroll(); root.innerHTML = `<div class="center-screen"><div class="wizard" style="justify-items:center;text-align:center"><span class="brand-mark" style="width:54px;height:54px">${icon('lock')}</span><h1>محاسبك المالي مقفل</h1><p class="small muted" role="status">${esc(ui.bioMsg || 'افتح بالبصمة أو رمز قفل الجوال')}</p><button class="btn primary block" data-act="bio-unlock" style="min-height:54px">${icon('lock')} افتح</button></div></div>`; return; }
   if (!state) { root.innerHTML = welcomeScreen(); return; }
   applyTheme();
   if (!state.settings.onboarded) { root.innerHTML = wizardScreen(); return; }
@@ -1943,6 +1945,15 @@ function viewOptions() {
   </section>
   </form>
   <div class="grid g2">
+  ${window.__native && window.__native.on ? `<section class="card form"><h2>التنبيهات والجوال</h2>
+    <label class="check"><input type="checkbox" data-act="native-notify" ${s.nativeNotify !== false ? 'checked' : ''}> إشعار مساء اليوم السابق لكل خصم، ويوم الراتب، وقبل الشهر الضاغط</label>
+    <label class="check"><input type="checkbox" data-act="daily-reminder" ${s.dailyReminder !== false ? 'checked' : ''}> تذكير يومي بتسجيل المصاريف</label>
+    <div class="f"><label for="o_rh">وقت التذكير اليومي</label><select id="o_rh" data-change="remind-hour">${[18, 19, 20, 21, 22, 23].map((h) => `<option value="${h}" ${Number(s.remindHour ?? 21) === h ? 'selected' : ''}>${h - 12}:00 مساءً</option>`).join('')}</select></div>
+    <button class="btn" data-act="test-notif">${icon('bell')} أرسل إشعاراً تجريبياً</button>
+    <hr class="sep"><label class="check"><input type="checkbox" data-act="bio-lock" ${s.bioLock ? 'checked' : ''} ${state.security.pinEnabled ? 'disabled' : ''}> قفل التطبيق بالبصمة أو رمز الجوال</label>
+    ${state.security.pinEnabled ? '<p class="xs muted">لديك رمز قفل وتشفير مفعّل؛ ألغه أولاً لاستخدام البصمة بدلاً منه.</p>' : ''}
+    <p class="xs muted">لإضافة الودجت: اضغط مطولاً على مكان فارغ في الشاشة الرئيسية ← الأدوات (Widgets) ← محاسبك المالي.</p>
+  </section>` : ''}
   <section class="card form"><h2>الأمان والخصوصية</h2>
     <div class="notice">${icon('lock')}<div class="small">${state.security.pinEnabled ? 'بياناتك مشفرة بمفتاح AES‑256 مشتق من رمزك (PBKDF2، 250 ألف تكرار). الرمز لا يُخزَّن، ولا يمكن استعادة البيانات بدونه.' : 'فعّل رمز القفل ليُشفَّر كل ما يُخزَّن على جهازك وفي المزامنة.'}</div></div>
     <div class="row">${state.security.pinEnabled ? `<button class="btn" data-act="pin-set">تغيير الرمز</button><button class="btn danger" data-act="pin-off">إلغاء القفل</button><button class="btn" data-act="lock-now">${icon('lock')} قفل الآن</button>` : `<button class="btn primary" data-act="pin-set">${icon('lock')} تفعيل رمز القفل</button>`}</div>
@@ -2634,6 +2645,11 @@ const ACT = {
   calsel: (el) => { ui.calSel = el.dataset.date; render(); },
   horizon: (el) => { ui.horizon = Number(el.dataset.h); render(); },
   'quick-spend': () => quickSpend(),
+  'bio-unlock': () => window.__bioUnlock && window.__bioUnlock(),
+  'test-notif': () => window.__nativeTestNotif && window.__nativeTestNotif(),
+  'native-notify': (el) => { state.settings.nativeNotify = el.checked; save(); toast(el.checked ? 'التنبيهات مفعلة' : 'أُوقفت التنبيهات'); if (!el.checked && window.__native.P.LocalNotifications) window.__native.P.LocalNotifications.getPending().then((p) => p.notifications.length && window.__native.P.LocalNotifications.cancel({ notifications: p.notifications.map((n) => ({ id: n.id })) })); },
+  'daily-reminder': (el) => { state.settings.dailyReminder = el.checked; save(); toast(el.checked ? 'التذكير اليومي مفعل' : 'أُوقف التذكير اليومي'); },
+  'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   whatif: () => { closeSheet(); whatIfSheet(); },
   'wi-adopt': () => adoptWhatIf(),
   'show-daily': () => { ui.showDaily = !ui.showDaily; render(); },
@@ -2727,6 +2743,7 @@ document.addEventListener('change', (e) => {
   const ch = t.dataset && t.dataset.change; if (!ch) return;
   if (ch === 'cyc') { ui.cycle = t.value; render(); }
   if (ch === 'rcyc') { ui.reportCycle = t.value; render(); }
+  if (ch === 'remind-hour') { state.settings.remindHour = Number(t.value); save(); toast('حُفظ وقت التذكير'); }
   if (ch === 'lockmin') { state.settings.lockMinutes = Number(t.value); save(); toast('حُفظ'); }
   if (ch === 'import-json' && t.files[0]) importJSON(t.files[0]);
   if (ch === 'import-csv' && t.files[0]) importCSV(t.files[0]);
@@ -2763,7 +2780,7 @@ const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; if (state) render(); });
 window.addEventListener('appinstalled', () => { installEvt = null; toast('ثُبّت التطبيق على جهازك'); if (state) render(); });
 function installCard(compact) {
-  if (!window.__MOHASBAK_PWA__ || isStandalone()) return '';
+  if (!window.__MOHASBAK_PWA__ || isStandalone() || (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) return '';
   if (installEvt) return `<div class="notice lvl-good">${icon('download')}<div><strong>ثبّت «محاسبك المالي» على جوالك</strong><p class="small">يصير أيقونة على الشاشة الرئيسية ويفتح كتطبيق ويعمل بدون إنترنت.</p><button class="btn sm primary" data-act="install" style="margin-top:6px">تثبيت التطبيق</button></div></div>`;
   if (isIOS()) return `<div class="notice lvl-good">${icon('download')}<div><strong>ثبّته على الآيفون</strong><p class="small">في سفاري اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».</p></div></div>`;
   return compact ? '' : `<div class="notice">${icon('download')}<div><strong>لتثبيته كتطبيق على جوالك</strong><p class="small">افتح الرابط في Chrome أو Edge أو Samsung Internet (وليس داخل تطبيق آخر)، ثم من قائمة المتصفح ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</p></div></div>`;
@@ -2779,9 +2796,145 @@ function boot() {
   else if (env && env.data) { try { state = normalize(JSON.parse(env.data)); state.modifiedAt = state.modifiedAt || env.savedAt; markClean(); } catch (e) { state = null; toast('تعذرت قراءة البيانات المحفوظة'); } }
   render();
   cloudInit();
-  if ('serviceWorker' in navigator && window.__MOHASBAK_PWA__) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator && window.__MOHASBAK_PWA__ && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 window.__app = { get state() { return state; }, ui, E, render, go, setToday: (d) => { ui.todayOverride = d; render(); } };
 boot();
+
+/* محاسبك المالي — الجسر الأصلي (أندرويد عبر Capacitor)
+ * يعمل فقط داخل التطبيق الأصلي؛ في المتصفح لا يفعل شيئاً.
+ * الإشعارات المجدولة، الودجت، قفل البصمة، زر الرجوع، حفظ ومشاركة الملفات. */
+'use strict';
+const Native = (() => {
+  const C = window.Capacitor;
+  const on = !!(C && typeof C.isNativePlatform === 'function' && C.isNativePlatform());
+  const P = on ? C.Plugins : {};
+  return { on, P, platform: on ? C.getPlatform() : 'web' };
+})();
+window.__native = Native;
+
+if (Native.on) {
+  const { LocalNotifications: LN, App, MohasbakNative: MN, Filesystem: FS, Share } = Native.P;
+  const atLocal = (date, h, m) => { const [y, mo, d] = date.split('-').map(Number); return new Date(y, mo - 1, d, h, m || 0, 0); };
+  const shortMoney = (x) => `${nf(Math.round(x), 0)} ${curSym()}`;
+
+  /* ── الإشعارات: نعيد جدولة 30 يوماً قادمة بعد كل تعديل ── */
+  let notifTimer = null, notifAsked = false;
+  async function ensureNotifPermission() {
+    if (!LN) return false;
+    try {
+      let p = await LN.checkPermissions();
+      if (p.display !== 'granted' && !notifAsked) { notifAsked = true; p = await LN.requestPermissions(); }
+      return p.display === 'granted';
+    } catch (e) { return false; }
+  }
+  function buildNotifications() {
+    const s = state.settings, t = today(), now = new Date(), list = [];
+    const remindH = Number(s.remindHour ?? 21);
+    const push = (at, title, body, extra) => { if (at > now) list.push(Object.assign({ id: list.length + 1, title, body, schedule: { at, allowWhileIdle: true }, smallIcon: 'ic_stat_mohasbak', iconColor: '#3B43A6' }, extra || {})); };
+    // 1) الخصميات القادمة: مساء اليوم السابق
+    for (const o of E.upcoming(state, t, 31)) {
+      if (o.status !== 'due' || o.item.type === 'daily') continue;
+      if (o.kind === 'expense') push(atLocal(E.addDays(o.date, -1), 20, 0), `بكرة يُخصم: ${o.item.name}`, `${shortMoney(o.amount)}${o.item.type === 'installment' && o.n ? ` · القسط ${o.n} من ${o.of}` : ''}`);
+      else if (o.item.isPrimary) push(atLocal(o.date, 9, 0), 'اليوم يوم الراتب', `نزل ${shortMoney(o.amount)}؟ خطة الشهر جاهزة: افتح لترى كم يتبقى لك.`);
+    }
+    // 2) تذكير يومي بتسجيل المصاريف + مسموح اليوم
+    if (s.dailyReminder !== false) {
+      const db = E.dailyBudget(state, t);
+      for (let i = 0; i < 14; i++) {
+        const d = E.addDays(t, i);
+        push(atLocal(d, remindH, 0), 'سجّلت مصاريف اليوم؟', i === 0 && db.income > 0 ? `مسموح اليوم ${shortMoney(Math.max(0, db.todayLeft))}. التسجيل يأخذ ثانيتين.` : 'التسجيل يأخذ ثانيتين ويبقي «مسموح اليوم» دقيقاً.');
+      }
+    }
+    // 3) الراتب القادم ضاغط: قبل بدايته بثلاثة أيام
+    try {
+      const fc = E.forecast(state, { today: t, months: 4 });
+      fc.rows.slice(1).forEach((r) => { if (r.level === 'pressing' || r.level === 'risk') push(atLocal(E.addDays(r.start, -3), 19, 0), `${cycleTitle(r.key)} ${r.levelName}`, (r.reasons[0] || '') + ' افتح لترى الحل المقترح.'); });
+    } catch (e) { /* */ }
+    return list.slice(0, 60);
+  }
+  async function syncNotifications() {
+    if (!LN || !state || !state.settings.onboarded || state.settings.nativeNotify === false) return;
+    if (!(await ensureNotifPermission())) return;
+    try {
+      const pend = await LN.getPending();
+      if (pend.notifications.length) await LN.cancel({ notifications: pend.notifications.map((n) => ({ id: n.id })) });
+      const list = buildNotifications();
+      if (list.length) await LN.schedule({ notifications: list });
+      Native.lastScheduled = list.length;
+    } catch (e) { console.warn('notif', e); }
+  }
+
+  /* ── الودجت على الشاشة الرئيسية ── */
+  async function syncWidget() {
+    if (!MN || !state || !state.settings.onboarded) return;
+    try {
+      const t = today(), db = E.dailyBudget(state, t), d = stmtData(E.cycleOf(t, state.settings));
+      const over = db.todayLeft < 0;
+      await MN.updateWidget({
+        title: over ? 'تجاوزت مسموح اليوم بـ' : 'مسموح تصرف اليوم',
+        big: shortMoney(Math.abs(db.todayLeft)),
+        line1: `يتبقى من الراتب ${shortMoney(d.left)}`,
+        line2: `الراتب القادم بعد ${nf(db.daysLeft, 0)} ${db.daysLeft === 1 ? 'يوم' : db.daysLeft <= 10 ? 'أيام' : 'يوماً'}`
+      });
+    } catch (e) { console.warn('widget', e); }
+  }
+
+  window.__nativeSync = () => { clearTimeout(notifTimer); notifTimer = setTimeout(() => { syncWidget(); syncNotifications(); }, 600); };
+
+  /* ── إجراء من الودجت (زر +) ── */
+  async function consumeAction() {
+    if (!MN) return;
+    try { const r = await MN.consumeAction(); if (r && r.action === 'quick' && state && state.settings.onboarded && !ui.locked && !ui.bioLocked) { go('home'); quickSpend(); } } catch (e) { /* */ }
+  }
+
+  /* ── قفل البصمة ── */
+  let hiddenAt = 0;
+  async function bioUnlock() {
+    try { await MN.authenticate({ title: 'محاسبك المالي', subtitle: 'افتح بالبصمة أو رمز الجوال' }); ui.bioLocked = false; render(); consumeAction(); }
+    catch (e) { ui.bioMsg = 'لم يتم التحقق. حاول مرة أخرى.'; render(); }
+  }
+  window.__bioUnlock = bioUnlock;
+  function needBio() { return state && state.settings.bioLock && !state.security.pinEnabled; }
+
+  /* ── زر الرجوع في أندرويد ── */
+  let exitAt = 0;
+  if (App) {
+    App.addListener('backButton', () => {
+      if (ui.locked || ui.bioLocked || !state) return App.exitApp();
+      if ($('.sheet')) return closeSheet();
+      if (ui.view !== 'home') return go('home');
+      if (Date.now() - exitAt < 2500) return App.exitApp();
+      exitAt = Date.now(); toast('اضغط رجوع مرة أخرى للخروج');
+    });
+    App.addListener('appStateChange', ({ isActive }) => {
+      if (!isActive) { hiddenAt = Date.now(); if (state) save(true); return; }
+      if (needBio() && hiddenAt && Date.now() - hiddenAt > (Number(state.settings.lockMinutes) || 5) * 60000) { ui.bioLocked = true; render(); bioUnlock(); return; }
+      if (state) { render(); window.__nativeSync(); }
+      consumeAction();
+    });
+  }
+
+  /* ── حفظ ومشاركة الملفات (التنزيل العادي لا يعمل داخل التطبيق) ── */
+  window.__nativeSaveFile = async (filename, data) => {
+    const toB64 = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+    const isText = typeof data === 'string';
+    const w = await FS.writeFile({ path: filename, data: isText ? data : await toB64(data instanceof Blob ? data : new Blob([data])), directory: 'CACHE', encoding: isText ? 'utf8' : undefined });
+    await Share.share({ title: filename, url: w.uri, dialogTitle: 'حفظ أو مشاركة الملف' });
+    toast('اختر أين تحفظ الملف أو تشاركه');
+  };
+
+  /* ── اختبار الإشعار من الإعدادات ── */
+  window.__nativeTestNotif = async () => {
+    if (!(await ensureNotifPermission())) return toast('فعّل الإشعارات للتطبيق من إعدادات الجوال');
+    await LN.schedule({ notifications: [{ id: 999, title: 'محاسبك المالي', body: 'هكذا ستصلك التنبيهات قبل كل خصم.', schedule: { at: new Date(Date.now() + 5000), allowWhileIdle: true }, smallIcon: 'ic_stat_mohasbak', iconColor: '#3B43A6' }] });
+    toast('سيصلك إشعار تجريبي خلال 5 ثوانٍ');
+  };
+  window.__nativeCanBio = async () => { try { return (await MN.canBiometric()).available; } catch (e) { return false; } };
+
+  // تشغيل أول مرة
+  if (needBio()) { ui.bioLocked = true; render(); bioUnlock(); }
+  setTimeout(() => { if (state) window.__nativeSync(); consumeAction(); }, 800);
+}
 
 </script></body></html>

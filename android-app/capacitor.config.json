@@ -1,0 +1,9 @@
+{
+  "appId": "com.mohasbak.app",
+  "appName": "محاسبك المالي",
+  "webDir": "www",
+  "android": { "backgroundColor": "#F2F5F4" },
+  "plugins": {
+    "LocalNotifications": { "smallIcon": "ic_stat_mohasbak", "iconColor": "#3B43A6" }
+  }
+}
