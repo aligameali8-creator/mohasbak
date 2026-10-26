@@ -21,7 +21,7 @@ class Page:
             m = re.search(r'@(webview_devtools_remote_\d+)', sh('adb shell cat /proc/net/unix'))
             if m: sock = m.group(1); break
             time.sleep(2)
-        if not sock: raise RuntimeError('no webview devtools socket')
+        if not sock: diag('nosocket'); raise RuntimeError('no webview devtools socket')
         sh('adb forward --remove-all'); sh(f'adb forward tcp:9222 localabstract:{sock}')
         for _ in range(20):
             try:
@@ -51,9 +51,18 @@ class Page:
 def launch():
     sh(f'adb shell am start -W -n {PKG}/.MainActivity', 90)
 
+LOGF = open(f'{OUT}/logcat.txt', 'w')
+LOGP = None
+def diag(tag):
+    open(f'{OUT}/diag-{tag}.txt', 'w').write('\n'.join([
+        'devices: ' + sh('adb devices'), 'pid: ' + sh(f'adb shell pidof {PKG}'),
+        'focus: ' + sh('adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp"'),
+        'sockets: ' + sh('adb shell cat /proc/net/unix | grep -i devtools')]))
+    shot(f'diag-{tag}')
 try:
     sh(f'adb shell pm grant {PKG} android.permission.POST_NOTIFICATIONS')
     sh('adb logcat -c')
+    LOGP = subprocess.Popen(['adb', 'logcat', '-v', 'time'], stdout=LOGF, stderr=subprocess.STDOUT)
     launch(); time.sleep(10); shot('01-launch')
     pg = Page()
     check('التطبيق يعمل داخل أندرويد (Capacitor)', pg.wait("window.Capacitor && Capacitor.isNativePlatform() && !!window.__app"))
@@ -98,7 +107,10 @@ try:
     check('زر + في الودجت يفتح تسجيل مصروف', pg.wait("!!document.querySelector('#q_amt')", 10), '')
     shot('06-widget-plus'); pg.ev("closeSheet(); true")
     # البيانات بعد إغلاق التطبيق بالكامل
-    sh(f'adb shell am force-stop {PKG}'); time.sleep(2); launch(); time.sleep(8)
+    sh(f'adb shell am force-stop {PKG}'); time.sleep(3)
+    check('الجوال ما زال متصلاً بعد إغلاق التطبيق', 'emulator' in sh('adb devices'), sh('adb devices'))
+    launch(); time.sleep(10); diag('relaunch')
+    check('التطبيق يُفتح من جديد بعد إغلاقه بالكامل', sh(f'adb shell pidof {PKG}').strip() != '', sh(f'adb shell pidof {PKG}'))
     pg = Page()
     cnt = pg.wait("window.__app && window.__app.state && window.__app.state.items.filter(i => i.type === 'daily').length")
     check('البيانات باقية بعد إغلاق التطبيق وفتحه', cnt == 1, cnt)
@@ -108,8 +120,11 @@ try:
 except Exception as e:
     check('تنفيذ الاختبار', False, repr(e))
 finally:
-    log = sh('adb logcat -d -v brief')
-    open(f'{OUT}/logcat.txt', 'w').write(log[-200000:])
+    if LOGP: LOGP.terminate()
+    LOGF.close()
+    log = open(f'{OUT}/logcat.txt', errors='ignore').read()
+    check('سجل النظام التُقط فعلاً (حتى تكون نتيجتا الانهيار والأخطاء موثوقتين)', len(log) > 5000, len(log))
+    if len(log) > 400000: open(f'{OUT}/logcat.txt', 'w').write(log[-400000:])
     check('لا انهيار في التطبيق (FATAL)', 'FATAL EXCEPTION' not in log, re.findall(r'FATAL EXCEPTION.{0,400}', log, re.S)[:1])
     js_err = [l for l in log.splitlines() if 'chromium' in l.lower() and ('Uncaught' in l)]
     check('لا أخطاء JavaScript في WebView', not js_err, js_err[:3])

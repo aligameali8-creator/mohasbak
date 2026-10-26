@@ -404,6 +404,8 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 #wi-result tr.lvl-pressing td:last-child { color: var(--warn); } #wi-result tr.lvl-risk td:last-child { color: var(--risk); }
 .ytile em { position: absolute; top: 3px; inset-inline-start: 5px; font-style: normal; font-size: 9px; font-family: var(--f-display); color: var(--ink); opacity: .7; }
 .ytile { padding-top: 14px; }
+.file-btn { justify-self: start; }
+.sr:focus-visible + .file-btn, .file-btn:focus-within { outline: 3px solid var(--accent); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
 <script>window.__MOHASBAK_PWA__=true;</script><script>
@@ -1253,6 +1255,9 @@ const IC = {
 };
 const icon = (n, cls) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${cls || 'ic'}">${IC[n] || IC.dots}</svg>`;
 
+/** حقل اختيار ملف بنص عربي (زر النظام يظهر بلغة الجهاز مثل «Choose File») */
+const fileField = (id, accept, change, label) => `<label class="btn file-btn" for="${id}">${icon('upload')} ${label}</label><input type="file" id="${id}" class="sr" accept="${accept}" data-change="${change}">`;
+
 /* ───────── التشفير (PBKDF2 + AES-GCM) ───────── */
 const b64e = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 const b64d = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
@@ -1290,7 +1295,7 @@ function save(now) {
   const run = async () => {
     if (!state) return;
     try { envCache = await buildEnv(); writeLocal(envCache); if (cloudOn()) cloudPush(envCache); if (window.__nativeSync) window.__nativeSync(); }
-    catch (e) { console.error(e); toast('تعذر الحفظ: ' + e.message); }
+    catch (e) { console.error(e); toast('تعذر الحفظ: ' + friendlyError(e)); }
   };
   if (now) return run();
   saveTimer = setTimeout(run, 250);
@@ -1334,13 +1339,13 @@ async function cloudDelete() { if (cloud.ref) { try { await cloud.ref.delete(); 
 
 /* ───────── التنزيلات (قدرة المنصة أو رابط عادي خارجها) ───────── */
 async function saveFile(filename, data, mime) {
-  if (window.__nativeSaveFile) { try { return await window.__nativeSaveFile(filename, data); } catch (e) { return toast('تعذر حفظ الملف: ' + (e.message || e)); } }
+  if (window.__nativeSaveFile) { try { return await window.__nativeSaveFile(filename, data); } catch (e) { return toast('تعذر حفظ الملف: ' + friendlyError(e)); } }
   try {
     if (window.claude && window.claude.use) {
       const dl = await window.claude.use('downloads');
       if (dl) {
         try { await dl.save({ filename, data }); toast('تم تجهيز الملف: ' + filename); return; }
-        catch (e) { if (e && e.code === 'declined') { toast('أُلغي الحفظ'); return; } if (e && e.code !== 'unavailable' && e.code !== 'not_granted') { toast('تعذر حفظ الملف: ' + (e.message || e.code)); return; } }
+        catch (e) { if (e && e.code === 'declined') { toast('أُلغي الحفظ'); return; } if (e && e.code !== 'unavailable' && e.code !== 'not_granted') { toast('تعذر حفظ الملف: ' + friendlyError(e)); return; } }
       }
     }
   } catch (e) { /* أكمل بالطريقة العادية */ }
@@ -1349,10 +1354,16 @@ async function saveFile(filename, data, mime) {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   toast('تم تنزيل ' + filename);
 }
-function loadScript(src) {
+function loadScript(src, globalName) {
+  // إذا كانت المكتبة محمّلة فعلاً نكمل؛ وإذا فشل تحميل سابق نحذف أثره ونحاول من جديد
+  const ready = () => !globalName || !!window[globalName];
   return new Promise((res, rej) => {
-    if ($$('script').some((s) => s.src === src)) return res();
-    const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('تعذر تحميل المكتبة، تحقق من الاتصال'));
+    const old = $$('script').find((x) => x.src === src);
+    if (old && old.dataset.loaded === '1' && ready()) return res();
+    if (old) old.remove();
+    const s = document.createElement('script'); s.src = src;
+    s.onload = () => { s.dataset.loaded = '1'; ready() ? res() : rej(new Error('تعذر تحميل المكتبة، تحقق من الاتصال بالإنترنت')); };
+    s.onerror = () => { s.remove(); rej(new Error('تعذر تحميل المكتبة، تحقق من الاتصال بالإنترنت')); };
     document.head.appendChild(s);
   });
 }
@@ -1394,6 +1405,8 @@ function normalize(st) {
 
 /* ───────── الإشعارات المؤقتة (Toast) ───────── */
 let toastTimer;
+/** رسالة الخطأ للمستخدم: العربية كما هي، والأخطاء البرمجية الإنجليزية تتحول لرسالة مفهومة */
+function friendlyError(e) { const m = String((e && e.message) || e || ''); return /[\u0600-\u06FF]/.test(m) ? m : 'حدث خطأ غير متوقع. حاول مرة أخرى، وإذا تكرر صدّر نسخة احتياطية.'; }
 function toast(msg, o) {
   const root = $('#toast-root'); if (!root) return;
   root.innerHTML = `<div class="toast" role="status"><span>${esc(msg)}</span>${o && o.undo ? `<button data-act="undo">${'تراجع'}</button>` : ''}</div>`;
@@ -1968,8 +1981,8 @@ function viewOptions() {
   </section>
   <section class="card form"><h2>النسخ الاحتياطي والتصدير</h2>
     <div class="row"><button class="btn" data-act="export-xlsx">${icon('download')} Excel كامل</button><button class="btn" data-act="export-pdf" data-key="${E.cycleOf(today(), s)}">${icon('download')} PDF للشهر</button><button class="btn" data-act="export-json">${icon('download')} نسخة احتياطية JSON</button></div>
-    <div class="f"><label for="imp-json">استعادة نسخة احتياطية (JSON)</label><input type="file" id="imp-json" accept=".json,application/json" data-change="import-json" class="in"></div>
-    <div class="f"><label for="imp-csv">استيراد مصروفات من CSV أو Excel</label><input type="file" id="imp-csv" accept=".csv,.xlsx,.xls" data-change="import-csv" class="in"><span class="hint">الأعمدة: الاسم، المبلغ، التاريخ (YYYY-MM-DD)، الفئة (اختياري). كل صف يصبح مصروفاً لمرة واحدة. <button class="btn sm ghost" data-act="csv-template" type="button">تنزيل قالب</button></span></div>
+    <div class="f"><span class="lbl">استعادة نسخة احتياطية (JSON)</span>${fileField('imp-json', '.json,application/json', 'import-json', 'اختر ملف النسخة')}</div>
+    <div class="f"><span class="lbl">استيراد مصروفات من CSV أو Excel</span>${fileField('imp-csv', '.csv,.xlsx,.xls', 'import-csv', 'اختر ملف المصروفات')}<span class="hint">الأعمدة: الاسم، المبلغ، التاريخ (YYYY-MM-DD)، الفئة (اختياري). كل صف يصبح مصروفاً لمرة واحدة. <button class="btn sm ghost" data-act="csv-template" type="button">تنزيل قالب</button></span></div>
     <hr class="sep"><h3>الحسابات</h3><div class="list">${state.accounts.map((a) => `<div class="li"><div class="li-ic">${icon('wallet')}</div><div class="li-main"><div class="li-t">${esc(a.name)}</div></div><div class="li-end">${a.isDefault ? '<span class="chip">افتراضي</span>' : `<button class="btn sm ghost" data-act="acc-del" data-id="${a.id}">حذف</button>`}</div></div>`).join('')}</div>
     <form class="row" data-form="account"><input class="in" name="name" placeholder="اسم حساب جديد" style="flex:1;min-width:160px" required><button class="btn" type="submit">إضافة حساب</button></form>
     <hr class="sep"><div class="row"><button class="btn" data-nav="audit">${icon('history')} سجل التدقيق</button><button class="btn" data-act="load-demo">تحميل بيانات تجريبية</button><button class="btn danger" data-act="wipe">${icon('trash')} حذف كل البيانات</button></div>
@@ -2455,7 +2468,7 @@ function welcomeScreen() {
     ${installCard(false)}
     <button class="btn primary block" data-act="start-wizard" style="min-height:54px">ابدأ الإعداد (دقيقتان)</button>
     <button class="btn block" data-act="load-demo">جرّب ببيانات تجريبية واقعية</button>
-    <div class="f"><label for="w-imp" class="small muted">أو استعد نسخة احتياطية</label><input type="file" id="w-imp" class="in" accept=".json" data-change="import-json"></div>
+    <div class="f"><span class="small muted">أو إذا كانت لديك نسخة احتياطية:</span>${fileField('w-imp', '.json,application/json', 'import-json', 'استعد نسخة احتياطية')}</div>
   </div></div>`;
 }
 const WSTEPS = ['الراتب', 'دخل آخر', 'الرصيد', 'الادخار', 'الأسرة والدورة', 'الأسلوب', 'الحماية'];
@@ -2547,7 +2560,7 @@ function lockNow() { if (!state || !state.security.pinEnabled) return; save(true
 /* ───────── التصدير والاستيراد ───────── */
 async function exportExcel() {
   toast('جارٍ تجهيز ملف Excel…');
-  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
   const X = window.XLSX, wb = X.utils.book_new(); wb.Workbook = { Views: [{ RTL: true }] };
   const fc = E.forecast(state, { today: today(), months: state.settings.horizon });
   const add = (name, rows) => { const ws = X.utils.json_to_sheet(rows); ws['!cols'] = Object.keys(rows[0] || { a: 1 }).map(() => ({ wch: 18 })); X.utils.book_append_sheet(wb, ws, name); };
@@ -2563,8 +2576,8 @@ async function exportExcel() {
 }
 async function exportPDF(key) {
   toast('جارٍ تجهيز ملف PDF…');
-  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'html2canvas');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', 'jspdf');
   const cur = E.cycleOf(today(), state.settings), off = E.keyDiff(cur, key);
   const r = off >= 0 && off < 24 ? E.forecast(state, { today: today(), months: off + 1 }).rows[off] : null;
   const s = r ? r.summary : E.summarizeCycle(state, key);
@@ -2593,12 +2606,12 @@ async function importJSON(file) {
     const apply = () => { const prevPin = state && state.security.pinEnabled ? state.security : null; state = normalize(obj); if (prevPin && cryptoKey) state.security = prevPin; else state.security = { pinEnabled: false }; state.settings.onboarded = true; audit('import', `استعادة نسخة احتياطية (${obj.items.length} بنداً)`); save(true); closeSheet(); ui.view = 'home'; render(); toast('تمت الاستعادة'); };
     if (!state) return apply();
     confirmSheet('استعادة نسخة احتياطية', `سيُستبدل كل ما في التطبيق ببيانات الملف (${nf(obj.items.length, 0)} بنداً). يمكنك التراجع بعدها مباشرة.`, 'استبدال', () => { undoStack.push({ snap: JSON.stringify(state), summary: 'الاستعادة' }); apply(); });
-  } catch (e) { toast('تعذرت القراءة: ' + e.message); }
+  } catch (e) { toast('تعذرت القراءة: ' + friendlyError(e)); }
 }
 async function importCSV(file) {
   try {
     let rows;
-    if (/\.xlsx?$/i.test(file.name)) { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); const wb = window.XLSX.read(await readFile(file, true)); rows = window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false }); }
+    if (/\.xlsx?$/i.test(file.name)) { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX'); const wb = window.XLSX.read(await readFile(file, true)); rows = window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false }); }
     else rows = (await readFile(file)).replace(/^﻿/, '').split(/\r?\n/).filter((l) => l.trim()).map((l) => l.split(/[,;\t]/).map((c) => c.trim().replace(/^"|"$/g, '')));
     if (rows.length && isNaN(num(rows[0][1]))) rows.shift();
     const items = []; const bad = [];
@@ -2612,7 +2625,7 @@ async function importCSV(file) {
     });
     if (!items.length) return toast('لم يُعثر على صفوف صالحة. تأكد من الأعمدة: الاسم، المبلغ، التاريخ');
     commit(`استيراد ${items.length} مصروفاً من ${file.name}${bad.length ? ` (تُجوهل ${bad.length} صفوف غير صالحة)` : ''}`, (st) => { st.items.push(...items); }, { action: 'import' });
-  } catch (e) { toast('تعذر الاستيراد: ' + e.message); }
+  } catch (e) { toast('تعذر الاستيراد: ' + friendlyError(e)); }
 }
 
 async function wipeAll() { closeSheet(); await cloudDelete(); try { localStorage.removeItem(LS_KEY); } catch (e) { /* */ } state = null; envCache = null; cryptoKey = null; undoStack = []; $('#root').innerHTML = ''; render(); }
@@ -2667,8 +2680,8 @@ const ACT = {
   read: (el) => { state.notifState.read[el.dataset.key] = true; save(); render(); },
   'read-all': () => { E.notifications(state, today()).forEach((n) => { state.notifState.read[n.key] = true; }); save(); render(); },
   'export-menu': (el) => { const key = el.dataset.key; openSheet('تصدير', `<div class="more-grid"><button class="more-link" data-act="export-pdf" data-key="${key}">${icon('download')}<span><strong>PDF لخطة ${E.cycleName(key)}</strong></span></button><button class="more-link" data-act="export-xlsx">${icon('download')}<span><strong>Excel للتوقع والبنود والأقساط</strong></span></button><button class="more-link" data-act="export-json">${icon('download')}<span><strong>نسخة احتياطية كاملة (JSON)</strong></span></button></div>`); },
-  'export-xlsx': () => { closeSheet(); exportExcel().catch((e) => toast(e.message)); },
-  'export-pdf': (el) => { closeSheet(); exportPDF(el.dataset.key).catch((e) => toast('تعذر إنشاء PDF: ' + e.message)); },
+  'export-xlsx': () => { closeSheet(); exportExcel().catch((e) => toast(friendlyError(e))); },
+  'export-pdf': (el) => { closeSheet(); exportPDF(el.dataset.key).catch((e) => toast('تعذر إنشاء PDF: ' + friendlyError(e))); },
   'export-json': () => { closeSheet(); exportJSON(); },
   'csv-template': () => saveFile('قالب-مصروفات.csv', '﻿الاسم,المبلغ,التاريخ,الفئة\nصيدلية,85,2026-10-20,صيدلية وصحة\nبنزين,120,2026-10-21,بنزين\n', 'text/csv'),
   'acc-del': (el) => { const id = el.dataset.id; if (state.items.some((i) => i.accountId === id && !i.deletedAt)) return toast('الحساب مستخدم في بنود نشطة. انقلها لحساب آخر أولاً.'); commit('حُذف حساب', (st) => { st.accounts = st.accounts.filter((a) => a.id !== id); }); },
@@ -2729,11 +2742,11 @@ document.addEventListener('click', (e) => {
   const fn = ACT[a.dataset.act]; if (!fn) return;
   if (a.dataset.act === 'sheet-bg') { if (e.target === a) closeSheet(); return; } // اللمس داخل النافذة يمر طبيعياً للحقول
   if (a.tagName === 'BUTTON' || a.tagName === 'A') e.preventDefault();
-  Promise.resolve(fn(a, e)).catch((err) => { console.error(err); toast('حدث خطأ: ' + err.message); });
+  Promise.resolve(fn(a, e)).catch((err) => { console.error(err); toast(friendlyError(err)); });
 });
 document.addEventListener('submit', (e) => {
   const f = e.target.closest('form[data-form]'); if (!f) return; e.preventDefault();
-  const fn = FORMS[f.dataset.form]; if (fn) Promise.resolve(fn(f)).catch((err) => { console.error(err); showErrors(f, [err.message]); });
+  const fn = FORMS[f.dataset.form]; if (fn) Promise.resolve(fn(f)).catch((err) => { console.error(err); showErrors(f, [friendlyError(err)]); });
 });
 document.addEventListener('change', (e) => {
   const t = e.target;
