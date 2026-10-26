@@ -2219,6 +2219,7 @@ function welcomeScreen() {
     <h1 style="font-size:var(--t-2xl)">اعرف أين يذهب مالك، ومتى تتحسن سيولتك.</h1>
     <p class="muted">أدخل راتبك والتزاماتك مرة واحدة، ويحسب لك التطبيق خطة كل دورة راتب وتوقع 12–24 شهراً، مع سبب كل رقم ونصيحة. بياناتك تبقى على جهازك.</p>
     ${ui.cloudOffer ? `<div class="notice">${icon('cloud')}<div><strong>وجدنا نسخة مزامنة مشفرة لحسابك</strong><p class="small">استعدها بإدخال رمز القفل.</p><button class="btn sm primary" data-act="cloud-restore" style="margin-top:6px">استعادة</button></div></div>` : ''}
+    ${installCard(false)}
     <button class="btn primary block" data-act="start-wizard" style="min-height:54px">ابدأ الإعداد (دقيقتان)</button>
     <button class="btn block" data-act="load-demo">جرّب ببيانات تجريبية واقعية</button>
     <div class="f"><label for="w-imp" class="small muted">أو استعد نسخة احتياطية</label><input type="file" id="w-imp" class="in" accept=".json" data-change="import-json"></div>
@@ -2537,7 +2538,7 @@ function installCard(compact) {
   if (!window.__MOHASBAK_PWA__ || isStandalone()) return '';
   if (installEvt) return `<div class="notice lvl-good">${icon('download')}<div><strong>ثبّت «محاسبك المالي» على جوالك</strong><p class="small">يصير أيقونة على الشاشة الرئيسية ويفتح كتطبيق ويعمل بدون إنترنت.</p><button class="btn sm primary" data-act="install" style="margin-top:6px">تثبيت التطبيق</button></div></div>`;
   if (isIOS()) return `<div class="notice lvl-good">${icon('download')}<div><strong>ثبّته على الآيفون</strong><p class="small">في سفاري اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».</p></div></div>`;
-  return compact ? '' : `<p class="small muted">لتثبيته: افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</p>`;
+  return compact ? '' : `<div class="notice">${icon('download')}<div><strong>لتثبيته كتطبيق على جوالك</strong><p class="small">افتح الرابط في Chrome أو Edge أو Samsung Internet (وليس داخل تطبيق آخر)، ثم من قائمة المتصفح ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</p></div></div>`;
 }
 
 /* ───────── الإقلاع ───────── */
