@@ -1217,6 +1217,7 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     ];
     st.savingsLedger = { '2026-10': { done: true, amount: 2000, at: '2026-09-27T10:00:00.000Z' } };
     st.audit = [{ at: setAt, action: 'seed', summary: 'تحميل البيانات التجريبية' }];
+    st.settings.demo = true;
     return st;
   }
   return { uid, emptyState, demoState, CATEGORIES, ACCOUNTS, mk };
@@ -1554,6 +1555,7 @@ function applyTheme() {
   const t = state ? state.settings.theme : 'auto';
   if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
 }
+const isDemo = () => !!(state && state.settings.onboarded && (state.settings.demo === true || (state.settings.demo !== false && (state.audit || []).some((a) => a.action === 'seed'))));
 const itemsWord = (n) => n === 0 ? 'لا بنود' : n === 1 ? 'بند واحد' : n === 2 ? 'بندان' : n <= 10 ? `${nf(n, 0)} بنود` : `${nf(n, 0)} بنداً`;
 function render() { try { window.__shownDay = today(); } catch (e) { /* */ } return E.batch(() => renderInner()); }
 function renderInner() {
@@ -1776,7 +1778,8 @@ function viewHome() {
   const fileMode = !/^https?:$/.test(location.protocol);
   const storageWarn = (!fileMode && !storageOK) ? `<div class="notice lvl-risk">${icon('alert')}<div><strong>تعذر حفظ بياناتك على هذا الجهاز</strong><p class="small">قد تكون مساحة الجوال ممتلئة أو أنك في نافذة خاصة. احفظ نسخة من بياناتك الآن حتى لا تضيع آخر تعديلاتك، ثم وفّر مساحة وأعد فتح التطبيق.</p><div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : fileMode ? `<div class="notice lvl-warn">${icon('alert')}<div><strong>أنت تفتح ملفاً منزّلاً، وبياناتك لن تنتقل</strong><p class="small">كل ملف تنزّله (مثل «محاسبك المالي (5)») يبدأ وحده ولا يرى ما أدخلته في الملف السابق، وقد تضيع البيانات عند إغلاق المتصفح. افتح التطبيق من رابطه على الإنترنت وثبّته على جوالك، فتُحفظ بياناتك على جهازك بشكل دائم.</p><div class="row" style="margin-top:6px"><button class="btn sm" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : '';
   const saved = cloud.status === 'synced' ? `<p class="xs muted" style="display:flex;gap:6px;align-items:center">${icon('cloud')} محفوظ في حسابك</p>` : '';
-  return `${topbar(`${hi}${name}`)}${storageWarn}${saved}${installCard(true)}
+  const demoBar = isDemo() ? `<div class="notice lvl-warn demo-bar">${icon('alert')}<div><strong>هذه بيانات تجريبية للتعرّف على التطبيق</strong><p class="small">لما تجهز، اضغط الزر وابدأ ببياناتك أنت: راتبك ويوم نزوله ثم التزاماتك. البيانات التجريبية تُمسح.</p><div class="row" style="margin-top:8px"><button class="btn primary" data-act="leave-demo">${icon('check')} ابدأ ببياناتي الشخصية</button></div></div></div>` : '';
+  return `${topbar(`${hi}${name}`)}${demoBar}${storageWarn}${saved}${installCard(true)}
   ${stmtCard(d, { tabs, cta: true })}
   ${dedList(d)}
   ${notice}
@@ -2052,7 +2055,7 @@ function viewOptions() {
     <div class="f"><span class="lbl">استيراد مصروفات من CSV أو Excel</span>${fileField('imp-csv', '.csv,.xlsx,.xls', 'import-csv', 'اختر ملف المصروفات')}<span class="hint">الأعمدة: الاسم، المبلغ، التاريخ (YYYY-MM-DD)، الفئة (اختياري). كل صف يصبح مصروفاً لمرة واحدة. <button class="btn sm ghost" data-act="csv-template" type="button">تنزيل قالب</button></span></div>
     <hr class="sep"><h3>الحسابات</h3><div class="list">${state.accounts.map((a) => `<div class="li"><div class="li-ic">${icon('wallet')}</div><div class="li-main"><div class="li-t">${esc(a.name)}</div></div><div class="li-end">${a.isDefault ? '<span class="chip">افتراضي</span>' : `<button class="btn sm ghost" data-act="acc-del" data-id="${a.id}">حذف</button>`}</div></div>`).join('')}</div>
     <form class="row" data-form="account"><input class="in" name="name" placeholder="اسم حساب جديد" style="flex:1;min-width:160px" required><button class="btn" type="submit">إضافة حساب</button></form>
-    <hr class="sep"><div class="row"><button class="btn" data-nav="audit">${icon('history')} سجل التدقيق</button><button class="btn" data-act="load-demo">تحميل بيانات تجريبية</button><button class="btn danger" data-act="wipe">${icon('trash')} حذف كل البيانات</button></div>
+    <hr class="sep"><div class="row"><button class="btn" data-nav="audit">${icon('history')} سجل التدقيق</button>${isDemo() ? `<button class="btn primary" data-act="leave-demo">ابدأ ببياناتي الشخصية</button>` : '<button class="btn" data-act="load-demo">تحميل بيانات تجريبية</button>'}<button class="btn danger" data-act="wipe">${icon('trash')} حذف كل البيانات</button></div>
     ${!storageOK ? '<p class="err">تعذر الحفظ على هذا الجهاز (التخزين معطّل أو نافذة خاصة). صدّر نسخة احتياطية قبل الإغلاق.</p>' : ''}
   </section></div>
   <p class="xs muted">الإصدار 1.0 · ${esc(state.settings.timezone)} · ${itemsWord(state.items.length)}</p>`;
@@ -2764,6 +2767,13 @@ const ACT = {
     if (!state || !state.settings.onboarded) return apply();
     confirmSheet('تحميل بيانات تجريبية', 'ستُستبدل بياناتك الحالية ببيانات تجريبية. صدّر نسخة احتياطية أولاً إن أردت الاحتفاظ بها. يمكنك التراجع مباشرة بعدها.', 'استبدال', () => { undoStack.push({ snap: JSON.stringify(state), summary: 'تحميل البيانات التجريبية' }); apply(); }); },
   wipe: () => confirmSheet('حذف كل البيانات', 'سيُحذف كل شيء من هذا الجهاز ومن المزامنة نهائياً. اكتب «حذف» للتأكيد.', 'حذف نهائي', () => { if (($('#wipe-confirm') || {}).value.trim() !== 'حذف') { toast('اكتب «حذف» للتأكيد'); return false; } wipeAll(); }, '<input class="in" id="wipe-confirm" style="margin-top:12px" aria-label="اكتب حذف">'),
+  'leave-demo': () => confirmSheet('ابدأ ببياناتك الشخصية', 'سنمسح البيانات التجريبية ونبدأ إعداداً سريعاً لبياناتك أنت (راتبك، يوم نزوله، ثم التزاماتك). يأخذ دقيقتين، وتقدر تعدّل كل شيء بعدها.', 'ابدأ الآن', async () => {
+    const sec = state && state.security, key = cryptoKey;
+    await cloudDelete(); try { localStorage.removeItem(LS_KEY); } catch (e) { /* */ }
+    envCache = null; undoStack = []; state = Seed.emptyState(today());
+    if (sec && sec.pinEnabled && key) { state.security = sec; cryptoKey = key; } else cryptoKey = null;
+    ui.wizardStep = 0; ui.view = 'home'; ui.cycle = null; closeSheet(); render(); window.scrollTo(0, 0);
+  }),
   'start-wizard': () => { state = Seed.emptyState(today()); ui.wizardStep = 0; render(); },
   'wiz-back': () => { const f = $('form[data-form="wizard"]'); if (f) wizardCollect(f); ui.wizardStep = Math.max(0, ui.wizardStep - 1); render(); },
   'wiz-skip': () => { if (ui.wizardStep >= WSTEPS.length - 1) return wizardFinish(null); ui.wizardStep++; render(); },
