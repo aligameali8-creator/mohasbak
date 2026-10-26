@@ -430,9 +430,10 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .pro-card h2 svg { width: 18px; height: 18px; vertical-align: -3px; color: var(--accent); }
 .chip.good { background: var(--good); color: #fff; }
 .pro-notice { border-color: var(--accent); }
+.plan:focus { outline: none; } .plan:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="9b31655870";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="3c760c858e";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -2257,7 +2258,7 @@ function submitWhatIf(f) {
   const r = E.simulate(state, w.items, { today: today(), months, patch: w.patch });
   ui.lastWhatIf = w;
   const V = { none: ['info', 'لا أثر خلال المدة', 'لا يغير شيئاً في رواتبك القادمة.'],
-    safe: ['good', 'آمن: يتحمله راتبك', r.worst ? `أقل ما يتبقى يصير ${moneyText(Math.round(r.worst.after))} في ${cycleTitle(r.worst.key)}.` : ''],
+    safe: ['good', 'آمن: يتحمله راتبك', (r.worst ? `أقل ما يتبقى يصير ${moneyText(Math.round(r.worst.after))} في ${cycleTitle(r.worst.key)}.` : '') + (() => { const pre = r.affected.filter((x) => ['pressing', 'risk'].includes(x.levelAfter)); return pre.length ? ` لا يغيّر تصنيف أي شهر، لكن انتبه: ${pre.map((x) => cycleTitle(x.key)).join('، ')} ${pre.length > 1 ? 'ضاغطة' : 'ضاغط'} أصلاً حتى بدون هذا القرار.` : ''; })()],
     tight: ['warn', 'يضغط عليك', r.worsened.length ? `${r.worsened.length > 1 ? 'تصبح ضاغطة' : 'يصبح ضاغطاً'}: ${r.worsened.map((x) => cycleTitle(x.key)).join('، ')}. أسوأ راتب ${cycleTitle(r.worst.key).replace('راتب ', '')} ويتبقى منه ${moneyText(Math.round(r.worst.after))} فقط.` : ''],
     risk: ['risk', 'خطر: لا يتحمله راتبك', r.worst ? `في ${cycleTitle(r.worst.key)} يصير ${r.worst.after < 0 ? 'عجزاً بـ ' + moneyText(Math.round(-r.worst.after)) : 'المتبقي ' + moneyText(Math.round(r.worst.after))}. ${esc((r.worst.reasonsAfter || [])[0] || '')}` : ''] }[r.verdict];
   box.innerHTML = `<div class="notice lvl-${V[0]}">${icon(V[0] === 'good' ? 'check' : 'alert')}<div><strong>${V[1]}</strong><p class="small">${V[2]}</p>${r.affected.length ? `<p class="small muted">الأثر الإجمالي ${w.k === 'salary' && r.totalImpact > 0 ? '+' : ''}${moneyText(r.totalImpact)} على ${nf(r.affected.length, 0)} ${r.affected.length > 10 ? 'راتباً' : 'رواتب'}.</p>` : ''}</div></div>

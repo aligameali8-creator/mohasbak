@@ -1,5 +1,5 @@
 // Service worker: يعمل التطبيق دون اتصال. الصفحة: الشبكة أولاً (تحديثات فورية) ثم النسخة المحفوظة. الباقي: المحفوظ ثم تحديث بالخلفية.
-const C = 'mohasbak-9b31655870';
+const C = 'mohasbak-3c760c858e';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(C).then((c) => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== C).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
