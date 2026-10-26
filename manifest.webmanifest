@@ -6,6 +6,8 @@
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
+ "id": "./",
+ "orientation": "portrait",
  "background_color": "#F2F5F4",
  "theme_color": "#3B43A6",
  "description": "خطة شهرية وتوقع مالي 12–24 شهراً",
@@ -19,7 +21,13 @@
    "src": "icon-512.png",
    "sizes": "512x512",
    "type": "image/png",
-   "purpose": "any maskable"
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
   },
   {
    "src": "icon.svg",
