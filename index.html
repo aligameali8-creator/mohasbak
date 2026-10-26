@@ -61,8 +61,10 @@ a { color: var(--accent); }
 /* ── الهيكل ── */
 .app { min-height: 100%; display: grid; grid-template-columns: 1fr; }
 .main { min-width: 0; padding-block: 12px 120px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 16px; }
-.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); display: flex; align-items: center; gap: 10px; padding-block: 8px; margin-bottom: 4px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.wrap > *, .card, .li, .stmt, .sheet-body { min-width: 0; }
+.li .t, .li .s, .ded b, .mrow b, .stmt h2, .goal h3 { overflow-wrap: anywhere; }
+.topbar { min-width: 0; max-width: 100%; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); display: flex; align-items: center; gap: 10px; padding-block: 8px; margin-bottom: 4px; }
 .topbar h1 { font-size: var(--t-lg); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 600; }
 .brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 15px; flex: none; }
@@ -436,9 +438,20 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
   const keyAdd = (key, k) => { const [y, m] = key.split('-').map(Number); const r = addMonthsYM(y, m, k); return `${r.y}-${pad(r.m)}`; };
   const keyDiff = (a, b) => { const [ay, am] = a.split('-').map(Number); const [by, bm] = b.split('-').map(Number); return (by * 12 + bm) - (ay * 12 + am); };
   const weekday = (s) => new Date(toUTC(s)).getUTCDay(); // 0=الأحد
+  // إنشاء منسّق التاريخ مكلف جداً؛ نحتفظ به لكل منطقة زمنية ونخزن النتيجة لثوانٍ
+  const TZF = new Map(); let todayCache = { tz: null, at: 0, v: null };
   function todayIn(tz) {
-    try { return new Intl.DateTimeFormat('en-CA', { timeZone: tz || 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
-    catch (e) { return fromUTC(Date.now()); }
+    tz = tz || 'Asia/Riyadh';
+    const now = Date.now();
+    if (todayCache.tz === tz && now - todayCache.at < 5000) return todayCache.v;
+    let v;
+    try {
+      let f = TZF.get(tz);
+      if (!f) { f = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }); TZF.set(tz, f); }
+      v = f.format(new Date(now));
+    } catch (e) { v = fromUTC(now); }
+    todayCache = { tz, at: now, v };
+    return v;
   }
 
   /* ───────────── المال ───────────── */
@@ -689,11 +702,38 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     return k;
   }
   /** كل الاستحقاقات المنسوبة لدورة معينة */
-  function cycleOccurrences(state, key) {
+  /* ── ذاكرة مؤقتة داخل دفعة رسم واحدة: نفس الحساب لا يُعاد في نفس الشاشة ──
+   * تُفعَّل فقط أثناء batch() (رسم الشاشة) حيث لا تتغير البيانات، فلا خطر من نتائج قديمة. */
+  let BATCH = null;
+  function batch(fn) { if (BATCH) return fn(); BATCH = new WeakMap(); try { return fn(); } finally { BATCH = null; } }
+  function memo(kind, state, key, compute) {
+    if (!BATCH) return compute();
+    let m = BATCH.get(state); if (!m) { m = new Map(); BATCH.set(state, m); }
+    const k = kind + '|' + key; if (m.has(k)) return m.get(k);
+    const v = compute(); m.set(k, v); return v;
+  }
+  function cycleOccurrences(state, key) { return memo('occ', state, key, () => cycleOccurrencesRaw(state, key)); }
+  /** فهرس البنود: بنود المرة الواحدة (مثل المصروف اليومي) مرتبة بالتاريخ للوصول المباشر، والباقي تُفحص كلها */
+  function itemIndex(state) {
+    return memo('idx', state, '', () => {
+      const once = [], rec = [];
+      for (const it of activeItems(state)) {
+        const d = it.rule && it.rule.freq === 'once' && !it.shiftWeekend ? (it.rule.date || it.rule.start) : null;
+        if (d) once.push([d, it]); else rec.push(it);
+      }
+      once.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+      return { once, rec };
+    });
+  }
+  function cycleOccurrencesRaw(state, key) {
     const s = state.settings, r = cycleRange(key, s), grace = primaryGrace(state);
     const from = addDays(r.start, -40), to = addDays(r.end, 40);
-    const out = [];
-    for (const it of activeItems(state)) {
+    const out = [], ix = itemIndex(state);
+    let lo = 0, hi = ix.once.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (ix.once[mid][0] < from) lo = mid + 1; else hi = mid; }
+    const cand = ix.rec.slice();
+    for (let i = lo; i < ix.once.length && ix.once[i][0] < to; i++) cand.push(ix.once[i][1]);
+    for (const it of cand) {
       for (const o of occurrences(it, from, to)) {
         if (effectiveCycleOf(o, it, s, grace) === key) out.push(Object.assign({ item: it }, o));
       }
@@ -710,7 +750,8 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     const goalsMonthly = (state.goals || []).filter((g) => !g.deletedAt && g.status !== 'done').reduce((a, g) => a + toH(g.monthly || 0), 0);
     return fromH(toH(state.settings.savingMonthly || 0) + goalsMonthly);
   }
-  function summarizeCycle(state, key, ctx) {
+  function summarizeCycle(state, key, ctx) { return memo('sum', state, key + '|' + JSON.stringify(ctx || {}), () => summarizeCycleRaw(state, key, ctx)); }
+  function summarizeCycleRaw(state, key, ctx) {
     ctx = ctx || {};
     const occ = cycleOccurrences(state, key);
     const inc = occ.filter((o) => o.kind === 'income');
@@ -783,6 +824,10 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     return !o.paidAt || !setAt || o.paidAt > setAt;
   }
   function forecast(state, opts) {
+    const o = opts || {};
+    return memo('fc', state, JSON.stringify({ t: o.today, m: o.months, k: o.startKey, p: !!o.patch }), () => forecastRaw(state, opts));
+  }
+  function forecastRaw(state, opts) {
     opts = opts || {};
     const s = state.settings;
     const today = opts.today || todayIn(s.timezone);
@@ -917,7 +962,8 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
   }
 
   /* ───────────── التنبيهات ───────────── */
-  function notifications(state, today) {
+  function notifications(state, today) { return memo('ntf', state, String(today) + JSON.stringify((state.notifState && state.notifState.read) || {}).length, () => notificationsRaw(state, today)); }
+  function notificationsRaw(state, today) {
     const s = state.settings; today = today || todayIn(s.timezone);
     const out = [];
     const horizon = addDays(today, Number(s.notifyDays || 3) + 1);
@@ -957,7 +1003,8 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
   /* ───────────── مسموح اليوم ─────────────
    * من راتب الدورة الحالية: نطرح كل الالتزامات المخطط لها (ثابتة ومتغيرة وأقساط واشتراكات) والادخار المستهدف
    * والمصروف اليومي قبل اليوم، ثم نقسم الباقي على الأيام المتبقية حتى الراتب القادم (شاملة اليوم). */
-  function dailyBudget(state, today) {
+  function dailyBudget(state, today) { return memo('db', state, String(today), () => dailyBudgetRaw(state, today)); }
+  function dailyBudgetRaw(state, today) {
     const s = state.settings; today = today || todayIn(s.timezone);
     const key = cycleOf(today, s), r = cycleRange(key, s);
     const occ = cycleOccurrences(state, key).filter((o) => o.status !== 'skipped');
@@ -1044,7 +1091,7 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     // core
     cycleRange, cycleOf, cycleName, versionAt, setVersion, ruleDates, occurrences, cycleOccurrences,
     buildInstallmentPlan, planStatus, payInstallment, unpayInstallment, earlyPayoff, postponeInstallment,
-    summarizeCycle, savingTarget, isPending, forecast, dailyBudget, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
+    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
   };
 });
 
@@ -1195,11 +1242,14 @@ const nowISO = () => new Date().toISOString();
 
 /* ───────── التنسيق ───────── */
 const CUR = { SAR: 'ر.س', AED: 'د.إ', KWD: 'د.ك', QAR: 'ر.ق', BHD: 'د.ب', OMR: 'ر.ع', EGP: 'ج.م', USD: '$', EUR: '€' };
+const NF = new Map();
 function nf(x, dec) {
   const n = Number(x) || 0;
   const digits = state && state.settings.digits === 'arab' ? 'ar-SA-u-nu-arab' : 'en-US';
   const frac = dec != null ? dec : (Math.abs(n % 1) > 0.004 ? 2 : 0);
-  return new Intl.NumberFormat(digits, { minimumFractionDigits: frac, maximumFractionDigits: frac }).format(n);
+  const k = digits + frac; let f = NF.get(k);
+  if (!f) { f = new Intl.NumberFormat(digits, { minimumFractionDigits: frac, maximumFractionDigits: frac }); NF.set(k, f); }
+  return f.format(n);
 }
 const curSym = () => CUR[(state && state.settings.currency) || 'SAR'] || (state && state.settings.currency) || 'ر.س';
 const money = (x, cls) => `<span class="amt ${cls || ''}">${nf(x)}</span> <span class="cur">${curSym()}</span>`;
@@ -1277,7 +1327,15 @@ async function decryptEnv(env, key) {
 
 /* ───────── التخزين المحلي والسحابي ───────── */
 function readLocal() { try { return JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { storageOK = false; return null; } }
-function writeLocal(env) { try { localStorage.setItem(LS_KEY, JSON.stringify(env)); storageOK = true; } catch (e) { storageOK = false; } }
+function writeLocal(env) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(env)); if (!storageOK) { storageOK = true; if (state) render(); } }
+  catch (e) {
+    const was = storageOK; storageOK = false;
+    if (was) { toast(/quota/i.test((e && (e.name + e.message)) || '') ? 'مساحة التخزين ممتلئة ولم يُحفظ آخر تعديل. احفظ نسخة من بياناتك من الإعدادات.' : 'تعذر الحفظ على هذا الجهاز. احفظ نسخة من بياناتك من الإعدادات.'); if (state) setTimeout(render, 0); }
+  }
+}
+/* نطلب من المتصفح ألا يمسح بيانات التطبيق عند امتلاء الجهاز */
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then((p) => { if (!p) navigator.storage.persist(); }).catch(() => {}); } catch (e) { /* */ }
 /** وقت آخر تعديل حقيقي للبيانات (لا يتغير بمجرد الحفظ عند الإغلاق) — أساس اختيار النسخة الأحدث بين الأجهزة */
 let lastSig = null;
 function contentSig() { const { modifiedAt, ...rest } = state; const s = JSON.stringify(rest); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return s.length + ':' + h; }
@@ -1496,7 +1554,9 @@ function applyTheme() {
   const t = state ? state.settings.theme : 'auto';
   if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
 }
-function render() {
+const itemsWord = (n) => n === 0 ? 'لا بنود' : n === 1 ? 'بند واحد' : n === 2 ? 'بندان' : n <= 10 ? `${nf(n, 0)} بنود` : `${nf(n, 0)} بنداً`;
+function render() { try { window.__shownDay = today(); } catch (e) { /* */ } return E.batch(() => renderInner()); }
+function renderInner() {
   const root = $('#root');
   if (!$('.app')) unlockScroll();
   if (ui.locked) { unlockScroll(); root.innerHTML = lockScreen(); return; }
@@ -1608,8 +1668,8 @@ function stmtCard(d, opts) {
     <div class="stmt-bar" role="img" aria-label="انخصم ${Math.round(pct(d.deducted))}% وباقي ${Math.round(pct(d.pending))}%"><i class="done" style="width:${pct(d.deducted)}%"></i><i class="next" style="width:${pct(d.pending)}%"></i></div>
     <div class="stmt-rows">
       <div class="stmt-row"><span>${d.inc.length > 1 ? 'الراتب والدخل' : 'الراتب'}</span><b class="pos amt">+${nf(d.income)}</b></div>
-      ${d.isCur || d.isPast ? `<div class="stmt-row"><span><i class="dot done"></i>انخصم ${d.isCur ? 'حتى اليوم' : ''} <small>(${nf(d.done.length + d.daily.length, 0)} بنداً)</small></span><b class="neg amt">−${nf(d.deducted)}</b></div>` : ''}
-      <div class="stmt-row"><span><i class="dot next"></i>${futureWord} ${d.next.length ? `<small>(${nf(d.next.length, 0)} بنداً)</small>` : ''}</span>${d.next.length ? `<b class="neg amt soft">−${nf(d.pending)}</b>` : '<b class="muted" style="font-size:var(--t-md)">لا شيء</b>'}</div>
+      ${d.isCur || d.isPast ? `<div class="stmt-row"><span><i class="dot done"></i>انخصم ${d.isCur ? 'حتى اليوم' : ''} <small>(${itemsWord(d.done.length + d.daily.length)})</small></span><b class="neg amt">−${nf(d.deducted)}</b></div>` : ''}
+      <div class="stmt-row"><span><i class="dot next"></i>${futureWord} ${d.next.length ? `<small>(${itemsWord(d.next.length)})</small>` : ''}</span>${d.next.length ? `<b class="neg amt soft">−${nf(d.pending)}</b>` : '<b class="muted" style="font-size:var(--t-md)">لا شيء</b>'}</div>
     </div>
     <div class="stmt-left ${over ? 'over' : ''}"><span>${over ? 'العجز في هذا الراتب' : d.isCur ? 'يتبقى لك من الراتب' : 'سيتبقى لك'}</span><strong class="amt hero-num">${over ? '−' : ''}${nf(Math.abs(d.left))} <span class="cur">${curSym()}</span></strong></div>
     ${d.isCur && d.pending > 0 ? `<p class="small muted">معك الآن من الراتب ${money(d.leftNow)}، احتفظ منها بـ ${money(d.pending)} للخصميات الباقية.</p>` : ''}
@@ -1644,7 +1704,7 @@ function dedList(d, opts) {
     return `<div class="ded-h"><span>${title} · ${nf(list.length, 0)}</span><span class="neg amt">−${nf(total)}</span></div>${(cut ? list.slice(-3) : list).map(dedRow).join('')}${cut ? `<button class="btn sm ghost block" data-act="show-done">عرض كل ما انخصم (${nf(list.length, 0)})</button>` : fold && list.length > 4 ? '<button class="btn sm ghost block" data-act="show-done">إخفاء</button>' : ''}`; };
   const futureWord = d.isCur ? 'باقي يُخصم' : 'سيُخصم';
   return `<section class="card">
-    <div class="card-h"><h2>الخصميات · ${nf(d.done.length + d.next.length + d.daily.length, 0)} بنداً</h2><button class="btn sm primary" data-act="add">${icon('plus')} إضافة</button></div>
+    <div class="card-h"><h2>الخصميات · ${itemsWord(d.done.length + d.next.length + d.daily.length)}</h2><button class="btn sm primary" data-act="add">${icon('plus')} إضافة</button></div>
     ${d.done.length + d.next.length + d.daily.length === 0 ? emptyBlock('receipt', 'لا خصميات في هذا الراتب', 'أضف مصروف البيت والإيجار والأقساط والاشتراكات مرة واحدة، وستظهر هنا كل شهر تلقائياً.', `<button class="btn primary" data-act="add">${icon('plus')} أضف أول خصم</button>`) : ''}
     ${group(futureWord, d.next, d.pending)}
     ${d.daily.length ? `<div class="ded-h"><span>مصاريفك اليومية · ${nf(d.daily.length, 0)}</span><span class="neg amt">−${nf(d.dailyTotal)}</span></div>${(ui.showDaily ? d.daily : d.daily.slice(0, 4)).map(dedRow).join('')}${d.daily.length > 4 ? `<button class="btn sm ghost block" data-act="show-daily">${ui.showDaily ? 'إخفاء' : `عرض الكل (${nf(d.daily.length, 0)})`}</button>` : ''}` : ''}
@@ -1714,7 +1774,7 @@ function viewHome() {
     notice = `<div class="notice lvl-${tight.left < 0 ? 'risk' : 'pressing'}">${icon('alert')}<div><strong>${cycleTitle(tight.key)}: يتبقى ${tight.left < 0 ? 'عجز ' : ''}${money(Math.abs(tight.left))} فقط</strong><p class="small">${b.length ? 'بسبب ' + b.map((o) => `${esc(o.item.name)} (${nf(o.amount)})`).join(' و') + '. ' : ''}ابدأ تجنيب مبلغ صغير من الرواتب التي قبله.</p></div></div>`;
   }
   const fileMode = !/^https?:$/.test(location.protocol);
-  const storageWarn = (fileMode || !storageOK) ? `<div class="notice lvl-warn">${icon('alert')}<div><strong>أنت تفتح ملفاً منزّلاً، وبياناتك لن تنتقل</strong><p class="small">كل ملف تنزّله (مثل «محاسبك المالي (5)») يبدأ وحده ولا يرى ما أدخلته في الملف السابق، وقد تضيع البيانات عند إغلاق المتصفح. افتح التطبيق من رابطه على الإنترنت وثبّته على جوالك، فتُحفظ بياناتك على جهازك بشكل دائم.</p><div class="row" style="margin-top:6px"><button class="btn sm" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : '';
+  const storageWarn = (!fileMode && !storageOK) ? `<div class="notice lvl-risk">${icon('alert')}<div><strong>تعذر حفظ بياناتك على هذا الجهاز</strong><p class="small">قد تكون مساحة الجوال ممتلئة أو أنك في نافذة خاصة. احفظ نسخة من بياناتك الآن حتى لا تضيع آخر تعديلاتك، ثم وفّر مساحة وأعد فتح التطبيق.</p><div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : fileMode ? `<div class="notice lvl-warn">${icon('alert')}<div><strong>أنت تفتح ملفاً منزّلاً، وبياناتك لن تنتقل</strong><p class="small">كل ملف تنزّله (مثل «محاسبك المالي (5)») يبدأ وحده ولا يرى ما أدخلته في الملف السابق، وقد تضيع البيانات عند إغلاق المتصفح. افتح التطبيق من رابطه على الإنترنت وثبّته على جوالك، فتُحفظ بياناتك على جهازك بشكل دائم.</p><div class="row" style="margin-top:6px"><button class="btn sm" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : '';
   const saved = cloud.status === 'synced' ? `<p class="xs muted" style="display:flex;gap:6px;align-items:center">${icon('cloud')} محفوظ في حسابك</p>` : '';
   return `${topbar(`${hi}${name}`)}${storageWarn}${saved}${installCard(true)}
   ${stmtCard(d, { tabs, cta: true })}
@@ -1909,9 +1969,15 @@ function viewMore() {
 }
 function viewItems() {
   const f = ui.itemsFilter;
-  const filters = [['all', 'الكل'], ['income', 'الدخل'], ['expense', 'المصروفات'], ['installment', 'الأقساط'], ['subscription', 'الاشتراكات'], ['paused', 'موقوفة'], ['deleted', 'محذوفة']];
+  const filters = [['all', 'الالتزامات'], ['income', 'الدخل'], ['expense', 'المصروفات'], ['installment', 'الأقساط'], ['subscription', 'الاشتراكات'], ['daily', 'اليومية'], ['paused', 'موقوفة'], ['deleted', 'محذوفة']];
   let list = state.items.slice();
-  list = list.filter((it) => {
+  // المصاريف اليومية كثيرة (مئات في السنة) فلها تبويب خاص بآخر 150، ولا تزحم قائمة الالتزامات
+  const MAXD = 150;
+  if (f === 'daily') list = list.filter((it) => it.type === 'daily' && !it.deletedAt).sort((a, b) => ((b.rule && b.rule.date) || '').localeCompare((a.rule && a.rule.date) || ''));
+  const dailyTotalCount = f === 'daily' ? list.length : 0;
+  if (f === 'daily') list = list.slice(0, MAXD);
+  else list = list.filter((it) => {
+    if (it.type === 'daily' && f !== 'deleted') return false;
     const s = itemStatus(it).k;
     if (f === 'deleted') return s === 'deleted';
     if (s === 'deleted') return false;
@@ -1923,6 +1989,7 @@ function viewItems() {
   });
   return `${topbar('كل البنود', `<button class="btn sm primary" data-act="add">${icon('plus')} إضافة</button>`)}
   <div class="seg" role="group" aria-label="تصفية">${filters.map(([k, t]) => `<button data-act="ifilter" data-f="${k}" aria-pressed="${f === k}">${t}</button>`).join('')}</div>
+  ${f === 'daily' && dailyTotalCount > MAXD ? `<p class="small muted">آخر ${nf(MAXD, 0)} مصروفاً من ${nf(dailyTotalCount, 0)}. للبحث في الأقدم استخدم التقارير ← بحث وفلاتر.</p>` : ''}
   <section class="card"><div class="list">${list.length ? list.map((it) => { const st = itemStatus(it), cat = catOf(it.categoryId), amt = it.type === 'installment' && it.plan ? E.planStatus(it.plan).monthly : (E.versionAt(it, today()).amount || 0); return `<div class="li clickable" data-act="detail" data-id="${it.id}" style="--cc:var(--${it.kind === 'income' ? 'good' : cat.color})"><div class="li-ic">${icon(it.kind === 'income' ? 'wallet' : cat.icon)}</div><div class="li-main"><div class="li-t">${esc(it.name)}</div><div class="li-s"><span>${it.kind === 'income' ? 'دخل' : E.EXPENSE_TYPES[it.type]}</span><span>· ${ruleText(it)}</span></div></div><div class="li-end">${money(amt)}<span class="chip">${st.t}</span></div></div>`; }).join('') : emptyBlock('list', 'لا توجد بنود هنا', 'استخدم زر الإضافة لإنشاء دخل أو مصروف أو قسط.')}</div></section>`;
 }
 function viewAudit() {
@@ -1937,7 +2004,7 @@ function viewOptions() {
   return `${topbar('الإعدادات')}
   <form class="grid g2" data-form="options">
   <section class="card form"><h2>الملف والأسرة</h2>
-    <div class="f"><label for="o_name">اسمك (اختياري)</label><input class="in" id="o_name" name="name" value="${esc(state.user.name)}"></div>
+    <div class="f"><label for="o_name">اسمك (اختياري)</label><input class="in" id="o_name" name="name" maxlength="40" value="${esc(state.user.name)}"></div>
     <div class="f"><label for="o_members">أفراد الأسرة</label><input class="in" id="o_members" name="members" value="${esc(state.household.members.map((m) => m.name).join('، '))}" placeholder="افصل بين الأسماء بفاصلة"><span class="hint">يساعد في تسمية المصروفات وتخطيطها. لا يُشارك مع أحد.</span></div>
     <div class="f2"><div class="f"><label for="o_currency">العملة</label>${sel('currency', Object.keys(CUR).map((k) => [k, `${k} (${CUR[k]})`]), s.currency)}</div>
     <div class="f"><label for="o_timezone">المنطقة الزمنية</label>${sel('timezone', ['Asia/Riyadh', 'Asia/Dubai', 'Asia/Kuwait', 'Asia/Qatar', 'Asia/Bahrain', 'Asia/Muscat', 'Africa/Cairo', 'Europe/London', 'UTC'].map((z) => [z, z]), s.timezone)}</div></div>
@@ -1988,7 +2055,7 @@ function viewOptions() {
     <hr class="sep"><div class="row"><button class="btn" data-nav="audit">${icon('history')} سجل التدقيق</button><button class="btn" data-act="load-demo">تحميل بيانات تجريبية</button><button class="btn danger" data-act="wipe">${icon('trash')} حذف كل البيانات</button></div>
     ${!storageOK ? '<p class="err">تعذر الحفظ على هذا الجهاز (التخزين معطّل أو نافذة خاصة). صدّر نسخة احتياطية قبل الإغلاق.</p>' : ''}
   </section></div>
-  <p class="xs muted">الإصدار 1.0 · ${esc(state.settings.timezone)} · ${nf(state.items.length, 0)} بنداً</p>`;
+  <p class="xs muted">الإصدار 1.0 · ${esc(state.settings.timezone)} · ${itemsWord(state.items.length)}</p>`;
 }
 const VIEWS = { home: viewHome, month: viewMonth, calendar: viewCalendar, forecast: viewForecast, goals: viewGoals, reports: viewReports, alerts: viewAlerts, more: viewMore, items: viewItems, audit: viewAudit, options: viewOptions };
 
@@ -2083,7 +2150,7 @@ const fdata = (form) => { const o = {}; new FormData(form).forEach((v, k) => { i
 function showErrors(form, errs) {
   let box = $('.err-box', form); if (!box) { box = document.createElement('div'); box.className = 'err-box err notice lvl-risk'; form.prepend(box); }
   box.innerHTML = `${icon('alert')}<div>${errs.map((e) => `<div>${esc(e)}</div>`).join('')}</div>`; box.setAttribute('role', 'alert');
-  const sc = form.closest('.sheet-body'); if (sc) sc.scrollTo({ top: 0, behavior: 'smooth' }); else box.scrollIntoView({ block: 'nearest' });
+  const sc = form.closest('.sheet-body'); if (sc) sc.scrollTop = 0; else box.scrollIntoView({ block: 'nearest' });
   toast(errs[0]);
 }
 const num = (v) => E.parseAmount(v);
@@ -2124,7 +2191,7 @@ function whatIfSheet() {
     <div class="f"><span class="lbl">ماذا تريد أن تجرب؟</span><div class="seg" role="radiogroup">${Object.entries(WI).map(([k, l], i) => `<input type="radio" id="wt_${k}" name="wtype" value="${k}" ${i === 0 ? 'checked' : ''}><label for="wt_${k}">${l}</label>`).join('')}</div></div>
     <div class="f"><label for="w_amt" id="w_amt_l">قيمة الشراء الإجمالية</label><input class="in big" id="w_amt" name="amount" inputmode="decimal" autocomplete="off" placeholder="0"></div>
     <div class="f2"><div class="f" data-wfor="inst monthly"><label for="w_n">عدد الأشهر</label><input class="in" type="number" min="1" max="60" id="w_n" name="months" value="4"><span class="hint" data-wfor="monthly">اتركه فارغاً إذا كان مستمراً</span></div>
-      <div class="f"><label for="w_name">الاسم (اختياري)</label><input class="in" id="w_name" name="name" placeholder="مثال: جوال جديد"></div></div>
+      <div class="f"><label for="w_name">الاسم (اختياري)</label><input class="in" id="w_name" name="name" maxlength="40" placeholder="مثال: جوال جديد"></div></div>
     <div class="f wide"><label for="w_start">يبدأ من</label><input class="in" type="date" id="w_start" name="start" value="${t}">${dateChips('w_start')}</div>
     <div id="wi-result" aria-live="polite"></div>
   </form>`, `<button class="btn" data-act="close">إغلاق</button><button class="btn primary" data-act="submit-form" data-form="whatif">${icon('spark')} احسب الأثر</button>`);
@@ -2199,7 +2266,7 @@ function itemForm(preset, item) {
   const title = isEdit ? `تعديل «${esc(item.name)}»` : kind === 'income' ? 'دخل جديد' : type === 'subscription' ? 'اشتراك جديد' : type === 'emergency' ? 'مصروف طارئ' : 'مصروف جديد';
   const body = `<form class="form" data-form="item" data-kind="${kind}" ${isEdit ? `data-id="${item.id}"` : ''} novalidate>
     <div class="f"><label for="i_amount">${kind === 'income' ? 'المبلغ' : type === 'variable' ? 'المبلغ التقديري' : 'المبلغ'}</label><input class="in big" id="i_amount" name="amount" inputmode="decimal" autocomplete="off" value="${v.amount !== '' ? v.amount : ''}" placeholder="0" required autofocus></div>
-    <div class="f"><label for="i_name">الاسم</label><input class="in" id="i_name" name="name" value="${esc(item ? item.name : preset.name || '')}" placeholder="${kind === 'income' ? 'مثال: الراتب' : 'مثال: الكهرباء'}" required></div>
+    <div class="f"><label for="i_name">الاسم</label><input class="in" id="i_name" name="name" maxlength="80" value="${esc(item ? item.name : preset.name || '')}" placeholder="${kind === 'income' ? 'مثال: الراتب' : 'مثال: الكهرباء'}" required></div>
     ${kind === 'expense' ? `<div class="f"><span class="lbl">النوع</span>${seg('type', [['fixed', 'أساسي ثابت'], ['variable', 'متغير متوقع'], ['emergency', 'طارئ'], ['scheduled', 'مستقبلي مجدول'], ['subscription', 'اشتراك']], type === 'installment' ? 'fixed' : type)}</div>` : `<input type="hidden" name="type" value="${type === 'salary' || (item && item.isPrimary) ? 'salary' : 'other'}">`}
     <div class="f"><span class="lbl">الفئة</span>${catChips(kind, item ? item.categoryId : preset.categoryId || (type === 'subscription' ? 'c_subs' : null))}</div>
     ${kind === 'expense' ? `<div class="f"><span class="lbl">الأولوية</span>${seg('priority', [['essential', 'أساسي'], ['important', 'مهم'], ['flexible', 'مرن']], item ? item.priority : type === 'subscription' ? 'flexible' : type === 'emergency' ? 'essential' : 'important')}<span class="hint">البنود «المرنة» هي ما نقترح تخفيضه في الأشهر الضاغطة، ولا نقترب من «الأساسي».</span></div>` : ''}
@@ -2298,7 +2365,7 @@ function installmentForm(item) {
   const prov = p ? p.provider : 'تابي';
   const body = `<form class="form" data-form="inst" ${item ? `data-id="${item.id}"` : ''} novalidate>
     <div class="f"><span class="lbl">الجهة</span><div class="chips">${providers.map((x) => `<input type="radio" name="provider" id="pv_${x}" value="${x}" ${(providers.includes(prov) ? prov : 'أخرى') === x ? 'checked' : ''}><label for="pv_${x}">${x}</label>`).join('')}</div><input class="in" name="providerOther" placeholder="اسم الجهة إن اخترت «أخرى»" value="${!providers.includes(prov) ? esc(prov) : ''}"></div>
-    <div class="f"><label for="n_name">ماذا اشتريت؟</label><input class="in" id="n_name" name="name" value="${esc(item ? item.name : '')}" placeholder="مثال: جوال، مكيف" required autofocus></div>
+    <div class="f"><label for="n_name">ماذا اشتريت؟</label><input class="in" id="n_name" name="name" maxlength="80" value="${esc(item ? item.name : '')}" placeholder="مثال: جوال، مكيف" required autofocus></div>
     <div class="f"><span class="lbl">أعرف</span><div class="seg"><input type="radio" id="mode_total" name="mode" value="total" checked><label for="mode_total">القيمة الإجمالية</label><input type="radio" id="mode_each" name="mode" value="each"><label for="mode_each">قيمة القسط</label></div></div>
     <div class="f2"><div class="f"><label for="n_amount">المبلغ</label><input class="in" id="n_amount" name="amount" inputmode="decimal" value="${p ? p.total : ''}" required></div>
       <div class="f"><label for="n_count">عدد الأقساط (أشهر)</label><input class="in" type="number" min="1" max="60" id="n_count" name="count" value="${p ? p.count : 4}" required></div>
@@ -2442,7 +2509,7 @@ function balanceSheet() {
 }
 function goalSheet(id) {
   const g = id ? state.goals.find((x) => x.id === id) : null; ui.ctxId = id || null;
-  openSheet(g ? 'تعديل الهدف' : 'هدف ادخار جديد', `<form class="form" data-form="goal"><div class="f"><label for="g_n">اسم الهدف</label><input class="in" id="g_n" name="name" value="${esc(g ? g.name : '')}" placeholder="مثال: صندوق الطوارئ" required autofocus></div>
+  openSheet(g ? 'تعديل الهدف' : 'هدف ادخار جديد', `<form class="form" data-form="goal"><div class="f"><label for="g_n">اسم الهدف</label><input class="in" id="g_n" name="name" maxlength="60" value="${esc(g ? g.name : '')}" placeholder="مثال: صندوق الطوارئ" required autofocus></div>
     <div class="f2"><div class="f"><label for="g_t">المبلغ المستهدف</label><input class="in" id="g_t" name="target" inputmode="decimal" value="${g ? g.target : ''}" required></div><div class="f"><label for="g_s">المدخر حالياً</label><input class="in" id="g_s" name="saved" inputmode="decimal" value="${g ? g.saved : 0}"></div>
     <div class="f"><label for="g_m">المساهمة الشهرية</label><input class="in" id="g_m" name="monthly" inputmode="decimal" value="${g ? g.monthly : ''}" placeholder="0"><span class="hint">تُضاف إلى الادخار المستهدف في كل دورة</span></div><div class="f"><label for="g_d">الموعد المستهدف</label><input class="in" type="date" id="g_d" name="targetDate" value="${g ? g.targetDate || '' : ''}"></div></div></form>`,
     `${g ? `<button class="btn danger" data-act="goal-del" data-id="${g.id}">حذف</button>` : ''}<button class="btn" data-act="close">إلغاء</button><button class="btn primary" data-act="submit-form" data-form="goal">حفظ</button>`);
@@ -2476,7 +2543,7 @@ function wizardScreen() {
   const w = ui.wizardData || (ui.wizardData = { salary: '', payday: 27, otherIncomes: [], balance: '', savingsBalance: '', savingMonthly: '', savingYearly: '', reserveMin: '', members: '', cycleStartDay: null, cycleLabel: 'end', style: 'balanced', name: '' });
   const s = ui.wizardStep;
   let body = '';
-  if (s === 0) body = `<div class="f"><label for="w_name">اسمك (اختياري)</label><input class="in" id="w_name" name="name" value="${esc(w.name)}"></div><div class="f"><label for="w_sal">صافي الراتب الشهري</label><input class="in big" id="w_sal" name="salary" inputmode="decimal" value="${esc(w.salary)}" placeholder="0" autofocus></div><div class="f"><label for="w_pd">يوم نزول الراتب</label><input class="in" type="number" min="1" max="31" id="w_pd" name="payday" value="${w.payday}"><span class="hint">في السعودية غالباً يوم 27</span></div>`;
+  if (s === 0) body = `<div class="f"><label for="w_name">اسمك (اختياري)</label><input class="in" id="w_name" name="name" maxlength="40" value="${esc(w.name)}"></div><div class="f"><label for="w_sal">صافي الراتب الشهري</label><input class="in big" id="w_sal" name="salary" inputmode="decimal" value="${esc(w.salary)}" placeholder="0" autofocus></div><div class="f"><label for="w_pd">يوم نزول الراتب</label><input class="in" type="number" min="1" max="31" id="w_pd" name="payday" value="${w.payday}"><span class="hint">في السعودية غالباً يوم 27</span></div>`;
   if (s === 1) body = `<p class="small muted">بدل سكن منفصل، عمل حر، إيجار، مكافأة… أضف ما تعرفه الآن والباقي لاحقاً.</p><div class="list">${w.otherIncomes.map((x, i) => `<div class="li"><div class="li-ic" style="--cc:var(--good)">${icon('wallet')}</div><div class="li-main"><div class="li-t">${esc(x.name)}</div><div class="li-s">${{ monthly: 'شهري', interval: `كل ${x.interval} أشهر`, months: 'موسمي', once: 'مرة واحدة' }[x.freq]}${x.date ? ' · ' + x.date : ''}</div></div><div class="li-end">${money(x.amount)}<button class="btn sm ghost" data-act="wiz-rm" data-i="${i}">حذف</button></div></div>`).join('')}</div>
     <div class="card" style="background:var(--surface-2);border:0"><div class="form"><div class="f2"><div class="f"><label for="wo_n">الاسم</label><input class="in" id="wo_n" name="oname"></div><div class="f"><label for="wo_a">المبلغ</label><input class="in" id="wo_a" name="oamount" inputmode="decimal"></div>
     <div class="f"><label for="wo_f">التكرار</label><select id="wo_f" name="ofreq"><option value="monthly">شهري</option><option value="interval">كل عدة أشهر</option><option value="months">موسمي (أشهر محددة)</option><option value="once">مرة واحدة</option></select></div>
@@ -2506,7 +2573,7 @@ async function wizardFinish(pin) {
   const w = ui.wizardData, t = today();
   const st = Seed.emptyState(t);
   const n = (x) => { const v = num(x); return isNaN(v) ? 0 : v; };
-  st.user.name = (w.name || '').trim();
+  st.user.name = (w.name || '').trim().slice(0, 40);
   const payday = Math.min(31, Math.max(1, Number(w.payday) || 27));
   Object.assign(st.settings, { cycleStartDay: Math.min(31, Math.max(1, Number(w.cycleStartDay) || payday)), cycleLabel: w.cycleLabel || 'end', style: w.style || 'balanced', reserveMin: n(w.reserveMin), savingMonthly: n(w.savingMonthly) || E.r2(n(w.savingYearly) / 12), savingsBalance: n(w.savingsBalance), onboarded: true });
   st.household.members = String(w.members || '').split(/[،,]/).map((x) => x.trim()).filter(Boolean).map((name) => ({ id: Seed.uid('m'), name }));
@@ -2723,7 +2790,7 @@ const FORMS = {
   'goal-add': (f) => { const a = num(fdata(f).amount); if (isNaN(a) || a <= 0) return showErrors(f, ['أدخل مبلغاً موجباً.']); const id = ui.ctxId, g = state.goals.find((x) => x.id === id); closeSheet(); commit(`إيداع ${moneyText(a)} في «${g.name}»`, (st) => { const x = st.goals.find((y) => y.id === id); x.saved = E.r2((x.saved || 0) + a); if (x.saved >= x.target) x.status = 'done'; }, { action: 'goal' }); },
   pin: async (f) => { const d = fdata(f); if (!/^\d{4,8}$/.test(d.pin || '')) return showErrors(f, ['الرمز 4 إلى 8 أرقام.']); if (d.pin !== d.pin2) return showErrors(f, ['الرمزان غير متطابقين.']); closeSheet(); await setPin(d.pin); toast('فُعّل القفل وشُفّرت البيانات'); },
   options: (f) => { const d = fdata(f); const n = (x, def) => { const v = num(x); return isNaN(v) ? def : v; }; const csd = Math.min(31, Math.max(1, Number(d.cycleStartDay) || 1));
-    commit('حُفظت الإعدادات', (st) => { st.user.name = d.name.trim(); st.household.members = d.members.split(/[،,]/).map((x) => x.trim()).filter(Boolean).map((name) => ({ id: Seed.uid('m'), name }));
+    commit('حُفظت الإعدادات', (st) => { st.user.name = d.name.trim().slice(0, 40); st.household.members = d.members.split(/[،,]/).map((x) => x.trim()).filter(Boolean).map((name) => ({ id: Seed.uid('m'), name }));
       Object.assign(st.settings, { currency: d.currency, timezone: d.timezone, theme: d.theme, digits: d.digits, cycleStartDay: csd, cycleLabel: d.cycleLabel, salaryGraceDays: Math.max(0, Math.min(10, Number(d.salaryGraceDays) || 0)), style: d.style, savingMonthly: n(d.savingMonthly, 0), reserveMin: n(d.reserveMin, 0), savingsBalance: n(d.savingsBalance, 0), horizon: Number(d.horizon) || 12, notifyDays: Number(d.notifyDays) || 3 }); }, { action: 'settings' }); },
   account: (f) => { const name = fdata(f).name.trim(); if (!name) return; commit(`أُضيف حساب «${name}»`, (st) => st.accounts.push({ id: Seed.uid('a'), name, type: 'bank' })); },
   filters: (f) => { ui.filters = fdata(f); render(); },
@@ -2771,7 +2838,16 @@ document.addEventListener('keydown', (e) => {
 });
 ['pointerdown', 'touchstart', 'scroll'].forEach((ev) => document.addEventListener(ev, () => { ui.lastActive = Date.now(); }, { passive: true }));
 setInterval(() => { if (state && state.security.pinEnabled && !ui.locked && Date.now() - ui.lastActive > (Number(state.settings.lockMinutes) || 5) * 60000) lockNow(); }, 15000);
-document.addEventListener('visibilitychange', () => { if (document.hidden && state) save(true); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && state) save(true); else checkDayChange(); });
+/* اليوم تغيّر والتطبيق مفتوح (منتصف الليل أو يوم الراتب): نعيد الرسم حتى لا يبقى «مسموح اليوم» والشهر على الأمس */
+function checkDayChange() {
+  if (!state || !state.settings.onboarded || ui.locked) return;
+  const d = today();
+  if (window.__shownDay && d !== window.__shownDay && !$('.sheet')) render();
+}
+setInterval(checkDayChange, 30000);
+window.addEventListener('focus', checkDayChange);
+window.addEventListener('pageshow', checkDayChange);
 
 /* ───────── حارس الرجوع: إيماءة الرجوع تغلق النافذة أو تعود للرئيسية بدل الخروج ───────── */
 let backArmed = false, exitAsk = 0;
