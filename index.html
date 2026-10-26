@@ -408,9 +408,31 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .ytile { padding-top: 14px; }
 .file-btn { justify-self: start; }
 .sr:focus-visible + .file-btn, .file-btn:focus-within { outline: 3px solid var(--accent); }
+
+/* ───── Pro ───── */
+.paywall { display: grid; gap: 12px; }
+.pw-reason { font-weight: 600; line-height: 1.7; }
+.pw-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pw-list li { display: flex; gap: 10px; align-items: center; }
+.pw-list svg { width: 20px; height: 20px; color: var(--accent); flex: none; }
+.plans { display: grid; gap: 10px; }
+.plan { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 64px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); text-align: start; cursor: pointer; font: inherit; }
+.plan.best { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.plan:disabled { cursor: default; opacity: .92; }
+.plan-t { display: grid; gap: 2px; min-width: 0; } .plan-t b { font-size: var(--t-md); } .plan-t small { color: var(--muted); font-size: var(--t-xs); }
+.plan-p { font-family: var(--f-display); font-weight: 800; font-size: var(--t-lg); white-space: nowrap; }
+.plan-badge { position: absolute; top: -10px; inset-inline-start: 12px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.ytile.locked { background: var(--surface-2); color: var(--muted); }
+.ytile.locked svg { width: 18px; height: 18px; }
+.mrow.locked { border-style: dashed; }
+.mrow.locked svg { width: 16px; height: 16px; vertical-align: -3px; }
+.seg button svg { width: 14px; height: 14px; vertical-align: -2px; margin-inline-end: 3px; }
+.pro-card h2 svg { width: 18px; height: 18px; vertical-align: -3px; color: var(--accent); }
+.chip.good { background: var(--good); color: #fff; }
+.pro-notice { border-color: var(--accent); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="036b18f9b2";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="9b31655870";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -1717,6 +1739,7 @@ function dedList(d, opts) {
   </section>`;
 }
 function monthsAhead(fromKey, n) {
+  const lockedN = proActive() ? 0 : Math.max(0, n - PRO.limits.months); n -= lockedN;
   const rows = [];
   for (let i = 0; i < n; i++) { const k = E.keyAdd(fromKey, i); rows.push(stmtData(k)); }
   const big = (d) => d.next.concat(d.done).filter((o) => ['scheduled', 'emergency'].includes(o.item.type) && o.amount >= 500);
@@ -1724,7 +1747,7 @@ function monthsAhead(fromKey, n) {
     <div class="months">${rows.map((d) => { const b = big(d); const low = d.income > 0 && d.left < d.income * 0.15;
       return `<button class="mrow ${d.left < 0 ? 'bad' : low ? 'warn' : ''}" data-act="open-cycle" data-key="${d.key}">
         <span class="mrow-t"><b>${cycleTitle(d.key)}</b><small>${b.length ? 'فيه: ' + b.map((o) => esc(o.item.name)).join('، ') : `${nf(d.next.length + d.done.length, 0)} خصماً`}</small></span>
-        <span class="mrow-n"><small class="neg">−${nf(d.deducted + d.pending)}</small><b class="amt">${d.left < 0 ? '−' : ''}${nf(Math.abs(d.left))}</b></span></button>`; }).join('')}</div>
+        <span class="mrow-n"><small class="neg">−${nf(d.deducted + d.pending)}</small><b class="amt">${d.left < 0 ? '−' : ''}${nf(Math.abs(d.left))}</b></span></button>`; }).join('')}${lockedN ? `<button class="mrow locked" data-act="paywall" data-f="forecast"><span class="mrow-t"><b>${icon('lock')} الأشهر التالية وسنتك كاملة</b><small>متاحة في محاسبك Pro</small></span><span class="mrow-n"><b>Pro</b></span></button>` : ''}</div>
     <p class="xs muted">الرقم الكبير = ما يتبقى من الراتب بعد كل الخصميات. الأحمر الصغير = مجموع الخصميات.</p></section>`;
 }
 
@@ -1779,7 +1802,7 @@ function viewHome() {
   const storageWarn = (!fileMode && !storageOK) ? `<div class="notice lvl-risk">${icon('alert')}<div><strong>تعذر حفظ بياناتك على هذا الجهاز</strong><p class="small">قد تكون مساحة الجوال ممتلئة أو أنك في نافذة خاصة. احفظ نسخة من بياناتك الآن حتى لا تضيع آخر تعديلاتك، ثم وفّر مساحة وأعد فتح التطبيق.</p><div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : fileMode ? `<div class="notice lvl-warn">${icon('alert')}<div><strong>أنت تفتح ملفاً منزّلاً، وبياناتك لن تنتقل</strong><p class="small">كل ملف تنزّله (مثل «محاسبك المالي (5)») يبدأ وحده ولا يرى ما أدخلته في الملف السابق، وقد تضيع البيانات عند إغلاق المتصفح. افتح التطبيق من رابطه على الإنترنت وثبّته على جوالك، فتُحفظ بياناتك على جهازك بشكل دائم.</p><div class="row" style="margin-top:6px"><button class="btn sm" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : '';
   const saved = cloud.status === 'synced' ? `<p class="xs muted" style="display:flex;gap:6px;align-items:center">${icon('cloud')} محفوظ في حسابك</p>` : '';
   const demoBar = isDemo() ? `<div class="notice lvl-warn demo-bar">${icon('alert')}<div><strong>هذه بيانات تجريبية للتعرّف على التطبيق</strong><p class="small">لما تجهز، اضغط الزر وابدأ ببياناتك أنت: راتبك ويوم نزوله ثم التزاماتك. البيانات التجريبية تُمسح.</p><div class="row" style="margin-top:8px"><button class="btn primary" data-act="leave-demo">${icon('check')} ابدأ ببياناتي الشخصية</button></div></div></div>` : '';
-  return `${topbar(`${hi}${name}`)}${demoBar}${storageWarn}${saved}${installCard(true)}
+  return `${topbar(`${hi}${name}`)}${demoBar}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
   ${stmtCard(d, { tabs, cta: true })}
   ${dedList(d)}
   ${notice}
@@ -1852,14 +1875,15 @@ function viewCalendar() {
 
 /* ───────── التوقع ───────── */
 function viewForecast() {
-  const h = ui.horizon || state.settings.horizon || 12;
+  const pro = proActive();
+  const h = pro ? (ui.horizon || state.settings.horizon || 12) : PRO.limits.months;
   const fc = fcRows(h), ins = fc.insights;
   const counts = {}; fc.rows.forEach((r) => { counts[r.level] = (counts[r.level] || 0) + 1; });
   return `${topbar('التوقع المالي')}
-  <div class="row spread"><div class="seg" role="group" aria-label="المدة">${[12, 24].map((x) => `<button data-act="horizon" data-h="${x}" aria-pressed="${h === x}">${nf(x, 0)} شهراً</button>`).join('')}</div><div class="row">${['comfortable', 'balanced', 'pressing', 'risk'].map((l) => `<span class="pill lvl-${l}">${E.LEVELS[l]}: ${nf(counts[l] || 0, 0)}</span>`).join('')}</div></div>
+  <div class="row spread"><div class="seg" role="group" aria-label="المدة">${[12, 24].map((x) => `<button data-act="horizon" data-h="${x}" aria-pressed="${h === x}">${pro ? '' : icon('lock')}${nf(x, 0)} شهراً</button>`).join('')}</div><div class="row">${['comfortable', 'balanced', 'pressing', 'risk'].map((l) => `<span class="pill lvl-${l}">${E.LEVELS[l]}: ${nf(counts[l] || 0, 0)}</span>`).join('')}</div></div>
   <div class="notice">${icon('wallet')}<div><strong>التوقع يبدأ من رصيدك: ${money(state.balance.amount)}</strong><p class="small muted">آخر تحديث ${dlabel(state.balance.asOf)}. حدّثه من وقت لآخر ليبقى التوقع دقيقاً.</p><button class="btn sm" data-act="balance" style="margin-top:6px">${icon('wallet')} تحديث الرصيد</button></div></div>
   <section class="card"><div class="card-h"><h2>خريطة ${h > 12 ? 'السنتين' : 'السنة'}: كم يتبقى من كل راتب</h2><button class="btn sm primary" data-act="whatif">${icon('spark')} ماذا لو؟</button></div>
-    <div class="ymap">${fc.rows.map((r, i) => { const y = r.start.slice(0, 4), newYear = i === 0 || fc.rows[i - 1].start.slice(0, 4) !== y; return `<button class="ytile lvl-${r.level}" data-act="open-cycle" data-key="${r.key}" aria-label="${esc(cycleTitle(r.key))}: يتبقى ${nf(r.net, 0)}، ${r.levelName}">${newYear ? `<em>${y}</em>` : ''}<small>${shortMonth(r.start.slice(0, 7))}</small><b class="amt">${kfmt(r.net)}</b><i></i></button>`; }).join('')}</div>
+    <div class="ymap">${fc.rows.map((r, i) => { const y = r.start.slice(0, 4), newYear = i === 0 || fc.rows[i - 1].start.slice(0, 4) !== y; return `<button class="ytile lvl-${r.level}" data-act="open-cycle" data-key="${r.key}" aria-label="${esc(cycleTitle(r.key))}: يتبقى ${nf(r.net, 0)}، ${r.levelName}">${newYear ? `<em>${y}</em>` : ''}<small>${shortMonth(r.start.slice(0, 7))}</small><b class="amt">${kfmt(r.net)}</b><i></i></button>`; }).join('')}${pro ? '' : proLockedTiles(fc.rows[fc.rows.length - 1].key, 12 - fc.rows.length)}</div>${pro ? '' : `<button class="btn primary block" data-act="paywall" data-f="forecast" style="margin-top:10px">${icon('spark')} افتح توقع السنة كاملة مع Pro</button>`}
     <div class="legend"><span><i style="background:var(--good)"></i>مريح</span><span><i style="background:var(--calm)"></i>متوازن</span><span><i style="background:var(--warn)"></i>ضاغط</span><span><i style="background:var(--risk)"></i>خطر</span><span>الرقم = يتبقى بعد كل الخصميات</span></div>
   </section>
   <section class="card"><div class="card-h"><h2>الرصيد القابل للصرف المتوقع</h2><span class="xs muted">بعد المصروفات والادخار المستهدف</span></div>${balanceChart(fc.rows, Number(state.settings.reserveMin) || 0)}</section>
@@ -2004,7 +2028,7 @@ function viewOptions() {
   const s = state.settings;
   const sel = (name, opts, v) => `<select name="${name}" id="o_${name}">${opts.map(([k, t]) => `<option value="${k}" ${String(k) === String(v) ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
   const syncState = { unavailable: 'غير متاح عند فتح ملف منزّل؛ افتح التطبيق من Claude', ready: 'جاهزة', synced: 'متزامنة', syncing: 'جارٍ الحفظ…', error: 'تعذرت المزامنة' }[cloud.status];
-  return `${topbar('الإعدادات')}
+  return `${topbar('الإعدادات')}${proStatusCard()}
   <form class="grid g2" data-form="options">
   <section class="card form"><h2>الملف والأسرة</h2>
     <div class="f"><label for="o_name">اسمك (اختياري)</label><input class="in" id="o_name" name="name" maxlength="40" value="${esc(state.user.name)}"></div>
@@ -2921,6 +2945,184 @@ function boot() {
   }
 }
 window.__app = { get state() { return state; }, ui, E, render, go, setToday: (d) => { ui.todayOverride = d; render(); } };
+
+/* محاسبك المالي — نسخة Pro
+ * المجاني: الكشف الشهري، مسموح اليوم، التسجيل السريع، التنبيهات، توقع 3 أشهر، حتى 12 التزاماً وهدف واحد، النسخ الاحتياطي.
+ * Pro: توقع 12 و24 شهراً وخريطة السنة كاملة، «ماذا لو؟»، تصدير Excel وPDF، قفل البصمة، التزامات وأهداف بلا حد.
+ * كل مستخدم جديد يحصل على 14 يوماً تجربة Pro كاملة. الشراء عبر Google Play داخل تطبيق أندرويد. */
+'use strict';
+var PRO = {
+  trialDays: 14,
+  limits: { commitments: 12, goals: 1, months: 3 },
+  ids: { monthly: 'pro_monthly', yearly: 'pro_yearly', lifetime: 'pro_lifetime' },
+  ownerHash: '70d2c50e5655cce52da1b58bf5b82e04fb778b7b540a2b1bdbc0bdf306d2c953',
+  site: 'https://aligameali8-creator.github.io/mohasbak/',
+  prices: null, // من Google Play عند توفرها
+  fallback: { monthly: '14.99', yearly: '99', lifetime: '199', launch: '49' }
+};
+const isNativeApp = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const isArtifactBuild = () => !window.__MOHASBAK_PWA__ && !isNativeApp(); // نسخة Claude الخاصة بالمالك
+function proEnt() { try { return JSON.parse(localStorage.getItem('mohasbak.ent') || 'null'); } catch (e) { return null; } }
+function proSetEnt(x) { try { if (x) localStorage.setItem('mohasbak.ent', JSON.stringify(x)); else localStorage.removeItem('mohasbak.ent'); } catch (e) { /* */ } }
+/** بداية التجربة: الأقدم بين المحفوظ في البيانات وفي الجهاز (حتى لا تتجدد التجربة بمسح البيانات) */
+function proTrialStart() {
+  let ls = null; try { ls = localStorage.getItem('mohasbak.trial'); } catch (e) { /* */ }
+  const st = state && state.settings && state.settings.trialStart;
+  const t = today(), cands = [ls, st].filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x || ''));
+  const start = cands.length ? cands.sort()[0] : t;
+  if (ls !== start) { try { localStorage.setItem('mohasbak.trial', start); } catch (e) { /* */ } }
+  if (state && state.settings && state.settings.trialStart !== start) state.settings.trialStart = start;
+  return start;
+}
+function proStatus() {
+  if (isArtifactBuild()) return { pro: true, kind: 'owner' };
+  const e = proEnt();
+  if (e && e.kind === 'owner') return { pro: true, kind: 'owner' };
+  if (e && e.kind === 'play' && e.active) return { pro: true, kind: 'play', product: e.product };
+  if (!state || !state.settings.onboarded) return { pro: true, kind: 'trial', left: PRO.trialDays };
+  const left = PRO.trialDays - E.diffDays(proTrialStart(), today());
+  if (left > 0) return { pro: true, kind: 'trial', left };
+  return { pro: false, kind: 'free' };
+}
+const proActive = () => proStatus().pro;
+const activeCommitments = () => state.items.filter((i) => i.kind === 'expense' && i.type !== 'daily' && !i.deletedAt).length;
+const activeGoals = () => (state.goals || []).filter((g) => !g.deletedAt && g.status !== 'done').length;
+/** يرجع true إن كانت الميزة متاحة، وإلا يفتح شاشة الاشتراك */
+function proGate(feature) { if (proActive()) return true; proPaywall(feature); return false; }
+
+/* ───────── شاشة الاشتراك ───────── */
+const PRO_REASON = {
+  forecast: 'شوف سنتك كاملة: كم يتبقى من كل راتب لـ 12 و24 شهراً، وأي شهر بيضغط عليك قبل ما يجي.',
+  whatif: 'جرّب أي قرار (قسط، التزام، سفر، تغيير راتب) وشوف أثره على كل رواتبك القادمة قبل ما تتخذه.',
+  items: `وصلت للحد المجاني (${PRO.limits.commitments} التزاماً). مع Pro أضف ما تشاء.`,
+  goals: 'المجانية تسمح بهدف ادخار واحد. مع Pro أضف أهدافاً بلا حد.',
+  export: 'صدّر كشوفك وتوقعك إلى Excel وPDF لمشاركتها أو طباعتها.',
+  bio: 'اقفل التطبيق ببصمتك أو وجهك حتى لا يطّلع أحد على أرقامك.',
+  status: ''
+};
+function priceOf(plan) {
+  const p = PRO.prices && PRO.prices[PRO.ids[plan]];
+  return p ? esc(p) : `${PRO.fallback[plan === 'lifetime' ? 'launch' : plan]} ر.س`;
+}
+function proPaywall(feature) {
+  const st = proStatus(), native = isNativeApp();
+  const benefits = [['trend', 'توقع 12 و24 شهراً وخريطة السنة كاملة'], ['spark', '«ماذا لو؟» لأي قرار مالي'], ['list', 'التزامات وأهداف ادخار بلا حد'], ['download', 'تصدير Excel وPDF'], ['lock', 'قفل بالبصمة أو الوجه']];
+  const plan = (id, title, sub, badge) => `<button type="button" class="plan ${id === 'yearly' ? 'best' : ''}" data-act="pro-buy" data-plan="${id}" ${native ? '' : 'disabled'}>
+    ${badge ? `<span class="plan-badge">${badge}</span>` : ''}<span class="plan-t"><b>${title}</b><small>${sub}</small></span><span class="plan-p">${priceOf(id)}</span></button>`;
+  const statusLine = st.kind === 'trial' ? `<p class="small" style="color:var(--accent)">أنت الآن في تجربة Pro المجانية: باقي ${nf(st.left, 0)} ${st.left === 1 ? 'يوم' : st.left <= 10 ? 'أيام' : 'يوماً'}.</p>`
+    : st.pro ? `<p class="small" style="color:var(--good)">${icon('check')} Pro مفعّل عندك. شكراً لدعمك.</p>` : '';
+  const body = `<div class="paywall">
+    ${PRO_REASON[feature] ? `<p class="pw-reason">${PRO_REASON[feature]}</p>` : ''}${statusLine}
+    <ul class="pw-list">${benefits.map(([i, t]) => `<li>${icon(i)}<span>${t}</span></li>`).join('')}</ul>
+    <div class="plans">
+      ${plan('yearly', 'سنوي', `يعادل ${nf(Number(PRO.fallback.yearly) / 12, 2)} ر.س شهرياً · وفّر 45%`, 'الأوفر')}
+      ${plan('monthly', 'شهري', 'ألغِ متى شئت')}
+      ${plan('lifetime', 'مدى الحياة', `دفعة واحدة · عرض الإطلاق بدل <s>${PRO.fallback.lifetime} ر.س</s>`, 'عرض الإطلاق')}
+    </div>
+    ${native ? '' : `<div class="notice">${icon('download')}<div><strong>الاشتراك من تطبيق أندرويد</strong><p class="small muted">الشراء يتم بأمان عبر Google Play داخل تطبيق «محاسبك المالي». إذا عندك رمز تفعيل أدخله تحت.</p></div></div>`}
+    <p class="xs muted">${native ? 'الاشتراك يتجدد تلقائياً ويمكنك إلغاؤه في أي وقت من Google Play. ' : ''}بياناتك تبقى على جهازك دائماً، ولا تُحذف عند انتهاء التجربة أو الاشتراك. <a href="${PRO.site}terms.html" target="_blank" rel="noopener">الشروط</a> · <a href="${PRO.site}privacy.html" target="_blank" rel="noopener">الخصوصية</a></p>
+  </div>`;
+  openSheet('محاسبك Pro', body, `${native ? '<button class="btn" data-act="pro-restore">استعادة المشتريات</button>' : ''}<button class="btn" data-act="pro-code">عندي رمز تفعيل</button><button class="btn" data-act="close">إغلاق</button>`);
+}
+function proCodeSheet() {
+  openSheet('رمز التفعيل', `<form class="form" data-form="procode" novalidate><div class="f"><label for="pc_code">أدخل رمز التفعيل</label><input class="in" id="pc_code" name="code" autocomplete="off" autocapitalize="characters" placeholder="MHSB-XXXX-XXXX" dir="ltr" style="text-align:center;letter-spacing:2px"></div></form>`,
+    '<button class="btn" data-act="close">إلغاء</button><button class="btn primary" data-act="submit-form" data-form="procode">تفعيل</button>');
+}
+async function sha256hex(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map((x) => x.toString(16).padStart(2, '0')).join(''); }
+async function submitProCode(form) {
+  const code = String(fdata(form).code || '').trim().toUpperCase().replace(/\s+/g, '');
+  if (!code) return showErrors(form, ['اكتب الرمز']);
+  let h = ''; try { h = await sha256hex(code); } catch (e) { return showErrors(form, ['تعذر التحقق من الرمز على هذا المتصفح']); }
+  if (h !== PRO.ownerHash) return showErrors(form, ['الرمز غير صحيح']);
+  proSetEnt({ kind: 'owner', at: nowISO() }); closeSheet(); render(); toast('تم تفعيل Pro على هذا الجهاز');
+}
+
+/* ───────── Google Play Billing (تطبيق أندرويد فقط) ───────── */
+const MNB = () => (isNativeApp() && window.Capacitor.Plugins && window.Capacitor.Plugins.MohasbakNative) || null;
+function applyOwned(owned) {
+  const ids = Object.values(PRO.ids), got = (owned || []).filter((x) => ids.includes(x.id || x));
+  if (got.length) { const g = got[0]; proSetEnt({ kind: 'play', active: true, product: g.id || g, at: nowISO() }); return true; }
+  const e = proEnt(); if (e && e.kind === 'play') proSetEnt(null);
+  return false;
+}
+async function proRestore(silent) {
+  const mn = MNB(); if (!mn) return;
+  try { const r = await mn.billingRestore(); const had = proActive(); const ok = applyOwned(r.owned); if (state) render(); if (!silent) toast(ok ? 'تم استعادة اشتراكك في Pro' : 'لا توجد مشتريات سابقة على حساب Google هذا'); else if (!had && ok) toast('تم تفعيل Pro'); }
+  catch (e) { if (!silent) toast('تعذر الاتصال بـ Google Play. تأكد من الإنترنت وحاول مرة أخرى.'); }
+}
+async function proBuy(plan) {
+  const mn = MNB(); if (!mn) return toast('الشراء متاح من تطبيق أندرويد');
+  const id = PRO.ids[plan]; if (!id) return;
+  try {
+    const r = await mn.billingBuy({ id, type: plan === 'lifetime' ? 'inapp' : 'subs' });
+    if (r && r.state === 'pending') return toast('الدفع قيد المعالجة. سيُفعّل Pro تلقائياً عند اكتماله.');
+    if (applyOwned(r && r.owned)) { closeSheet(); render(); toast('شكراً لك! تم تفعيل محاسبك Pro'); }
+  } catch (e) {
+    const c = String((e && e.code) || '');
+    if (c === '1' || /cancel/i.test(String(e && e.message))) return; // ألغى المستخدم
+    toast(c === '7' ? 'أنت مشترك بالفعل. اضغط «استعادة المشتريات».' : 'تعذر إتمام الشراء: ' + friendlyError(e));
+  }
+}
+async function proNativeInit() {
+  const mn = MNB(); if (!mn) return;
+  try { const r = await mn.billingProducts(); const m = {}; (r.products || []).forEach((p) => { m[p.id] = p.price; }); if (Object.keys(m).length) PRO.prices = m; } catch (e) { /* Google Play غير متوفر */ }
+  proRestore(true);
+}
+if (isNativeApp()) setTimeout(proNativeInit, 1500);
+
+/* ───────── عناصر الواجهة ───────── */
+function proStatusCard() {
+  if (isArtifactBuild()) return '';
+  const st = proStatus();
+  const line = st.kind === 'trial' ? `تجربة Pro المجانية: باقي ${nf(st.left, 0)} ${st.left === 1 ? 'يوم' : st.left <= 10 ? 'أيام' : 'يوماً'}`
+    : st.kind === 'play' ? `Pro مفعّل (${st.product === PRO.ids.lifetime ? 'مدى الحياة' : st.product === PRO.ids.yearly ? 'سنوي' : 'شهري'})`
+    : st.kind === 'owner' ? 'Pro مفعّل برمز تفعيل' : 'النسخة المجانية';
+  return `<section class="card pro-card"><div class="card-h"><h2>${icon('spark')} اشتراكك</h2><span class="chip ${st.pro ? 'good' : ''}">${st.pro ? 'Pro' : 'مجاني'}</span></div>
+    <p class="small">${line}</p>
+    <div class="row" style="margin-top:8px">${st.kind === 'play' && st.product !== PRO.ids.lifetime ? `<a class="btn sm" href="https://play.google.com/store/account/subscriptions?package=com.mohasbak.app" target="_blank" rel="noopener">إدارة الاشتراك</a>` : st.kind === 'play' || st.kind === 'owner' ? '' : `<button class="btn sm primary" data-act="paywall" data-f="status">${icon('spark')} ترقية إلى Pro</button>`}
+    ${isNativeApp() ? '<button class="btn sm" data-act="pro-restore">استعادة المشتريات</button>' : ''}${st.kind !== 'owner' && st.kind !== 'play' ? '<button class="btn sm ghost" data-act="pro-code">عندي رمز تفعيل</button>' : ''}</div></section>`;
+}
+/** تنبيه لطيف في الرئيسية: آخر 3 أيام من التجربة، ومرة واحدة عند انتهائها */
+function proHomeNotice() {
+  if (isArtifactBuild() || !state || !state.settings.onboarded) return '';
+  const st = proStatus();
+  if (st.kind === 'trial' && st.left <= 3) return `<div class="notice pro-notice">${icon('spark')}<div><strong>باقي ${nf(st.left, 0)} ${st.left === 1 ? 'يوم' : 'أيام'} على تجربة Pro</strong><p class="small">بعدها تبقى بياناتك كاملة والمزايا الأساسية مجانية، ويتوقف التوقع الطويل و«ماذا لو؟» والتصدير.</p><div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="paywall" data-f="status">اعرف الخطط</button></div></div></div>`;
+  if (st.kind === 'free' && !state.settings.trialEndSeen) return `<div class="notice pro-notice">${icon('spark')}<div><strong>انتهت تجربة Pro المجانية</strong><p class="small">بياناتك كلها باقية، والكشف الشهري ومسموح اليوم والتنبيهات مجانية دائماً. للتوقع الكامل لسنتك و«ماذا لو؟» اشترك في Pro.</p><div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="paywall" data-f="forecast">اشترك في Pro</button><button class="btn sm ghost" data-act="pro-dismiss">لاحقاً</button></div></div></div>`;
+  return '';
+}
+/** مربعات مقفلة في خريطة السنة للنسخة المجانية */
+function proLockedTiles(lastKey, n) {
+  let out = '';
+  for (let i = 1; i <= n; i++) { const k = E.keyAdd(lastKey, i); out += `<button class="ytile locked" data-act="paywall" data-f="forecast" aria-label="${esc(cycleTitle(k))} — متاح في Pro"><small>${E.MONTHS_AR[Number(k.slice(5, 7)) - 1]}</small><b>${icon('lock')}</b></button>`; }
+  return out;
+}
+
+/* ───────── ربط الأزرار والنماذج ───────── */
+(() => {
+  const wrap = (name, feature, cond) => { const f = ACT[name]; if (!f) return; ACT[name] = (el, ev) => { if ((!cond || cond(el)) && !proGate(feature)) { if (el && el.type === 'checkbox') el.checked = false; return; } return f(el, ev); }; };
+  wrap('whatif', 'whatif'); wrap('wi-adopt', 'whatif');
+  wrap('new', 'whatif', (el) => el.dataset.kind === 'whatif');
+  wrap('horizon', 'forecast', (el) => Number(el.dataset.h) > PRO.limits.months);
+  wrap('export-xlsx', 'export'); wrap('export-pdf', 'export');
+  wrap('bio-lock', 'bio', (el) => el.checked);
+  wrap('goal', 'goals', (el) => !el.dataset.id && activeGoals() >= PRO.limits.goals);
+  const wrapForm = (name, feature, cond) => { const f = FORMS[name]; if (!f) return; FORMS[name] = (form) => { if (cond(form) && !proActive()) { closeSheet(); proPaywall(feature); return; } return f(form); }; };
+  wrapForm('item', 'items', (f) => f.dataset.kind === 'expense' && !f.dataset.id && activeCommitments() >= PRO.limits.commitments);
+  wrapForm('inst', 'items', (f) => !f.dataset.id && activeCommitments() >= PRO.limits.commitments);
+  wrapForm('goal', 'goals', (f) => !f.dataset.id && activeGoals() >= PRO.limits.goals);
+  FORMS.procode = submitProCode;
+  Object.assign(ACT, {
+    paywall: (el) => { closeSheet(); proPaywall(el.dataset.f); },
+    'pro-buy': (el) => proBuy(el.dataset.plan),
+    'pro-restore': () => proRestore(false),
+    'pro-code': () => { closeSheet(); proCodeSheet(); },
+    'pro-dismiss': () => { state.settings.trialEndSeen = true; save(); render(); }
+  });
+})();
+window.__pro = { status: proStatus, PRO, setEnt: proSetEnt, applyOwned };
+
+/* الإقلاع: بعد تحميل كل الوحدات (ومنها Pro) وقبل الجسر الأصلي */
+'use strict';
 boot();
 
 /* محاسبك المالي — الجسر الأصلي (أندرويد عبر Capacitor)

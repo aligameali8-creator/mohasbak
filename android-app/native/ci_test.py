@@ -117,6 +117,21 @@ try:
     shot('07-after-restart')
     pg.ev("window.__app.go('options'); true"); time.sleep(1.5); shot('08-options')
     check('الإعدادات: قسم التنبيهات والجوال', 'التنبيهات والجوال' in (pg.ev("document.querySelector('#main').innerText") or ''))
+    # الاشتراك Pro عبر Google Play (المحاكي بلا متجر: يجب أن يرد بخطأ مفهوم بدون انهيار)
+    bp = pg.ev("Capacitor.Plugins.MohasbakNative.billingProducts().then((r) => 'ok:' + JSON.stringify(r)).catch((e) => 'err:' + (e.code || '') + ' ' + e.message)")
+    check('مكتبة Google Play Billing تستجيب (نجاح أو رفض مفهوم)', isinstance(bp, str) and (bp.startswith('ok:') or bp.startswith('err:')), bp)
+    br = pg.ev("Capacitor.Plugins.MohasbakNative.billingRestore().then((r) => 'ok:' + JSON.stringify(r)).catch((e) => 'err:' + e.message)")
+    check('استعادة المشتريات تستجيب بدون انهيار', isinstance(br, str) and br[:3] in ('ok:', 'err'), br)
+    pg.ev("window.__app.go('options'); true"); time.sleep(1)
+    check('بطاقة الاشتراك ظاهرة في الإعدادات', 'اشتراكك' in (pg.ev("document.querySelector('#main').innerText") or ''))
+    pg.ev("document.querySelector('[data-act=pro-restore]') ? 1 : 0")
+    pg.ev("window.__pro && (localStorage.setItem('mohasbak.trial','2020-01-01'), window.__app.state.settings.trialStart='2020-01-01', window.__app.go('forecast')); true"); time.sleep(1)
+    pg.ev("document.querySelector('[data-act=horizon][data-h=\"24\"]').click(); true"); time.sleep(1.5); shot('09-paywall')
+    pw = pg.ev("(document.querySelector('.paywall') || {}).innerText || ''") or ''
+    check('شاشة الاشتراك تفتح بالخطط الثلاث', 'سنوي' in pw and 'شهري' in pw and 'مدى الحياة' in pw, pw[:200])
+    check('أزرار الشراء مفعّلة داخل التطبيق', pg.ev("[...document.querySelectorAll('[data-act=pro-buy]')].every((b) => !b.disabled)") is True)
+    pg.ev("document.querySelector('[data-act=pro-buy][data-plan=yearly]').click(); true"); time.sleep(4); shot('10-buy-try')
+    check('محاولة الشراء بدون متجر لا تُسقط التطبيق', sh(f'adb shell pidof {PKG}').strip() != '' and pg.ev("!!window.__app") is True)
 except Exception as e:
     check('تنفيذ الاختبار', False, repr(e))
 finally:

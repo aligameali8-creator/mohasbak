@@ -36,6 +36,12 @@ jobs:
           set -o pipefail
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee ../../ci-gradle.log
+      - name: Build release bundle (AAB for Google Play, signed later with the private upload key)
+        working-directory: android-app/android
+        run: |
+          set -o pipefail
+          ./gradlew bundleRelease --no-daemon --stacktrace 2>&1 | tail -40 | tee ../../ci-bundle.log
+          ls -la app/build/outputs/bundle/release/
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -53,7 +59,7 @@ jobs:
         if: always()
         run: |
           mkdir -p /tmp/out && cp -r ci-shots /tmp/out/ 2>/dev/null || true
-          for f in ci-npm.log ci-cap.log ci-gradle.log; do [ -f "$f" ] && tail -c 150000 "$f" > /tmp/out/$f; done
+          for f in ci-npm.log ci-cap.log ci-gradle.log ci-bundle.log; do [ -f "$f" ] && tail -c 150000 "$f" > /tmp/out/$f; done
           echo "run ${{ github.run_number }} · ${{ github.sha }} · $(date -u)" > /tmp/out/RUN.txt
           cd /tmp/out && git init -q && git checkout -q -b ci-results && git add -A
           git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "ci results ${{ github.run_number }}"
@@ -64,5 +70,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp android-app/android/app/build/outputs/apk/debug/app-debug.apk mohasbak.apk
+          cp android-app/android/app/build/outputs/bundle/release/app-release.aab mohasbak-release-unsigned.aab
           gh release delete android-latest -y --cleanup-tag || true
-          gh release create android-latest mohasbak.apk --title "محاسبك المالي — أندرويد (نسخة اختبار)" --notes "آخر نسخة أندرويد. نزّل mohasbak.apk وثبّته. التحديثات تُثبَّت فوق السابقة دون حذف بياناتك." --latest
+          gh release create android-latest mohasbak.apk mohasbak-release-unsigned.aab --title "محاسبك المالي — أندرويد (نسخة اختبار)" --notes "آخر نسخة أندرويد. نزّل mohasbak.apk وثبّته. التحديثات تُثبَّت فوق السابقة دون حذف بياناتك." --latest

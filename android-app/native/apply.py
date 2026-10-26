@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """يُشغَّل في GitHub Actions بعد `npx cap add android`: ينسخ الكود الأصلي (الودجت، الإضافة، MainActivity)،
 ويعدّل AndroidManifest وbuild.gradle (البصمة + التوقيع الثابت)، ويضع أيقونة التطبيق وشاشة البداية."""
-import pathlib, re, shutil
+import os, pathlib, re, shutil
 from PIL import Image
 
 HERE = pathlib.Path(__file__).parent
@@ -39,6 +39,12 @@ bg = APP / 'build.gradle'
 g = bg.read_text(encoding='utf-8')
 if 'androidx.biometric' not in g:
     g = re.sub(r'dependencies\s*\{', 'dependencies {\n    implementation "androidx.biometric:biometric:1.1.0"', g, count=1)
+if 'billingclient' not in g:
+    g = re.sub(r'dependencies\s*\{', 'dependencies {\n    implementation "com.android.billingclient:billing:7.1.1"', g, count=1)
+# رقم الإصدار: يزيد مع كل بناء (Google Play يشترط رقماً أكبر في كل رفع)
+run = int(os.environ.get('GITHUB_RUN_NUMBER', '1'))
+g = re.sub(r'versionCode\s+\d+', f'versionCode {100 + run}', g)
+g = re.sub(r'versionName\s+"[^"]*"', f'versionName "1.0.{run}"', g)
 if 'signingConfigs' not in g:
     g += '''
 android {
@@ -52,11 +58,21 @@ android {
     }
     buildTypes {
         debug { signingConfig signingConfigs.mohasbakTest }
-        release { signingConfig signingConfigs.mohasbakTest }
     }
 }
 '''
 bg.write_text(g, encoding='utf-8')
+
+# 4ب) Google Play يشترط استهداف Android 16 (API 36) منذ 31 أغسطس 2026
+vg = APP.parent / 'variables.gradle'
+if vg.exists():
+    v = vg.read_text(encoding='utf-8')
+    v = re.sub(r'compileSdkVersion\s*=\s*\d+', 'compileSdkVersion = 36', v)
+    v = re.sub(r'targetSdkVersion\s*=\s*\d+', 'targetSdkVersion = 36', v)
+    vg.write_text(v, encoding='utf-8')
+gp = APP.parent / 'gradle.properties'
+if gp.exists() and 'suppressUnsupportedCompileSdk' not in gp.read_text(encoding='utf-8'):
+    gp.write_text(gp.read_text(encoding='utf-8') + '\nandroid.suppressUnsupportedCompileSdk=36\n', encoding='utf-8')
 
 # 5) الأيقونة وشاشة البداية
 icon = Image.open(HERE.parent / 'www' / 'icon-512.png').convert('RGBA')
