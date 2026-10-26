@@ -410,7 +410,7 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .sr:focus-visible + .file-btn, .file-btn:focus-within { outline: 3px solid var(--accent); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="036b18f9b2";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -2849,6 +2849,25 @@ document.addEventListener('keydown', (e) => {
 ['pointerdown', 'touchstart', 'scroll'].forEach((ev) => document.addEventListener(ev, () => { ui.lastActive = Date.now(); }, { passive: true }));
 setInterval(() => { if (state && state.security.pinEnabled && !ui.locked && Date.now() - ui.lastActive > (Number(state.settings.lockMinutes) || 5) * 60000) lockNow(); }, 15000);
 document.addEventListener('visibilitychange', () => { if (document.hidden && state) save(true); else checkDayChange(); });
+/* تحديث تلقائي: التطبيق المثبّت لا يعيد تحميل نفسه عند الرجوع إليه، فنفحص رقم الإصدار ونحدّث إن وُجد جديد */
+let updBusy = false;
+async function checkUpdate() {
+  if (updBusy || !window.__BUILD__ || !navigator.onLine) return;
+  updBusy = true;
+  try {
+    const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+    const v = r.ok ? (await r.json()).v : null;
+    if (!v || v === window.__BUILD__) return;
+    let tried = null; try { tried = sessionStorage.getItem('mohasbak.upd'); } catch (e) { /* */ }
+    if (tried === v) return; // حاولنا مرة لهذا الإصدار: لا نكرر حتى لا ندخل في حلقة
+    if ($('.sheet') || ui.locked) return; // لا نقاطع المستخدم أثناء الإدخال؛ نعيد المحاولة لاحقاً
+    try { sessionStorage.setItem('mohasbak.upd', v); } catch (e) { /* */ }
+    toast('يوجد تحديث جديد… جاري التحديث');
+    if (state) await save(true);
+    try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch (e) { /* */ }
+    setTimeout(() => location.reload(), 700);
+  } catch (e) { /* بدون اتصال */ } finally { updBusy = false; }
+}
 /* اليوم تغيّر والتطبيق مفتوح (منتصف الليل أو يوم الراتب): نعيد الرسم حتى لا يبقى «مسموح اليوم» والشهر على الأمس */
 function checkDayChange() {
   if (!state || !state.settings.onboarded || ui.locked) return;
@@ -2895,7 +2914,11 @@ function boot() {
   else if (env && env.data) { try { state = normalize(JSON.parse(env.data)); state.modifiedAt = state.modifiedAt || env.savedAt; markClean(); } catch (e) { state = null; toast('تعذرت قراءة البيانات المحفوظة'); } }
   render();
   cloudInit();
-  if ('serviceWorker' in navigator && window.__MOHASBAK_PWA__ && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator && window.__MOHASBAK_PWA__ && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+    setTimeout(checkUpdate, 3000); setInterval(checkUpdate, 30 * 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
+  }
 }
 window.__app = { get state() { return state; }, ui, E, render, go, setToday: (d) => { ui.todayOverride = d; render(); } };
 boot();
