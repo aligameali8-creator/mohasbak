@@ -431,9 +431,25 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .chip.good { background: var(--good); color: #fff; }
 .pro-notice { border-color: var(--accent); }
 .plan:focus { outline: none; } .plan:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.today-left { margin: 0; font-size: var(--t-sm, .9rem); }
+.today-left b { color: var(--ink); font-family: var(--f-display); }
+.today-cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.today-cmp .tc { display: grid; gap: 1px; justify-items: start; text-align: start; padding: 8px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font: inherit; min-width: 0; }
+.today-cmp .tc.on { border-color: var(--accent); cursor: pointer; }
+.today-cmp .tc b { font-family: var(--f-display); font-size: var(--t-lg, 1.25rem); color: var(--accent); line-height: 1.2; }
+.today-cmp .tc:not(.on) b { color: var(--ink); }
+.today-cmp small { font-size: var(--t-xs, .75rem); color: var(--muted); overflow-wrap: anywhere; }
+.today-save { display: grid; gap: 6px; }
+.today-save .btn small { font-weight: 400; }
+.save-opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.save-opt { display: grid; gap: 2px; padding: 10px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; text-align: center; min-height: 60px; }
+.save-opt.on { border-color: var(--accent); background: var(--accent-soft); }
+.save-opt b { font-family: var(--f-display); font-size: var(--t-md, 1.05rem); } .save-opt small { color: var(--muted); font-size: var(--t-xs, .75rem); }
+.today-cmp small svg { width: 12px; height: 12px; vertical-align: -1px; color: var(--accent); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="3c760c858e";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="69a7b7327b";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -1706,14 +1722,38 @@ function stmtCard(d, opts) {
 function todayBox() {
   const db = E.dailyBudget(state, today());
   if (db.income <= 0) return `<div class="today-box"><p class="small">أضف راتبك ليظهر لك كم تقدر تصرف كل يوم.</p></div>`;
-  if (db.pool <= 0) return `<div class="today-box over"><div class="today-row"><div><span class="small">مسموح تصرف اليوم</span><strong class="amt">0</strong></div><button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div><p class="xs">الالتزامات${db.saving ? ' والادخار' : ''} تستهلك ما تبقى من الراتب. أي مصروف إضافي يقلل ما يتبقى آخر الشهر.</p></div>`;
+  const dw = (n) => (n === 1 ? 'يوم' : n === 2 ? 'يومين' : n <= 10 ? `${nf(n, 0)} أيام` : `${nf(n, 0)} يوماً`);
+  const freePool = E.r2(db.pool + db.saving);                 // ما يتبقى للصرف حتى الراتب بدون ادخار (قبل مصروف اليوم)
+  const freeLeft = Math.max(0, Math.round(freePool - db.spentToday)); // يتبقى الآن بعد الالتزامات ومصروف اليوم
+  const noSavePerDay = Math.max(0, freePool / db.daysLeft);
+  if (freePool <= 0) return `<div class="today-box over"><div class="today-row"><div><span class="small">مسموح تصرف اليوم</span><strong class="amt">0</strong></div><button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div><p class="xs">الالتزامات تستهلك ما تبقى من الراتب حتى الراتب القادم. أي مصروف إضافي يقلل ما يتبقى آخر الشهر.</p></div>`;
+  const hasSave = db.saving > 0;
   const pct = db.perDay > 0 ? Math.min(100, (db.spentToday / db.perDay) * 100) : 100, over = db.todayLeft < 0;
+  const perDayIf = (sv) => Math.max(0, Math.round((freePool - sv) / db.daysLeft));
+  const cmp = hasSave
+    ? `<div class="today-cmp"><button type="button" class="tc on" data-act="saving-quick"><small>مع ادخار ${nf(db.saving)} للراتب الجاي ${icon('edit')}</small><b>${nf(Math.round(db.perDay), 0)}</b><small>يومياً · يتبقى ${nf(db.saving)}</small></button>
+       <div class="tc"><small>بدون ادخار</small><b>${nf(Math.round(noSavePerDay), 0)}</b><small>يومياً · يتبقى 0</small></div></div>`
+    : `<div class="today-save"><span class="xs">تبي تدخر للراتب الجاي؟ اختر المبلغ:</span><div class="row" style="gap:6px">${[250, 500, 1000].filter((v) => v < freePool).map((v) => `<button type="button" class="btn sm" data-act="set-saving" data-v="${v}">${nf(v, 0)} <small class="muted">← ${nf(perDayIf(v), 0)} يومياً</small></button>`).join('')}<button type="button" class="btn sm ghost" data-act="saving-quick">مبلغ آخر</button></div></div>`;
   return `<div class="today-box ${over ? 'over' : ''}">
     <div class="today-row"><div><span class="small">${over ? 'تجاوزت مسموح اليوم بـ' : 'مسموح تصرف اليوم'}</span><strong class="amt">${nf(Math.abs(Math.round(db.todayLeft)), 0)} <span class="cur">${curSym()}</span></strong></div>
     <button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div>
     <div class="today-bar"><i style="width:${pct}%"></i></div>
-    <span class="xs">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)} · معك للمصاريف اليومية ${nf(Math.max(0, Math.round(db.pool - db.spentToday)), 0)} حتى الراتب (${nf(db.daysLeft, 0)} ${db.daysLeft <= 10 ? 'أيام' : 'يوماً'})${db.saving ? ` بعد تجنيب ادخار ${nf(db.saving)}` : ''}</span>
+    <p class="today-left">يتبقى لك من الراتب بعد الالتزامات: <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب</p>
+    ${cmp}
+    <span class="xs">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)}. المبلغ اليومي يُعاد حسابه كل يوم: الباقي ÷ الأيام المتبقية، فإذا صرفت أقل اليوم يزيد مسموح بكرة.</span>
   </div>`;
+}
+/** نافذة سريعة لتغيير مبلغ الادخار للراتب الجاي مع أثره على المسموح اليومي */
+function savingQuickSheet() {
+  const db = E.dailyBudget(state, today()), freePool = E.r2(db.pool + db.saving), goals = E.r2(db.saving - (Number(state.settings.savingMonthly) || 0));
+  const per = (v) => Math.max(0, Math.round((freePool - v) / db.daysLeft));
+  const opts = [...new Set([goals, 0, 250, 500, 1000, 2000])].filter((v) => v >= goals && (v === goals || v < freePool)).sort((x, y) => x - y);
+  openSheet('الادخار للراتب الجاي', `<form class="form" data-form="savequick" novalidate>
+    <p class="small muted">كم تبي تجنّب من هذا الراتب؟ نخصمه من مصاريفك اليومية فيبقى لك آخر الشهر.</p>
+    <div class="save-opts">${opts.map((v) => `<button type="button" class="save-opt ${v === db.saving ? 'on' : ''}" data-act="set-saving" data-v="${v}"><b>${v ? nf(v, 0) : 'بدون ادخار'}${v && v === goals ? ' <small>(أهدافك فقط)</small>' : ''}</b><small>تصرف ${nf(per(v), 0)} يومياً</small></button>`).join('')}</div>
+    <div class="f"><label for="sq_amt">أو اكتب مبلغاً</label><input class="in" id="sq_amt" name="amount" inputmode="decimal" placeholder="مثال: 750" value=""></div>
+    ${goals > 0 ? `<p class="xs muted">يشمل ${nf(goals)} لأهداف الادخار الشهرية، فأقل مبلغ ممكن ${nf(goals)}.</p>` : ''}
+  </form>`, '<button class="btn" data-act="close">إلغاء</button><button class="btn primary" data-act="submit-form" data-form="savequick">حفظ</button>');
 }
 function dedRow(o) {
   const it = o.item, cat = catOf(it.categoryId), done = isDone(o), p = E.parse(o.date);
@@ -2758,6 +2798,8 @@ const ACT = {
   'native-notify': (el) => { state.settings.nativeNotify = el.checked; save(); toast(el.checked ? 'التنبيهات مفعلة' : 'أُوقفت التنبيهات'); if (!el.checked && window.__native.P.LocalNotifications) window.__native.P.LocalNotifications.getPending().then((p) => p.notifications.length && window.__native.P.LocalNotifications.cancel({ notifications: p.notifications.map((n) => ({ id: n.id })) })); },
   'daily-reminder': (el) => { state.settings.dailyReminder = el.checked; save(); toast(el.checked ? 'التذكير اليومي مفعل' : 'أُوقف التذكير اليومي'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
+  'saving-quick': () => savingQuickSheet(),
+  'set-saving': (el) => setSavingTotal(Number(el.dataset.v) || 0),
   whatif: () => { closeSheet(); whatIfSheet(); },
   'wi-adopt': () => adoptWhatIf(),
   'show-daily': () => { ui.showDaily = !ui.showDaily; render(); },
@@ -2813,8 +2855,16 @@ const ACT = {
   'back-lock': () => render(),
   'wipe-locked': async () => { await cloudDelete(); try { localStorage.removeItem(LS_KEY); } catch (e) { /* */ } envCache = null; ui.locked = false; ui.lockEnv = null; state = null; render(); }
 };
+/** يضبط مجموع الادخار من الراتب (العام + الأهداف): نغيّر الجزء العام فقط */
+function setSavingTotal(total) {
+  const goals = E.r2(E.dailyBudget(state, today()).saving - (Number(state.settings.savingMonthly) || 0));
+  const gen = E.r2(Math.max(0, total - Math.max(0, goals)));
+  closeSheet();
+  commit(total > 0 ? `ادخار ${nf(gen + Math.max(0, goals), 0)} من كل راتب` : 'بدون ادخار من الراتب', (st) => { st.settings.savingMonthly = gen; });
+}
 const FORMS = {
   spend: submitSpend, whatif: submitWhatIf,
+  savequick: (f) => { const v = num(fdata(f).amount); if (!Number.isFinite(v) || v < 0) return showErrors(f, ['اكتب مبلغاً صحيحاً']); setSavingTotal(v); },
   item: submitItemForm, inst: submitInst, pay: submitPay,
   pause: (f) => { const d = fdata(f); if (d.to && d.to <= d.from) return showErrors(f, ['تاريخ الانتهاء يجب أن يكون بعد البداية.']); const id = ui.ctxId, it = state.items.find((x) => x.id === id); closeSheetKeepDetail(); commit(`أُوقف «${it.name}» من ${d.from}${d.to ? ' حتى ' + d.to : ''}`, (st) => { st.items.find((y) => y.id === id).pauses.push({ from: d.from, to: d.to || null }); }, { action: 'pause', entity: 'item', id }); },
   postpone: (f) => { const d = fdata(f); const id = ui.ctxId, n = ui.ctxN, it = state.items.find((x) => x.id === id); closeSheetKeepDetail(); commit(`أُجلت دفعة ${n} من «${it.name}» ${d.months} شهر`, (st) => { E.postponeInstallment(st.items.find((y) => y.id === id).plan, n, Number(d.months), d.mode); }, { action: 'postpone', entity: 'item', id }); },
@@ -2910,6 +2960,7 @@ window.addEventListener('popstate', () => {
   backArmed = false;
   if (ui.locked || !state) return;
   if ($('.sheet')) { closeSheet(); armBack(); return; }
+  if (!state.settings.onboarded && ui.wizardStep > 0) { ACT['wiz-back'](); armBack(); return; } // الإعداد الأول: الرجوع = الخطوة السابقة
   if (ui.view !== 'home') { go('home'); armBack(); return; }
   if (Date.now() - exitAsk < 2500) { try { history.back(); } catch (e) { /* */ } return; }
   exitAsk = Date.now(); toast('اسحب للرجوع مرة أخرى للخروج'); armBack();
