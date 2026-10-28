@@ -447,9 +447,19 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .save-opt.on { border-color: var(--accent); background: var(--accent-soft); }
 .save-opt b { font-family: var(--f-display); font-size: var(--t-md, 1.05rem); } .save-opt small { color: var(--muted); font-size: var(--t-xs, .75rem); }
 .today-cmp small svg { width: 12px; height: 12px; vertical-align: -1px; color: var(--accent); }
+
+.today-when, .today-if { margin: 0; font-size: var(--t-sm, .9rem); }
+.today-when { color: var(--muted); display: flex; gap: 6px; align-items: flex-start; }
+.today-when svg { width: 15px; height: 15px; flex: none; margin-top: 4px; }
+.today-if b { font-family: var(--f-display); color: var(--ink); }
+.today-if.warn { color: var(--risk); font-weight: 600; }
+.today-warn { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; background: var(--risk-soft); color: var(--ink); font-size: var(--t-sm, .9rem); }
+.today-warn.soft { background: var(--warn-soft, var(--surface)); }
+.today-warn svg { width: 16px; height: 16px; flex: none; margin-top: 4px; color: var(--risk); }
+.linkish { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="69a7b7327b";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="899608676e";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -1728,6 +1738,21 @@ function todayBox() {
   const noSavePerDay = Math.max(0, freePool / db.daysLeft);
   if (freePool <= 0) return `<div class="today-box over"><div class="today-row"><div><span class="small">مسموح تصرف اليوم</span><strong class="amt">0</strong></div><button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div><p class="xs">الالتزامات تستهلك ما تبقى من الراتب حتى الراتب القادم. أي مصروف إضافي يقلل ما يتبقى آخر الشهر.</p></div>`;
   const hasSave = db.saving > 0;
+  // موعد الراتب القادم الفعلي (قد يختلف عن بداية الدورة إذا الإعداد غير مضبوط)
+  const nextSal = E.cycleOccurrences(state, E.keyAdd(db.key, 1)).filter((o) => o.kind === 'income' && o.item.isPrimary).map((o) => o.date).sort()[0] || db.endExclusive;
+  const prim = state.items.find((i) => i.kind === 'income' && i.isPrimary && !i.deletedAt && i.rule && i.rule.freq === 'monthly');
+  const salDay = prim ? Number(prim.rule.day) || E.parse(nextSal).d : E.parse(nextSal).d;
+  const mismatch = Math.abs(E.diffDays(db.endExclusive, nextSal)) >= 3 && salDay !== Number(state.settings.cycleStartDay);
+  const ifAll = Math.max(0, Math.round(db.pool - db.perDay));
+  const cycleLen = Math.max(1, E.diffDays(db.start, db.endExclusive));
+  const bigBecauseNear = db.daysLeft <= 5 && db.perDay > 2 * Math.max(1, (db.income - db.commitments - db.saving) / cycleLen);
+  const horizon = `<p class="today-when">${icon('calendar')} الراتب الجاي ${dlabel(mismatch ? db.endExclusive : nextSal, { wd: true })}، والمسموح موزّع على ${dw(db.daysLeft)} الباقية${db.daysLeft <= 7 ? ' فقط' : ''}.</p>`;
+  const ifSpent = db.daysLeft > 1
+    ? `<p class="today-if">إذا صرفت مسموح اليوم كاملاً، يبقى لك <b>${nf(ifAll, 0)} ${curSym()}</b> لباقي ${dw(db.daysLeft - 1)}.</p>`
+    : `<p class="today-if warn">اليوم آخر يوم قبل الراتب. إذا صرفت المبلغ كله ما يبقى لك شيء لو تأخر الراتب.</p>`;
+  const warnCfg = mismatch
+    ? `<div class="today-warn">${icon('alert')}<span><b>المسموح اليومي غير دقيق:</b> شهرك في الإعدادات يبدأ يوم ${nf(Number(state.settings.cycleStartDay), 0)}، لكن راتبك ينزل يوم ${nf(salDay, 0)}. فالتطبيق يوزّع فلوسك على ${dw(db.daysLeft)} بدل الشهر كامل.<br><button type="button" class="btn sm primary" data-act="fix-cycle" data-d="${salDay}" style="margin-top:6px">اجعل الشهر يبدأ يوم ${nf(salDay, 0)} (يوم الراتب)</button></span></div>`
+    : bigBecauseNear ? `<div class="today-warn soft">${icon('alert')}<span>المبلغ كبير لأن راتبك الجاي بعد ${dw(db.daysLeft)} فقط حسب إعداداتك. إذا راتبك ينزل في يوم مختلف <button type="button" class="linkish" data-nav="options">صحّح يوم الراتب</button>.</span></div>` : '';
   const pct = db.perDay > 0 ? Math.min(100, (db.spentToday / db.perDay) * 100) : 100, over = db.todayLeft < 0;
   const perDayIf = (sv) => Math.max(0, Math.round((freePool - sv) / db.daysLeft));
   const cmp = hasSave
@@ -1737,7 +1762,9 @@ function todayBox() {
   return `<div class="today-box ${over ? 'over' : ''}">
     <div class="today-row"><div><span class="small">${over ? 'تجاوزت مسموح اليوم بـ' : 'مسموح تصرف اليوم'}</span><strong class="amt">${nf(Math.abs(Math.round(db.todayLeft)), 0)} <span class="cur">${curSym()}</span></strong></div>
     <button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div>
+    ${horizon}${warnCfg}
     <div class="today-bar"><i style="width:${pct}%"></i></div>
+    ${ifSpent}
     <p class="today-left">يتبقى لك من الراتب بعد الالتزامات: <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب</p>
     ${cmp}
     <span class="xs">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)}. المبلغ اليومي يُعاد حسابه كل يوم: الباقي ÷ الأيام المتبقية، فإذا صرفت أقل اليوم يزيد مسموح بكرة.</span>
@@ -2799,6 +2826,7 @@ const ACT = {
   'daily-reminder': (el) => { state.settings.dailyReminder = el.checked; save(); toast(el.checked ? 'التذكير اليومي مفعل' : 'أُوقف التذكير اليومي'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   'saving-quick': () => savingQuickSheet(),
+  'fix-cycle': (el) => { const d = Math.min(31, Math.max(1, Number(el.dataset.d) || 27)); ui.cycle = null; commit(`الشهر يبدأ الآن يوم ${nf(d, 0)} مع نزول الراتب`, (st) => { st.settings.cycleStartDay = d; }); },
   'set-saving': (el) => setSavingTotal(Number(el.dataset.v) || 0),
   whatif: () => { closeSheet(); whatIfSheet(); },
   'wi-adopt': () => adoptWhatIf(),
