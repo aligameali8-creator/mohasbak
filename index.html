@@ -464,9 +464,28 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .pace-alert.lvl-risk svg { color: var(--risk); }
 .pace-alert div { display: grid; gap: 2px; min-width: 0; } .pace-alert b { font-weight: 700; } .pace-alert span { color: var(--ink); opacity: .85; }
 .today-left .neg { color: var(--risk); }
+
+/* وين تروح فلوسك */
+.waste h2 svg { width: 18px; height: 18px; vertical-align: -3px; color: var(--accent); }
+.seg.sm button { min-height: 32px; padding: 2px 10px; font-size: var(--t-xs, .8rem); }
+.w-list { display: grid; gap: 8px; }
+.w-row { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: start; padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.w-row:first-child { border-color: color-mix(in srgb, var(--cc) 55%, var(--line)); }
+.w-rank { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--surface-2); color: var(--muted); margin-top: 4px; }
+.w-row:first-child .w-rank { background: var(--risk); color: #fff; }
+.w-ic { flex: none; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--cc) 18%, transparent); color: var(--cc); }
+.w-ic svg { width: 18px; height: 18px; }
+.w-main { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.w-t { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.w-t .amt { font-family: var(--f-display); font-size: var(--t-md, 1.05rem); color: var(--risk); }
+.w-bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.w-bar i { display: block; height: 100%; background: var(--cc); border-radius: 3px; }
+.w-main small { color: var(--muted); font-size: var(--t-xs, .76rem); overflow-wrap: anywhere; }
+.w-main small b { color: var(--ink); }
+.w-up { color: var(--risk); font-size: var(--t-xs, .76rem); font-weight: 600; } .w-down { color: var(--good); font-size: var(--t-xs, .76rem); font-weight: 600; }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="68a77d5743";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="5708eb212a";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -1045,6 +1064,11 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     }
     if (db.spentToday > 0 && db.todayLeft < 0) { const nextPer = Math.max(0, (db.pool - db.spentToday) / Math.max(1, db.daysLeft - 1)); out.push({ key: `over:${today}`, level: 'warn', title: 'تجاوزت مسموح اليوم', body: db.perDay < 1 ? `صرفت ${mny(db.spentToday)} ر.س وما كان لك مسموح اليوم. كل ريال الآن يُخصم من التزاماتك أو ادخارك.` : nextPer < 1 ? `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. ما بقي لك مسموح للمصاريف حتى الراتب.` : `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. مسموحك من بكرة نزل إلى ${mny(nextPer)} ر.س يومياً (كان ${mny(db.perDay)}).` }); }
     out.unshift(...paceMessages(state, today));
+    try {
+      const w = wasteReport(state, today, 'cycle'), t0 = w.top[0], catName = (id) => ((state.categories || []).find((c) => c.id === id) || { name: 'أخرى' }).name;
+      if (t0 && w.days >= 3 && w.income > 0 && t0.share >= 0.35 && t0.amount >= w.income * 0.05)
+        out.push({ key: `waste:${w.from}:${t0.cat}:${Math.floor(t0.amount / 500)}`, level: 'warn', title: `أكثر شيء يضيع فلوسك: ${catName(t0.cat)}`, body: `${mny(t0.amount)} ر.س خلال ${daysAr(w.days)} (${Math.round(t0.share * 100)}% من مصاريفك اليومية). بهذا المعدل ${mny(t0.projected)} ر.س حتى الراتب.` });
+    } catch (e) { /* */ }
     for (const it of activeItems(state)) {
       if (it.type !== 'subscription' && it.type !== 'scheduled') continue;
       if (!it.rule || (it.rule.freq !== 'yearly' && !(it.rule.freq === 'monthly' && Number(it.rule.interval) >= 6))) continue;
@@ -1099,6 +1123,49 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     const rescueNoSave = r2(Math.max(0, freeLeft / Math.max(1, daysAfterToday)));             // لتكمل للراتب بدون ادخار
     const status = deficit > 0 || atRiskNow ? 'deficit' : runOut && fast ? (shortDays >= 5 ? 'risk' : 'warn') : savingAtRisk ? 'saving' : 'ok';
     return { status, avg, planned, freeLeft, deficit, cash, runOut, shortDays, atRiskNow, atRiskPace, saving: db.saving, savingLeft, savingAtRisk, rescue, rescueNoSave, daysAfterToday, nextSalary: r.end, elapsed };
+  }
+  /* ───────────── وين تروح فلوسك؟ أعلى فئات المصاريف اليومية (بدون الالتزامات) ───────────── */
+  function dailyByCategory(state, from, toIncl) {
+    const by = {}, end = addDays(toIncl, 1);
+    for (const it of activeItems(state)) {
+      if (it.kind !== 'expense' || it.type !== 'daily') continue;
+      for (const o of occurrences(it, from, end)) {
+        if (o.status === 'skipped') continue;
+        const c = it.categoryId || 'c_other', x = by[c] || (by[c] = { cat: c, amount: 0, count: 0, largest: 0, entries: [] });
+        x.amount = r2(x.amount + o.amount); x.count++; x.largest = Math.max(x.largest, o.amount);
+        x.entries.push({ id: it.id, date: o.date, amount: o.amount, name: it.name, note: it.note || '' });
+      }
+    }
+    return by;
+  }
+  function wasteReport(state, today, range) {
+    return memo('waste', state, String(today) + '|' + range, () => {
+      const s = state.settings; today = today || todayIn(s.timezone);
+      const key = cycleOf(today, s), r = cycleRange(key, s), cycleLen = Math.max(1, diffDays(r.start, r.end));
+      const db = dailyBudget(state, today);
+      let from = r.start;
+      if (range === 'all') {
+        let first = null;
+        for (const it of activeItems(state)) if (it.type === 'daily' && it.rule && it.rule.date && (!first || it.rule.date < first)) first = it.rule.date;
+        from = first && first < today ? first : today;
+      }
+      const days = Math.max(1, diffDays(from, today) + 1);
+      const by = dailyByCategory(state, from, today);
+      const total = r2(Object.values(by).reduce((a, x) => a + x.amount, 0));
+      // نفس الفترة من الشهر الماضي (للمقارنة)
+      const pr = cycleRange(keyAdd(key, -1), s), prevBy = range === 'cycle' ? dailyByCategory(state, pr.start, addDays(pr.start, days - 1)) : {};
+      const leftDays = Math.max(0, diffDays(today, r.end) - 1);
+      const cats = Object.values(by).sort((a, b) => b.amount - a.amount).map((x) => {
+        const perDay = x.amount / days;
+        return Object.assign({}, x, { entries: x.entries.sort((a, b) => (a.date < b.date ? 1 : -1)),
+          share: total > 0 ? x.amount / total : 0, perDay: r2(perDay), perMonth: r2(perDay * 30),
+          projected: range === 'cycle' ? r2(x.amount + perDay * leftDays) : null,
+          prev: prevBy[x.cat] ? prevBy[x.cat].amount : 0,
+          ofIncome: db.income > 0 ? (range === 'cycle' ? x.amount : perDay * 30) / db.income : 0 });
+      });
+      return { range, from, to: today, days, total, cats, top: cats.slice(0, 3), income: db.income, leftDays, cycleLen,
+        totalPrev: r2(Object.values(prevBy).reduce((a, x) => a + x.amount, 0)) };
+    });
   }
   function paceMessages(state, today) {
     const p = spendingPace(state, today), out = [];
@@ -1197,7 +1264,7 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     // core
     cycleRange, cycleOf, cycleName, versionAt, setVersion, ruleDates, occurrences, cycleOccurrences,
     buildInstallmentPlan, planStatus, payInstallment, unpayInstallment, earlyPayoff, postponeInstallment,
-    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, spendingPace, paceMessages, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
+    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, spendingPace, paceMessages, wasteReport, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
   };
 });
 
@@ -1220,6 +1287,10 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     { id: 'c_fuel', name: 'بنزين', kind: 'expense', icon: 'fuel', color: 'c5' },
     { id: 'c_grocery', name: 'بقالة', kind: 'expense', icon: 'cart', color: 'c6' },
     { id: 'c_dining', name: 'مطاعم', kind: 'expense', icon: 'cup', color: 'c7' },
+    { id: 'c_coffee', name: 'قهوة وبوفيات', kind: 'expense', icon: 'coffee', color: 'c3' },
+    { id: 'c_delivery', name: 'توصيل طلبات', kind: 'expense', icon: 'bike', color: 'c5' },
+    { id: 'c_shopping', name: 'تسوق وملابس', kind: 'expense', icon: 'bag', color: 'c2' },
+    { id: 'c_games', name: 'ألعاب وترفيه', kind: 'expense', icon: 'game', color: 'c4' },
     { id: 'c_car', name: 'السيارة وصيانتها', kind: 'expense', icon: 'car', color: 'c8' },
     { id: 'c_health', name: 'صيدلية وصحة', kind: 'expense', icon: 'plus', color: 'c3' },
     { id: 'c_insurance', name: 'تأمين ورسوم', kind: 'expense', icon: 'shield', color: 'c4' },
@@ -1408,7 +1479,7 @@ const IC = {
   alert: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>', undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>',
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0114 0M16 4a3.5 3.5 0 010 7M18 14a6 6 0 014 6"/>', history: '<path d="M3 12a9 9 0 103-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
-  arrow: '<path d="M19 12H5M11 18l-6-6 6-6"/>', coins: '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.7-2.7-3-6-3"/>'
+  arrow: '<path d="M19 12H5M11 18l-6-6 6-6"/>', coins: '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.7-2.7-3-6-3"/>', coffee: '<path d="M4 9h13v5a5 5 0 01-5 5H9a5 5 0 01-5-5z"/><path d="M17 11h1.5a2.5 2.5 0 010 5H17M8 3v3M12 3v3"/>', bike: '<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l4-7h5l3 7M10 10L8 6H5M15 10l1-3h3"/>', bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>', game: '<rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3M5.5 12.5h3M15.5 12h.01M18 14h.01"/>'
 };
 const icon = (n, cls) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${cls || 'ic'}">${IC[n] || IC.dots}</svg>`;
 
@@ -1837,6 +1908,46 @@ function todayBox() {
   </div>`;
 }
 /** نافذة سريعة لتغيير مبلغ الادخار للراتب الجاي مع أثره على المسموح اليومي */
+/** وين تروح فلوسك؟ أعلى 3 فئات من المصاريف اليومية (بدون الالتزامات)، تتحدث كل يوم */
+const timesAr = (n) => (n === 1 ? 'مرة واحدة' : n === 2 ? 'مرتين' : n <= 10 ? `${nf(n, 0)} مرات` : `${nf(n, 0)} مرة`);
+function wasteCard() {
+  const range = ui.wasteRange || 'cycle', w = E.wasteReport(state, today(), range);
+  const dw = (n) => (n === 1 ? 'يوم واحد' : n === 2 ? 'يومين' : n <= 10 ? `${nf(n, 0)} أيام` : `${nf(n, 0)} يوماً`);
+  const seg = `<div class="seg sm" role="group" aria-label="الفترة"><button data-act="waste-range" data-r="cycle" aria-pressed="${range === 'cycle'}">هذا الشهر</button><button data-act="waste-range" data-r="all" aria-pressed="${range === 'all'}">منذ بدأت</button></div>`;
+  if (!w.cats.length) return `<section class="card waste"><div class="card-h"><h2>${icon('search')} وين تروح فلوسك؟</h2>${seg}</div><p class="small muted">سجّل مصاريفك اليومية (مطاعم، قهوة، بقالة، ألعاب…) ويطلع لك هنا أكثر 3 أشياء تأخذ فلوسك، ويتحدث كل يوم.</p><button class="btn sm primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></section>`;
+  const t0 = w.top[0], name = (id) => catOf(id).name;
+  const pctIncome = w.income > 0 ? Math.round(((range === 'cycle' ? w.total : (w.total / w.days) * 30) / w.income) * 100) : 0;
+  const head = range === 'cycle'
+    ? `صرفت <b>${nf(Math.round(w.total), 0)} ${curSym()}</b> على المصاريف اليومية خلال ${dw(w.days)} من هذا الشهر${pctIncome ? `، يعني ${nf(pctIncome, 0)}% من راتبك` : ''}.`
+    : `منذ بدأت التسجيل (${dw(w.days)}) صرفت <b>${nf(Math.round(w.total), 0)} ${curSym()}</b> على المصاريف اليومية، بمعدل ${nf(Math.round((w.total / w.days) * 30), 0)} ${curSym()} شهرياً${pctIncome ? ` (${nf(pctIncome, 0)}% من راتبك)` : ''}.`;
+  const rows = w.top.map((x, i) => {
+    const c = catOf(x.cat), up = range === 'cycle' && x.prev > 0 ? Math.round((x.amount / x.prev - 1) * 100) : null;
+    const trend = up === null ? '' : up >= 15 ? `<span class="w-up">↑ ${nf(up, 0)}% عن نفس الفترة الشهر الماضي</span>` : up <= -15 ? `<span class="w-down">↓ ${nf(-up, 0)}% عن الشهر الماضي</span>` : '';
+    return `<button class="w-row" data-act="waste-cat" data-c="${x.cat}" style="--cc:var(--${c.color})">
+      <span class="w-rank">${nf(i + 1, 0)}</span><span class="w-ic">${icon(c.icon)}</span>
+      <span class="w-main"><span class="w-t"><b>${esc(c.name)}</b><b class="amt">${nf(Math.round(x.amount), 0)}</b></span>
+        <span class="w-bar"><i style="width:${Math.max(4, Math.round(x.share * 100))}%"></i></span>
+        <small>${nf(Math.round(x.share * 100), 0)}% من مصاريفك اليومية · ${timesAr(x.count)} · متوسط ${nf(Math.round(x.amount / x.count), 0)} للمرة</small>
+        ${range === 'cycle' && w.leftDays > 0 ? `<small>بهذا المعدل: <b>${nf(Math.round(x.projected), 0)} ${curSym()}</b> حتى الراتب</small>` : range === 'all' ? `<small>بمعدل <b>${nf(Math.round(x.perMonth), 0)} ${curSym()}</b> شهرياً · ${nf(Math.round(x.perMonth * 12), 0)} في السنة</small>` : ''}${trend}</span></button>`;
+  }).join('');
+  // تحذير المسرف: أكثر شيء يضيع الفلوس وكم يوفّر لو نصّفه
+  const save = range === 'cycle' ? Math.round((t0.projected - t0.amount) / 2) : Math.round(t0.perMonth / 2);
+  const alarm = t0.share >= 0.3 && w.income > 0 && (range === 'cycle' ? t0.projected : t0.perMonth) >= w.income * 0.08
+    ? `<div class="pace-alert lvl-warn">${icon('alert')}<div><b>${esc(name(t0.cat))} أكثر شيء يضيع فلوسك: ${nf(Math.round(t0.share * 100), 0)}% من مصاريفك اليومية</b><span>${range === 'cycle' ? `لو نصّفتها من اليوم لين الراتب توفّر حوالي ${nf(save, 0)} ${curSym()}.` : `لو نصّفتها توفّر حوالي ${nf(save, 0)} ${curSym()} شهرياً، يعني ${nf(save * 12, 0)} في السنة.`}</span></div></div>` : '';
+  const rest = w.cats.slice(3), restSum = rest.reduce((a, x) => a + x.amount, 0);
+  return `<section class="card waste"><div class="card-h"><h2>${icon('search')} وين تروح فلوسك؟</h2>${seg}</div>
+    <p class="small">${head}</p>${alarm}
+    <div class="w-list">${rows}</div>
+    ${rest.length ? `<p class="xs muted">${rest.length === 1 ? 'وفئة واحدة أخرى' : rest.length === 2 ? 'وفئتان أخريان' : `و${nf(rest.length, 0)} ${rest.length <= 10 ? 'فئات أخرى' : 'فئة أخرى'}`} بمجموع ${nf(Math.round(restSum), 0)} ${curSym()}: ${rest.slice(0, 4).map((x) => esc(name(x.cat))).join('، ')}${rest.length > 4 ? '…' : ''}</p>` : ''}
+    <p class="xs muted">الأرقام من مصاريفك اليومية فقط (بدون الإيجار والأقساط والفواتير)، وتتحدث مع كل مصروف تسجله.</p></section>`;
+}
+function wasteCatSheet(cat) {
+  const w = E.wasteReport(state, today(), ui.wasteRange || 'cycle'), x = w.cats.find((c) => c.cat === cat); if (!x) return;
+  const c = catOf(cat);
+  openSheet(`${c.name}: ${nf(Math.round(x.amount), 0)} ${curSym()}`, `<p class="small muted">${w.range === 'cycle' ? 'هذا الشهر' : 'منذ بدأت'} · ${timesAr(x.count)} · أكبر مرة ${nf(Math.round(x.largest), 0)} ${curSym()}</p>
+    <div class="list">${x.entries.slice(0, 60).map((e) => `<div class="li"><div class="li-main"><div class="li-t">${esc(e.note || e.name)}</div><div class="li-s">${dlabel(e.date, { wd: true })}</div></div><div class="li-end"><b class="amt neg">−${nf(e.amount)}</b></div></div>`).join('')}</div>
+    ${x.entries.length > 60 ? `<p class="xs muted">وأقدم من ذلك ${nf(x.entries.length - 60, 0)} مرة.</p>` : ''}`, `<button class="btn" data-act="close">إغلاق</button>`);
+}
 function savingQuickSheet() {
   const db = E.dailyBudget(state, today()), freePool = E.r2(db.pool + db.saving), goals = E.r2(db.saving - (Number(state.settings.savingMonthly) || 0));
   const per = (v) => Math.max(0, Math.round((freePool - v) / db.daysLeft));
@@ -1939,6 +2050,7 @@ function viewHome() {
   window.__remindShown = reminderDue();
   return `${topbar(`${hi}${name}`)}${demoBar}${reminderCard()}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
   ${stmtCard(d, { tabs, cta: true })}
+  ${wasteCard()}
   ${dedList(d)}
   ${notice}
   ${monthsAhead(cur, 6)}
@@ -2331,7 +2443,7 @@ function quickSpend(date) {
   const t = today(), y = E.addDays(t, -1);
   openSheet('مصروف يومي', `<form class="form" data-form="spend" novalidate>
     <div class="f"><label for="q_amt">كم صرفت؟</label><input class="in big" id="q_amt" name="amount" inputmode="decimal" autocomplete="off" placeholder="0"></div>
-    <div class="f"><span class="lbl">على ماذا؟</span>${catChips('expense', (state.recent || [])[0] || 'c_grocery')}</div>
+    <div class="f"><span class="lbl">على ماذا؟</span>${catChips('expense', (state.recent || [])[0] || 'c_grocery', true)}</div>
     <div class="f"><label for="q_note">ملاحظة (اختياري)</label><input class="in" id="q_note" name="note" placeholder="مثال: قهوة، غداء العمل"></div>
     <div class="f"><label for="q_date">التاريخ</label><input class="in" type="date" id="q_date" name="date" value="${date || t}" max="${t}">
       <div class="row" style="gap:6px"><button type="button" class="btn sm" data-act="setdate" data-target="q_date" data-val="${t}">اليوم</button><button type="button" class="btn sm" data-act="setdate" data-target="q_date" data-val="${y}">أمس</button></div></div>
@@ -2412,8 +2524,10 @@ function adoptWhatIf() {
 }
 
 /* ───────── نموذج الدخل / المصروف / الاشتراك ───────── */
-function catChips(kind, sel) {
-  const cats = state.categories.filter((c) => c.kind === kind);
+const DAILY_FIRST = ['c_dining', 'c_coffee', 'c_grocery', 'c_fuel', 'c_delivery', 'c_shopping', 'c_games', 'c_personal', 'c_home', 'c_health', 'c_family', 'c_car'];
+function catChips(kind, sel, daily) {
+  let cats = state.categories.filter((c) => c.kind === kind);
+  if (daily) cats = cats.slice().sort((a, b) => { const x = DAILY_FIRST.indexOf(a.id), y = DAILY_FIRST.indexOf(b.id); return (x < 0 ? 99 : x) - (y < 0 ? 99 : y); });
   const recent = (state.recent || []).filter((id) => cats.some((c) => c.id === id));
   const ordered = recent.map((id) => cats.find((c) => c.id === id)).concat(cats.filter((c) => !recent.includes(c.id)));
   return `<div class="chips" role="radiogroup" aria-label="الفئة">${ordered.map((c, i) => `<input type="radio" name="categoryId" id="cat_${c.id}" value="${c.id}" ${(sel ? sel === c.id : i === 0) ? 'checked' : ''}><label for="cat_${c.id}">${recent.includes(c.id) && i < recent.length ? icon('history') : ''}${esc(c.name)}</label>`).join('')}</div>`;
@@ -2902,6 +3016,8 @@ const ACT = {
   'log-confirm': () => { state.settings.logConfirmed = today(); save(); render(); toast('ممتاز! نذكّرك بكرة بنفس الوقت'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   'saving-quick': () => savingQuickSheet(),
+  'waste-range': (el) => { ui.wasteRange = el.dataset.r; render(); },
+  'waste-cat': (el) => wasteCatSheet(el.dataset.c),
   'fix-cycle': (el) => { const d = Math.min(31, Math.max(1, Number(el.dataset.d) || 27)); ui.cycle = null; commit(`الشهر يبدأ الآن يوم ${nf(d, 0)} مع نزول الراتب`, (st) => { st.settings.cycleStartDay = d; }); },
   'set-saving': (el) => setSavingTotal(Number(el.dataset.v) || 0),
   whatif: () => { closeSheet(); whatIfSheet(); },
