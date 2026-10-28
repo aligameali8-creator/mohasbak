@@ -117,6 +117,13 @@ try:
     shot('07-after-restart')
     pg.ev("window.__app.go('options'); true"); time.sleep(1.5); shot('08-options')
     check('الإعدادات: قسم التنبيهات والجوال', 'التنبيهات والجوال' in (pg.ev("document.querySelector('#main').innerText") or ''))
+    # تحديث نسخة الاختبار: يكشف الإصدار الأحدث من الموقع ويعرض زر التنزيل
+    upd = pg.ev("(async () => { const b = window.__BUILD__; window.__BUILD__ = 'old-build'; await window.__nativeCheckUpdate(); const r = window.__app.ui.nativeUpdate; window.__BUILD__ = b; return r || ''; })()")
+    pg.ev("window.__app.go('home'); true"); time.sleep(1)
+    check('يكشف وجود تحديث للتطبيق من الموقع', bool(upd) and not str(upd).startswith('EXC'), upd)
+    check('بطاقة «يوجد تحديث جديد» مع زر التنزيل', pg.ev("!!document.querySelector('a[href$=\"mohasbak.apk\"]')") is True)
+    shot('11-update-banner')
+    pg.ev("(async () => { await window.__nativeCheckUpdate(); window.__app.render(); return 1; })()")
     # الاشتراك Pro عبر Google Play (المحاكي بلا متجر: يجب أن يرد بخطأ مفهوم بدون انهيار)
     bp = pg.ev("Capacitor.Plugins.MohasbakNative.billingProducts().then((r) => 'ok:' + JSON.stringify(r)).catch((e) => 'err:' + (e.code || '') + ' ' + e.message)")
     check('مكتبة Google Play Billing تستجيب (نجاح أو رفض مفهوم)', isinstance(bp, str) and (bp.startswith('ok:') or bp.startswith('err:')), bp)

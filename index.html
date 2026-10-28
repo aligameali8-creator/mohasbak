@@ -487,7 +487,7 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .stmt-edit small svg { width: 12px; height: 12px; vertical-align: -1px; } .stmt-edit small { font-size: var(--t-xs, .75rem); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="4343cddd84";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="1e9a16d4a1";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -2052,7 +2052,8 @@ function viewHome() {
   const saved = cloud.status === 'synced' ? `<p class="xs muted" style="display:flex;gap:6px;align-items:center">${icon('cloud')} محفوظ في حسابك</p>` : '';
   const demoBar = isDemo() ? `<div class="notice lvl-warn demo-bar">${icon('alert')}<div><strong>هذه بيانات تجريبية للتعرّف على التطبيق</strong><p class="small">لما تجهز، اضغط الزر وابدأ ببياناتك أنت: راتبك ويوم نزوله ثم التزاماتك. البيانات التجريبية تُمسح.</p><div class="row" style="margin-top:8px"><button class="btn primary" data-act="leave-demo">${icon('check')} ابدأ ببياناتي الشخصية</button></div></div></div>` : '';
   window.__remindShown = reminderDue();
-  return `${topbar(`${hi}${name}`)}${demoBar}${reminderCard()}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
+  const nativeUpd = ui.nativeUpdate && window.__APK_URL ? `<div class="notice lvl-good">${icon('download')}<div><strong>يوجد تحديث جديد للتطبيق</strong><p class="small">نزّل النسخة الجديدة وثبّتها فوق الحالية. بياناتك تبقى كما هي.</p><div class="row" style="margin-top:6px"><a class="btn sm primary" href="${window.__APK_URL}">${icon('download')} نزّل التحديث</a></div><p class="xs muted">بعد التنزيل افتح الملف واضغط «تثبيت» أو «تحديث». إذا رجعت الرسالة بعد التثبيت، انتظر دقائق: النسخة الجديدة لسا تُجهَّز.</p></div></div>` : '';
+  return `${topbar(`${hi}${name}`)}${nativeUpd}${demoBar}${reminderCard()}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
   ${stmtCard(d, { tabs, cta: true })}
   ${wasteCard()}
   ${dedList(d)}
@@ -2337,7 +2338,7 @@ function viewOptions() {
     ${!storageOK ? '<p class="err">تعذر الحفظ على هذا الجهاز (التخزين معطّل أو نافذة خاصة). صدّر نسخة احتياطية قبل الإغلاق.</p>' : ''}
   </section></div>
   <section class="card"><h2>الإصدار والتحديث</h2><p class="small">إصدارك: <b dir="ltr">${esc(window.__BUILD__ || (isNativeApp() ? 'تطبيق أندرويد' : 'نسخة Claude'))}</b></p>
-    ${window.__MOHASBAK_PWA__ && !isNativeApp() ? `<p class="xs muted">التطبيق يتحدث تلقائياً كل ما تفتحه. إذا تبي تتأكد الحين:</p><button class="btn" data-act="check-update">${icon('download')} تحقق من التحديث الآن</button>` : isNativeApp() ? '<p class="xs muted">تطبيق أندرويد يتحدث من Google Play بعد النشر. نسخة الاختبار: نزّل ملف التطبيق الجديد وثبّته فوق القديم، وتبقى بياناتك.</p>' : ''}
+    ${window.__MOHASBAK_PWA__ && !isNativeApp() ? `<p class="xs muted">التطبيق يتحدث تلقائياً كل ما تفتحه. إذا تبي تتأكد الحين:</p><button class="btn" data-act="check-update">${icon('download')} تحقق من التحديث الآن</button>` : isNativeApp() ? `<p class="xs muted">${ui.nativeUpdate ? 'يوجد إصدار أحدث.' : 'يفحص التطبيق التحديثات كل ما تفتحه.'} بعد النشر في Google Play يتحدث تلقائياً من المتجر.</p><div class="row"><button class="btn" data-act="check-update">${icon('download')} تحقق من التحديث الآن</button>${ui.nativeUpdate && window.__APK_URL ? `<a class="btn primary" href="${window.__APK_URL}">${icon('download')} نزّل التحديث</a>` : ''}</div>` : ''}
   </section>
   <p class="xs muted">${esc(state.settings.timezone)} · ${itemsWord(state.items.length)}</p>`;
 }
@@ -3026,7 +3027,7 @@ const ACT = {
   'log-confirm': () => { state.settings.logConfirmed = today(); save(); render(); toast('ممتاز! نذكّرك بكرة بنفس الوقت'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   'saving-quick': () => savingQuickSheet(),
-  'check-update': () => { toast('جاري التحقق…'); checkUpdate(true); },
+  'check-update': async () => { toast('جاري التحقق…'); if (isNativeApp() && window.__nativeCheckUpdate) { await window.__nativeCheckUpdate(); toast(ui.nativeUpdate ? 'يوجد تحديث جديد. اضغط «نزّل التحديث»' : 'عندك آخر إصدار'); return; } checkUpdate(true); },
   'waste-range': (el) => { ui.wasteRange = el.dataset.r; render(); },
   'waste-cat': (el) => wasteCatSheet(el.dataset.c),
   'fix-cycle': (el) => { const d = Math.min(31, Math.max(1, Number(el.dataset.d) || 27)); ui.cycle = null; commit(`الشهر يبدأ الآن يوم ${nf(d, 0)} مع نزول الراتب`, (st) => { st.settings.cycleStartDay = d; }); },
@@ -3560,7 +3561,7 @@ if (Native.on) {
       if (!isActive) { hiddenAt = Date.now(); if (state) save(true); return; }
       if (needBio() && hiddenAt && Date.now() - hiddenAt > (Number(state.settings.lockMinutes) || 5) * 60000) { ui.bioLocked = true; render(); bioUnlock(); return; }
       if (state) { render(); window.__nativeSync(); }
-      consumeAction();
+      consumeAction(); checkNativeUpdate();
     });
   }
 
@@ -3583,6 +3584,19 @@ if (Native.on) {
 
   // تشغيل أول مرة
   if (needBio()) { ui.bioLocked = true; render(); bioUnlock(); }
+  /* ── تحديث تطبيق أندرويد (نسخة الاختبار قبل Google Play): نقارن رقم الإصدار بالموقع ونعرض زر التنزيل ── */
+  async function checkNativeUpdate() {
+    if (!window.__BUILD__) return;
+    try {
+      const r = await fetch('https://aligameali8-creator.github.io/mohasbak/version.json?t=' + Date.now(), { cache: 'no-store' });
+      const v = r.ok ? (await r.json()).v : null;
+      const nu = v && v !== window.__BUILD__ ? v : null;
+      if (nu !== (ui.nativeUpdate || null)) { ui.nativeUpdate = nu; if (state) render(); }
+    } catch (e) { /* بدون اتصال */ }
+  }
+  window.__nativeCheckUpdate = checkNativeUpdate;
+  window.__APK_URL = 'https://github.com/aligameali8-creator/mohasbak/releases/download/android-latest/mohasbak.apk';
+  setTimeout(checkNativeUpdate, 2500);
   setTimeout(() => { if (state) window.__nativeSync(); consumeAction(); }, 800);
 }
 
