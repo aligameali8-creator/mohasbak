@@ -74,7 +74,7 @@ try:
     n = pg.ev("Capacitor.Plugins.LocalNotifications.getPending().then(r => r.notifications.length)")
     check('الإشعارات مجدولة في نظام أندرويد', isinstance(n, int) and n >= 10, n)
     titles = pg.ev("Capacitor.Plugins.LocalNotifications.getPending().then(r => r.notifications.map(x => x.title).slice(0, 6).join(' | '))")
-    check('عناوين الإشعارات صحيحة', titles and ('بكرة يُخصم' in titles or 'سجّلت' in titles), titles)
+    check('عناوين الإشعارات صحيحة', titles and ('بكرة يُخصم' in titles or 'هل سجلت' in titles), titles)
     prefs = sh(f'adb shell run-as {PKG} cat shared_prefs/mohasbak_widget.xml')
     check('بيانات الودجت محفوظة للنظام', 'مسموح' in prefs and 'يتبقى من الراتب' in prefs, prefs[:300])
     aw = sh('adb shell dumpsys appwidget')

@@ -457,9 +457,16 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .today-warn.soft { background: var(--warn-soft, var(--surface)); }
 .today-warn svg { width: 16px; height: 16px; flex: none; margin-top: 4px; color: var(--risk); }
 .linkish { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+.pace-alert { display: flex; gap: 8px; align-items: flex-start; padding: 9px 11px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); font-size: var(--t-sm, .9rem); line-height: 1.6; }
+.pace-alert.lvl-risk { background: var(--risk-soft); }
+.pace-alert svg { width: 17px; height: 17px; flex: none; margin-top: 3px; color: var(--warn); }
+.pace-alert.lvl-risk svg { color: var(--risk); }
+.pace-alert div { display: grid; gap: 2px; min-width: 0; } .pace-alert b { font-weight: 700; } .pace-alert span { color: var(--ink); opacity: .85; }
+.today-left .neg { color: var(--risk); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="899608676e";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="68a77d5743";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -1036,7 +1043,8 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
       if (pct >= 90) out.push({ key: `spent:${db.key}:90`, level: 'risk', title: `صرفت ${pct}% من راتبك`, body: `وباقي ${db.daysLeft} يوماً على الراتب القادم. المتبقي ${Math.round(db.remainingNow)} ر.س.` });
       else if (pct >= 70) out.push({ key: `spent:${db.key}:70`, level: 'warn', title: `صرفت ${pct}% من راتبك`, body: `وباقي ${db.daysLeft} يوماً على الراتب القادم. المتبقي ${Math.round(db.remainingNow)} ر.س.` });
     }
-    if (db.spentToday > 0 && db.todayLeft < 0) out.push({ key: `over:${today}`, level: 'warn', title: 'تجاوزت مسموح اليوم', body: `صرفت ${Math.round(db.spentToday)} من ${Math.round(db.perDay)} ر.س. سيقل مسموح الأيام القادمة قليلاً.` });
+    if (db.spentToday > 0 && db.todayLeft < 0) { const nextPer = Math.max(0, (db.pool - db.spentToday) / Math.max(1, db.daysLeft - 1)); out.push({ key: `over:${today}`, level: 'warn', title: 'تجاوزت مسموح اليوم', body: db.perDay < 1 ? `صرفت ${mny(db.spentToday)} ر.س وما كان لك مسموح اليوم. كل ريال الآن يُخصم من التزاماتك أو ادخارك.` : nextPer < 1 ? `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. ما بقي لك مسموح للمصاريف حتى الراتب.` : `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. مسموحك من بكرة نزل إلى ${mny(nextPer)} ر.س يومياً (كان ${mny(db.perDay)}).` }); }
+    out.unshift(...paceMessages(state, today));
     for (const it of activeItems(state)) {
       if (it.type !== 'subscription' && it.type !== 'scheduled') continue;
       if (!it.rule || (it.rule.freq !== 'yearly' && !(it.rule.freq === 'monthly' && Number(it.rule.interval) >= 6))) continue;
@@ -1053,6 +1061,55 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
    * من راتب الدورة الحالية: نطرح كل الالتزامات المخطط لها (ثابتة ومتغيرة وأقساط واشتراكات) والادخار المستهدف
    * والمصروف اليومي قبل اليوم، ثم نقسم الباقي على الأيام المتبقية حتى الراتب القادم (شاملة اليوم). */
   function dailyBudget(state, today) { return memo('db', state, String(today), () => dailyBudgetRaw(state, today)); }
+  const mny = (x) => Math.round(x).toLocaleString('en-US');
+  const dLabel = (d) => { const p = parse(d); return `${p.d} ${MONTHS_AR[p.m - 1]}`; };
+  const daysAr = (n) => (n === 1 ? 'يوم واحد' : n === 2 ? 'يومين' : n <= 10 ? `${n} أيام` : `${n} يوماً`);
+
+  /* ───────────── وتيرة الصرف: هل يكفي الراتب حتى الراتب القادم؟ ─────────────
+   * يقارن معدل صرفك اليومي الفعلي بالمخطط، ويتوقع يوم نفاد فلوس المصاريف، ويكشف الالتزامات القادمة التي لن تُغطّى. */
+  function spendingPace(state, today) { return memo('pace', state, String(today), () => spendingPaceRaw(state, today)); }
+  function spendingPaceRaw(state, today) {
+    const s = state.settings; today = today || todayIn(s.timezone);
+    const db = dailyBudget(state, today);
+    if (db.income <= 0) return { status: 'none' };
+    const r = cycleRange(db.key, s), cycleLen = Math.max(1, diffDays(r.start, r.end));
+    const fixed = cycleOccurrences(state, db.key).filter((o) => o.status !== 'skipped' && o.kind === 'expense' && o.item.type !== 'daily').sort((a, b) => (a.date < b.date ? -1 : 1));
+    const elapsed = Math.max(1, diffDays(r.start, today) + 1);
+    const avg = r2(db.dailyTotal / elapsed);
+    const planned = r2(Math.max(0, (db.income - db.commitments - db.saving) / cycleLen));
+    const freeLeft = r2(db.income - db.commitments - db.dailyTotal);          // لمصاريف باقي الشهر (قبل الادخار)
+    const deficit = freeLeft < 0 ? r2(-freeLeft) : 0;
+    const cash = r2(db.income - sum(fixed.filter((o) => o.date <= today), (o) => o.amount) - db.dailyTotal); // معك الآن تقريباً
+    const upcoming = fixed.filter((o) => o.date > today);
+    const daysAfterToday = Math.max(0, diffDays(today, r.end) - 1);
+    // التزام لن يُغطّى حتى لو توقفت عن الصرف
+    let need = 0, atRiskNow = null;
+    for (const o of upcoming) { need = r2(need + o.amount); if (cash < need) { atRiskNow = { name: o.item.name, date: o.date, amount: o.amount, gap: r2(need - cash) }; break; } }
+    // التزام لن يُغطّى إذا استمر نفس المعدل
+    let atRiskPace = null; need = 0;
+    if (!atRiskNow && avg > 0) for (const o of upcoming) { need = r2(need + o.amount); const left = cash - avg * Math.max(0, diffDays(today, o.date) - 1); if (left < need) { atRiskPace = { name: o.item.name, date: o.date, amount: o.amount }; break; } }
+    // يوم النفاد بنفس المعدل
+    let runOut = null, shortDays = 0;
+    if (freeLeft <= 0) { runOut = addDays(today, 1); shortDays = daysAfterToday; }
+    else if (avg > 0) { const lasts = Math.floor(freeLeft / avg); if (lasts < daysAfterToday) { runOut = addDays(today, lasts + 1); shortDays = daysAfterToday - lasts; } }
+    const fast = avg > planned * 1.15 && (elapsed >= 3 || db.dailyTotal > planned * 3);
+    const savingLeft = r2(Math.max(0, Math.min(db.saving, freeLeft - avg * daysAfterToday)));
+    const savingAtRisk = db.saving > 0 && fast && savingLeft < db.saving;
+    const rescue = r2(Math.max(0, (freeLeft - db.saving) / Math.max(1, daysAfterToday)));      // لتكمل للراتب مع الادخار
+    const rescueNoSave = r2(Math.max(0, freeLeft / Math.max(1, daysAfterToday)));             // لتكمل للراتب بدون ادخار
+    const status = deficit > 0 || atRiskNow ? 'deficit' : runOut && fast ? (shortDays >= 5 ? 'risk' : 'warn') : savingAtRisk ? 'saving' : 'ok';
+    return { status, avg, planned, freeLeft, deficit, cash, runOut, shortDays, atRiskNow, atRiskPace, saving: db.saving, savingLeft, savingAtRisk, rescue, rescueNoSave, daysAfterToday, nextSalary: r.end, elapsed };
+  }
+  function paceMessages(state, today) {
+    const p = spendingPace(state, today), out = [];
+    if (!p || p.status === 'none') return out;
+    if (p.deficit > 0) out.push({ key: `deficit:${p.nextSalary}:${Math.ceil(p.deficit / 500)}`, level: 'risk', title: `عجز ${mny(p.deficit)} ر.س هذا الشهر`, body: `مصاريفك مع الالتزامات الباقية أكثر من راتبك حتى الراتب القادم (${dLabel(p.nextSalary)}). أي مصروف إضافي يزيد العجز ويصير ديناً أو سحباً من مدخراتك.` });
+    if (p.atRiskNow) out.push({ key: `cover:${p.atRiskNow.name}:${p.atRiskNow.date}`, level: 'risk', title: `فلوسك ما تكفي ${p.atRiskNow.name}`, body: `يستحق ${dLabel(p.atRiskNow.date)} بمبلغ ${mny(p.atRiskNow.amount)} ر.س، وينقصك ${mny(p.atRiskNow.gap)} ر.س حتى لو ما صرفت شيئاً بعد اليوم.` });
+    if (!p.deficit && p.runOut && (p.status === 'risk' || p.status === 'warn')) out.push({ key: `pace:${p.nextSalary}:${p.runOut}`, level: p.status === 'risk' ? 'risk' : 'warn', title: `بهذا المعدل تخلص فلوسك يوم ${dLabel(p.runOut)}`, body: `تصرف ${mny(p.avg)} ر.س يومياً بدل ${mny(p.planned)}، فتبقى ${daysAr(p.shortDays)} بلا مصروف قبل الراتب. لتكمل للراتب: لا تتجاوز ${mny(p.rescueNoSave)} ر.س يومياً.` });
+    if (!p.atRiskNow && p.atRiskPace && p.status !== 'ok') out.push({ key: `covpace:${p.atRiskPace.name}:${p.atRiskPace.date}`, level: 'warn', title: `انتبه: ${p.atRiskPace.name} يوم ${dLabel(p.atRiskPace.date)}`, body: `إذا استمر صرفك بنفس المعدل ما يبقى ما يكفي ${mny(p.atRiskPace.amount)} ر.س لهذا الالتزام.` });
+    if (p.status === 'saving') out.push({ key: `savrisk:${p.nextSalary}`, level: 'warn', title: 'ادخار هذا الشهر في خطر', body: `خطتك تدخر ${mny(p.saving)} ر.س، وبهذا المعدل ${p.savingLeft > 0 ? `يبقى منها ${mny(p.savingLeft)} فقط` : 'ما يبقى منها شيء'}. لتحافظ عليها: ${mny(p.rescue)} ر.س يومياً.` });
+    return out;
+  }
   function dailyBudgetRaw(state, today) {
     const s = state.settings; today = today || todayIn(s.timezone);
     const key = cycleOf(today, s), r = cycleRange(key, s);
@@ -1140,7 +1197,7 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     // core
     cycleRange, cycleOf, cycleName, versionAt, setVersion, ruleDates, occurrences, cycleOccurrences,
     buildInstallmentPlan, planStatus, payInstallment, unpayInstallment, earlyPayoff, postponeInstallment,
-    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
+    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, spendingPace, paceMessages, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
   };
 });
 
@@ -1736,7 +1793,16 @@ function todayBox() {
   const freePool = E.r2(db.pool + db.saving);                 // ما يتبقى للصرف حتى الراتب بدون ادخار (قبل مصروف اليوم)
   const freeLeft = Math.max(0, Math.round(freePool - db.spentToday)); // يتبقى الآن بعد الالتزامات ومصروف اليوم
   const noSavePerDay = Math.max(0, freePool / db.daysLeft);
-  if (freePool <= 0) return `<div class="today-box over"><div class="today-row"><div><span class="small">مسموح تصرف اليوم</span><strong class="amt">0</strong></div><button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div><p class="xs">الالتزامات تستهلك ما تبقى من الراتب حتى الراتب القادم. أي مصروف إضافي يقلل ما يتبقى آخر الشهر.</p></div>`;
+  const paceMsgs = E.paceMessages(state, today()).slice(0, 2);
+  const paceHtml = paceMsgs.map((m) => `<div class="pace-alert lvl-${m.level}">${icon('alert')}<div><b>${esc(m.title)}</b><span>${esc(m.body)}</span></div></div>`).join('');
+  if (freePool <= 0) {
+    const overspent = db.dailyTotal > 0;
+    const def = Math.round(-(freePool - db.spentToday));
+    return `<div class="today-box over"><div class="today-row"><div><span class="small">مسموح تصرف اليوم</span><strong class="amt">0</strong></div><button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div>
+    ${paceHtml}
+    <p class="today-left">${def > 0 ? `<b class="neg">عجز ${nf(def, 0)} ${curSym()}</b> حتى الراتب (${dw(db.daysLeft)})` : 'لا يبقى شيء للمصاريف حتى الراتب'}</p>
+    <p class="xs">${overspent ? 'مصاريفك اليومية هذا الشهر تجاوزت المتاح بعد الالتزامات. أي مصروف إضافي يزيد العجز.' : 'الالتزامات وحدها تستهلك الراتب حتى الراتب القادم. أي مصروف إضافي يصير عجزاً.'}</p></div>`;
+  }
   const hasSave = db.saving > 0;
   // موعد الراتب القادم الفعلي (قد يختلف عن بداية الدورة إذا الإعداد غير مضبوط)
   const nextSal = E.cycleOccurrences(state, E.keyAdd(db.key, 1)).filter((o) => o.kind === 'income' && o.item.isPrimary).map((o) => o.date).sort()[0] || db.endExclusive;
@@ -1762,12 +1828,12 @@ function todayBox() {
   return `<div class="today-box ${over ? 'over' : ''}">
     <div class="today-row"><div><span class="small">${over ? 'تجاوزت مسموح اليوم بـ' : 'مسموح تصرف اليوم'}</span><strong class="amt">${nf(Math.abs(Math.round(db.todayLeft)), 0)} <span class="cur">${curSym()}</span></strong></div>
     <button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div>
-    ${horizon}${warnCfg}
+    ${paceHtml}${horizon}${warnCfg}
     <div class="today-bar"><i style="width:${pct}%"></i></div>
     ${ifSpent}
-    <p class="today-left">يتبقى لك من الراتب بعد الالتزامات: <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب</p>
+    <p class="today-left">${freePool - db.spentToday < 0 ? `<b class="neg">عجز ${nf(Math.round(db.spentToday - freePool), 0)} ${curSym()}</b> بعد الالتزامات حتى الراتب` : `يتبقى لك من الراتب بعد الالتزامات: <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب`}</p>
     ${cmp}
-    <span class="xs">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)}. المبلغ اليومي يُعاد حسابه كل يوم: الباقي ÷ الأيام المتبقية، فإذا صرفت أقل اليوم يزيد مسموح بكرة.</span>
+    <span class="xs">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)}.${paceMsgs.length ? '' : ' المبلغ اليومي يُعاد حسابه كل يوم: الباقي ÷ الأيام المتبقية، فإذا صرفت أقل اليوم يزيد مسموح بكرة.'}</span>
   </div>`;
 }
 /** نافذة سريعة لتغيير مبلغ الادخار للراتب الجاي مع أثره على المسموح اليومي */
@@ -1870,7 +1936,8 @@ function viewHome() {
   const storageWarn = (!fileMode && !storageOK) ? `<div class="notice lvl-risk">${icon('alert')}<div><strong>تعذر حفظ بياناتك على هذا الجهاز</strong><p class="small">قد تكون مساحة الجوال ممتلئة أو أنك في نافذة خاصة. احفظ نسخة من بياناتك الآن حتى لا تضيع آخر تعديلاتك، ثم وفّر مساحة وأعد فتح التطبيق.</p><div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : fileMode ? `<div class="notice lvl-warn">${icon('alert')}<div><strong>أنت تفتح ملفاً منزّلاً، وبياناتك لن تنتقل</strong><p class="small">كل ملف تنزّله (مثل «محاسبك المالي (5)») يبدأ وحده ولا يرى ما أدخلته في الملف السابق، وقد تضيع البيانات عند إغلاق المتصفح. افتح التطبيق من رابطه على الإنترنت وثبّته على جوالك، فتُحفظ بياناتك على جهازك بشكل دائم.</p><div class="row" style="margin-top:6px"><button class="btn sm" data-act="export-json">${icon('download')} حفظ نسخة من بياناتي</button></div></div></div>` : '';
   const saved = cloud.status === 'synced' ? `<p class="xs muted" style="display:flex;gap:6px;align-items:center">${icon('cloud')} محفوظ في حسابك</p>` : '';
   const demoBar = isDemo() ? `<div class="notice lvl-warn demo-bar">${icon('alert')}<div><strong>هذه بيانات تجريبية للتعرّف على التطبيق</strong><p class="small">لما تجهز، اضغط الزر وابدأ ببياناتك أنت: راتبك ويوم نزوله ثم التزاماتك. البيانات التجريبية تُمسح.</p><div class="row" style="margin-top:8px"><button class="btn primary" data-act="leave-demo">${icon('check')} ابدأ ببياناتي الشخصية</button></div></div></div>` : '';
-  return `${topbar(`${hi}${name}`)}${demoBar}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
+  window.__remindShown = reminderDue();
+  return `${topbar(`${hi}${name}`)}${demoBar}${reminderCard()}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
   ${stmtCard(d, { tabs, cta: true })}
   ${dedList(d)}
   ${notice}
@@ -2120,10 +2187,13 @@ function viewOptions() {
   </section>
   </form>
   <div class="grid g2">
+  <section class="card form"><h2>تذكير تسجيل المصروفات</h2>
+    <label class="check"><input type="checkbox" data-act="daily-reminder" ${s.dailyReminder !== false ? 'checked' : ''}> ذكّرني قبل نهاية اليوم: «هل سجلت مصروفاتك كلها لهذا اليوم؟»</label>
+    <div class="f"><label for="o_rt">وقت التذكير</label><select id="o_rt" data-change="remind-time" ${s.dailyReminder === false ? 'disabled' : ''}>${REMIND_TIMES.concat(REMIND_TIMES.includes(remindTime()) ? [] : [remindTime()]).map((t) => `<option value="${t}" ${remindTime() === t ? 'selected' : ''}>${timeLabel(t)}</option>`).join('')}</select></div>
+    <p class="xs muted">${window.__native && window.__native.on ? 'يصلك إشعار على الجوال في هذا الوقت حتى لو التطبيق مغلق. إذا ضغطت «نعم، سجلت كل شيء» لا نذكّرك مرة ثانية في نفس اليوم.' : 'يظهر التذكير في الشاشة الرئيسية بعد هذا الوقت، ويصلك إشعار إذا كان التطبيق مفتوحاً. لإشعار يصلك والتطبيق مغلق استخدم تطبيق أندرويد.'}</p>
+  </section>
   ${window.__native && window.__native.on ? `<section class="card form"><h2>التنبيهات والجوال</h2>
-    <label class="check"><input type="checkbox" data-act="native-notify" ${s.nativeNotify !== false ? 'checked' : ''}> إشعار مساء اليوم السابق لكل خصم، ويوم الراتب، وقبل الشهر الضاغط</label>
-    <label class="check"><input type="checkbox" data-act="daily-reminder" ${s.dailyReminder !== false ? 'checked' : ''}> تذكير يومي بتسجيل المصاريف</label>
-    <div class="f"><label for="o_rh">وقت التذكير اليومي</label><select id="o_rh" data-change="remind-hour">${[18, 19, 20, 21, 22, 23].map((h) => `<option value="${h}" ${Number(s.remindHour ?? 21) === h ? 'selected' : ''}>${h - 12}:00 مساءً</option>`).join('')}</select></div>
+    <label class="check"><input type="checkbox" data-act="native-notify" ${s.nativeNotify !== false ? 'checked' : ''}> إشعار مساء اليوم السابق لكل خصم، ويوم الراتب، وقبل الشهر الضاغط، وتحذير إذا صرفك أسرع من راتبك</label>
     <button class="btn" data-act="test-notif">${icon('bell')} أرسل إشعاراً تجريبياً</button>
     <hr class="sep"><label class="check"><input type="checkbox" data-act="bio-lock" ${s.bioLock ? 'checked' : ''} ${state.security.pinEnabled ? 'disabled' : ''}> قفل التطبيق بالبصمة أو رمز الجوال</label>
     ${state.security.pinEnabled ? '<p class="xs muted">لديك رمز قفل وتشفير مفعّل؛ ألغه أولاً لاستخدام البصمة بدلاً منه.</p>' : ''}
@@ -2823,7 +2893,13 @@ const ACT = {
   'bio-unlock': () => window.__bioUnlock && window.__bioUnlock(),
   'test-notif': () => window.__nativeTestNotif && window.__nativeTestNotif(),
   'native-notify': (el) => { state.settings.nativeNotify = el.checked; save(); toast(el.checked ? 'التنبيهات مفعلة' : 'أُوقفت التنبيهات'); if (!el.checked && window.__native.P.LocalNotifications) window.__native.P.LocalNotifications.getPending().then((p) => p.notifications.length && window.__native.P.LocalNotifications.cancel({ notifications: p.notifications.map((n) => ({ id: n.id })) })); },
-  'daily-reminder': (el) => { state.settings.dailyReminder = el.checked; save(); toast(el.checked ? 'التذكير اليومي مفعل' : 'أُوقف التذكير اليومي'); },
+  'daily-reminder': async (el) => {
+    state.settings.dailyReminder = el.checked; save();
+    if (el.checked && !isNativeApp() && 'Notification' in window && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch (e) { /* */ } }
+    scheduleWebReminder(); render();
+    toast(el.checked ? `سيذكّرك التطبيق الساعة ${timeLabel(remindTime())}` : 'أُوقف تذكير تسجيل المصروفات');
+  },
+  'log-confirm': () => { state.settings.logConfirmed = today(); save(); render(); toast('ممتاز! نذكّرك بكرة بنفس الوقت'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   'saving-quick': () => savingQuickSheet(),
   'fix-cycle': (el) => { const d = Math.min(31, Math.max(1, Number(el.dataset.d) || 27)); ui.cycle = null; commit(`الشهر يبدأ الآن يوم ${nf(d, 0)} مع نزول الراتب`, (st) => { st.settings.cycleStartDay = d; }); },
@@ -2883,6 +2959,40 @@ const ACT = {
   'back-lock': () => render(),
   'wipe-locked': async () => { await cloudDelete(); try { localStorage.removeItem(LS_KEY); } catch (e) { /* */ } envCache = null; ui.locked = false; ui.lockEnv = null; state = null; render(); }
 };
+/* ───────── تذكير «هل سجلت مصروفاتك كلها لهذا اليوم؟» ───────── */
+const REMIND_TIMES = ['18:00', '19:00', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00', '23:30'];
+function remindTime() { const s = state.settings; if (/^\d{1,2}:\d{2}$/.test(s.remindTime || '')) return s.remindTime; return `${Number(s.remindHour ?? 21)}:30`.replace(/^(\d{2}):30$/, '$1:30'); }
+function timeLabel(t) { const [h, m] = t.split(':').map(Number); return `${h > 12 ? h - 12 : h}:${String(m).padStart(2, '0')} ${h >= 12 ? 'مساءً' : 'صباحاً'}`; }
+function nowHM() { try { return new Intl.DateTimeFormat('en-GB', { timeZone: state.settings.timezone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date()); } catch (e) { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; } }
+/** هل يظهر تذكير التسجيل الآن؟ بعد الوقت المختار، ولم يؤكد المستخدم أنه سجّل كل شيء اليوم */
+function reminderDue() {
+  if (!state || !state.settings.onboarded || state.settings.dailyReminder === false || ui.todayOverride) return false;
+  const [h, m] = remindTime().split(':').map(Number), [nh, nm] = nowHM().split(':').map(Number);
+  return nh * 60 + nm >= h * 60 + m && state.settings.logConfirmed !== today();
+}
+function reminderCard() {
+  if (!reminderDue()) return '';
+  const db = E.dailyBudget(state, today());
+  const did = db.todayCount ? `سجّلت اليوم ${itemsWordSpend(db.todayCount)} بمجموع ${nf(db.spentToday)} ${curSym()}. باقي شيء ما سجلته؟` : 'ما سجّلت أي مصروف اليوم. قهوة؟ بنزين؟ بقالة؟';
+  return `<div class="notice remind-card">${icon('bell')}<div><strong>هل سجلت مصروفاتك كلها لهذا اليوم؟</strong><p class="small">${did}</p>
+    <div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button><button class="btn sm" data-act="log-confirm">${icon('check')} نعم، سجلت كل شيء</button></div></div></div>`;
+}
+const itemsWordSpend = (n) => (n === 1 ? 'مصروفاً واحداً' : n === 2 ? 'مصروفين' : n <= 10 ? `${nf(n, 0)} مصروفات` : `${nf(n, 0)} مصروفاً`);
+/* إشعار المتصفح أثناء فتح التطبيق (نسخة الويب): عند حلول الوقت */
+let remindTimer = null;
+function scheduleWebReminder() {
+  clearTimeout(remindTimer);
+  if (!state || state.settings.dailyReminder === false || isNativeApp() || !('Notification' in window) || Notification.permission !== 'granted') return;
+  const [h, m] = remindTime().split(':').map(Number), [nh, nm] = nowHM().split(':').map(Number);
+  const mins = h * 60 + m - (nh * 60 + nm);
+  if (mins <= 0 || state.settings.logConfirmed === today()) return;
+  remindTimer = setTimeout(async () => {
+    if (!reminderDue()) return;
+    try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); const opt = { body: 'سجّل مصاريف اليوم قبل ما ينتهي، يأخذ ثانيتين.', icon: 'icon-192.png', tag: 'mohasbak-remind' };
+      if (reg) reg.showNotification('هل سجلت مصروفاتك كلها لهذا اليوم؟', opt); else new Notification('هل سجلت مصروفاتك كلها لهذا اليوم؟', opt); } catch (e) { /* */ }
+    render();
+  }, mins * 60000);
+}
 /** يضبط مجموع الادخار من الراتب (العام + الأهداف): نغيّر الجزء العام فقط */
 function setSavingTotal(total) {
   const goals = E.r2(E.dailyBudget(state, today()).saving - (Number(state.settings.savingMonthly) || 0));
@@ -2936,7 +3046,7 @@ document.addEventListener('change', (e) => {
   const ch = t.dataset && t.dataset.change; if (!ch) return;
   if (ch === 'cyc') { ui.cycle = t.value; render(); }
   if (ch === 'rcyc') { ui.reportCycle = t.value; render(); }
-  if (ch === 'remind-hour') { state.settings.remindHour = Number(t.value); save(); toast('حُفظ وقت التذكير'); }
+  if (ch === 'remind-time') { state.settings.remindTime = t.value; state.settings.remindHour = Number(t.value.split(':')[0]); save(); scheduleWebReminder(); render(); toast(`التذكير الساعة ${timeLabel(t.value)}`); }
   if (ch === 'lockmin') { state.settings.lockMinutes = Number(t.value); save(); toast('حُفظ'); }
   if (ch === 'import-json' && t.files[0]) importJSON(t.files[0]);
   if (ch === 'import-csv' && t.files[0]) importCSV(t.files[0]);
@@ -2975,7 +3085,8 @@ async function checkUpdate() {
 function checkDayChange() {
   if (!state || !state.settings.onboarded || ui.locked) return;
   const d = today();
-  if (window.__shownDay && d !== window.__shownDay && !$('.sheet')) render();
+  if (window.__shownDay && d !== window.__shownDay && !$('.sheet')) { render(); scheduleWebReminder(); return; }
+  const due = reminderDue(); if (due !== !!window.__remindShown && !$('.sheet')) render();
 }
 setInterval(checkDayChange, 30000);
 window.addEventListener('focus', checkDayChange);
@@ -3018,6 +3129,7 @@ function boot() {
   else if (env && env.data) { try { state = normalize(JSON.parse(env.data)); state.modifiedAt = state.modifiedAt || env.savedAt; markClean(); } catch (e) { state = null; toast('تعذرت قراءة البيانات المحفوظة'); } }
   render();
   cloudInit();
+  scheduleWebReminder();
   if ('serviceWorker' in navigator && window.__MOHASBAK_PWA__ && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
     setTimeout(checkUpdate, 3000); setInterval(checkUpdate, 30 * 60000);
@@ -3234,7 +3346,7 @@ if (Native.on) {
   }
   function buildNotifications() {
     const s = state.settings, t = today(), now = new Date(), list = [];
-    const remindH = Number(s.remindHour ?? 21);
+    const [remindH, remindM] = remindTime().split(':').map(Number);
     const push = (at, title, body, extra) => { if (at > now) list.push(Object.assign({ id: list.length + 1, title, body, schedule: { at, allowWhileIdle: true }, smallIcon: 'ic_stat_mohasbak', iconColor: '#3B43A6' }, extra || {})); };
     // 1) الخصميات القادمة: مساء اليوم السابق
     for (const o of E.upcoming(state, t, 31)) {
@@ -3247,9 +3359,15 @@ if (Native.on) {
       const db = E.dailyBudget(state, t);
       for (let i = 0; i < 14; i++) {
         const d = E.addDays(t, i);
-        push(atLocal(d, remindH, 0), 'سجّلت مصاريف اليوم؟', i === 0 && db.income > 0 ? `مسموح اليوم ${shortMoney(Math.max(0, db.todayLeft))}. التسجيل يأخذ ثانيتين.` : 'التسجيل يأخذ ثانيتين ويبقي «مسموح اليوم» دقيقاً.');
+        if (i === 0 && s.logConfirmed === t) continue; // أكّد أنه سجّل كل شيء اليوم
+        push(atLocal(d, remindH, remindM), 'هل سجلت مصروفاتك كلها لهذا اليوم؟', i === 0 && db.income > 0 ? `مسموح اليوم ${shortMoney(Math.max(0, db.todayLeft))}. التسجيل يأخذ ثانيتين.` : 'التسجيل يأخذ ثانيتين ويبقي «مسموح اليوم» دقيقاً.');
       }
     }
+    // 2ب) صرفك أسرع من راتبك / عجز / التزام لن يُغطّى: إشعار ظهراً أو مساءً اليوم
+    try {
+      const pm = E.paceMessages(state, t).filter((m) => m.level === 'risk')[0];
+      if (pm) { const noon = atLocal(t, 13, 0), eve = atLocal(t, 19, 30); push(now < noon ? noon : eve, pm.title, pm.body); }
+    } catch (e) { /* */ }
     // 3) الراتب القادم ضاغط: قبل بدايته بثلاثة أيام
     try {
       const fc = E.forecast(state, { today: t, months: 4 });
