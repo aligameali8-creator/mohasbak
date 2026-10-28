@@ -483,9 +483,11 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .w-main small { color: var(--muted); font-size: var(--t-xs, .76rem); overflow-wrap: anywhere; }
 .w-main small b { color: var(--ink); }
 .w-up { color: var(--risk); font-size: var(--t-xs, .76rem); font-weight: 600; } .w-down { color: var(--good); font-size: var(--t-xs, .76rem); font-weight: 600; }
+.stmt-edit { width: 100%; background: none; border: 0; border-bottom: 1px dashed var(--line); font: inherit; color: inherit; cursor: pointer; text-align: start; padding-inline: 0; }
+.stmt-edit small svg { width: 12px; height: 12px; vertical-align: -1px; } .stmt-edit small { font-size: var(--t-xs, .75rem); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="5708eb212a";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="10b9b8d0eb";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -1846,7 +1848,9 @@ function stmtCard(d, opts) {
     ${d.isCur ? todayBox() : ''}
     <div class="stmt-bar" role="img" aria-label="انخصم ${Math.round(pct(d.deducted))}% وباقي ${Math.round(pct(d.pending))}%"><i class="done" style="width:${pct(d.deducted)}%"></i><i class="next" style="width:${pct(d.pending)}%"></i></div>
     <div class="stmt-rows">
-      <div class="stmt-row"><span>${d.inc.length > 1 ? 'الراتب والدخل' : 'الراتب'}</span><b class="pos amt">+${nf(d.income)}</b></div>
+      ${(() => { const prim = state.items.find((i) => i.kind === 'income' && i.isPrimary && !i.deletedAt) || state.items.find((i) => i.kind === 'income' && !i.deletedAt);
+        return prim ? `<button type="button" class="stmt-row stmt-edit" data-act="detail" data-id="${prim.id}" aria-label="تعديل الراتب"><span>${d.inc.length > 1 ? 'الراتب والدخل' : 'الراتب'} <small class="muted">${icon('edit')} تعديل</small></span><b class="pos amt">+${nf(d.income)}</b></button>`
+          : `<div class="stmt-row"><span>الراتب</span><b class="pos amt">+${nf(d.income)}</b></div>`; })()}
       ${d.isCur || d.isPast ? `<div class="stmt-row"><span><i class="dot done"></i>انخصم ${d.isCur ? 'حتى اليوم' : ''} <small>(${itemsWord(d.done.length + d.daily.length)})</small></span><b class="neg amt">−${nf(d.deducted)}</b></div>` : ''}
       <div class="stmt-row"><span><i class="dot next"></i>${futureWord} ${d.next.length ? `<small>(${itemsWord(d.next.length)})</small>` : ''}</span>${d.next.length ? `<b class="neg amt soft">−${nf(d.pending)}</b>` : '<b class="muted" style="font-size:var(--t-md)">لا شيء</b>'}</div>
     </div>
@@ -2561,7 +2565,10 @@ function itemForm(preset, item) {
     <div class="f" data-for="months"><span class="lbl">الأشهر</span><div class="chips months-grid">${E.MONTHS_AR.map((m, i) => `<input type="checkbox" id="mo_${i + 1}" name="months" value="${i + 1}" ${(r.months || []).includes(i + 1) ? 'checked' : ''}><label for="mo_${i + 1}">${m}</label>`).join('')}</div></div>
     ${kind === 'income' ? `<label class="check"><input type="checkbox" name="shiftWeekend" ${item ? (item.shiftWeekend ? 'checked' : '') : preset.type === 'salary' ? 'checked' : ''}> إذا صادف جمعة أو سبت يُصرف الخميس قبله</label><label class="check"><input type="checkbox" name="isPrimary" ${item ? (item.isPrimary ? 'checked' : '') : preset.type === 'salary' ? 'checked' : ''}> هذا راتبي الأساسي (يُحتسب للدورة الجديدة حتى لو نزل مبكراً بأيام)</label><label class="check"><input type="checkbox" name="estimate" ${item && item.estimate ? 'checked' : ''}> مبلغ متغير — أُدخل الفعلي عند الاستلام</label>` : ''}
     <div class="f2"><div class="f"><label for="i_acc">الحساب</label><select id="i_acc" name="accountId">${state.accounts.map((a) => `<option value="${a.id}" ${(item ? item.accountId : (state.accounts.find((x) => x.isDefault) || {}).id) === a.id ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div>
-    ${isEdit && item.rule && E.occurrences(item, '1900-01-01', today()).length ? `<div class="f"><label for="i_eff">يسري التعديل من</label><input class="in" type="date" id="i_eff" name="effective" value="${today()}"><span class="hint">الأشهر السابقة تبقى كما هي في التقارير</span></div>` : ''}</div>
+    ${isEdit && item.rule && E.occurrences(item, '1900-01-01', today()).length ? `${(() => { const ck = E.cycleOf(today(), state.settings), cs = E.cycleRange(ck, state.settings).start, ns = E.cycleRange(E.keyAdd(ck, 1), state.settings).start;
+      return `<div class="f"><label for="i_eff">يسري التعديل من</label><input class="in" type="date" id="i_eff" name="effective" value="${cs}">
+      <div class="row" style="gap:6px"><button type="button" class="btn sm" data-act="setdate" data-target="i_eff" data-val="${cs}">من هذا الشهر (${dlabel(cs)})</button><button type="button" class="btn sm" data-act="setdate" data-target="i_eff" data-val="${ns}">من الشهر الجاي (${dlabel(ns)})</button></div>
+      <span class="hint">الأشهر قبل هذا التاريخ تبقى كما هي في التقارير.</span></div>`; })()}` : ''}</div>
     ${!isEdit ? `<label class="check" data-for="once"><input type="checkbox" name="paidNow" ${type === 'emergency' ? 'checked' : ''}> ${kind === 'income' ? 'تم الاستلام' : 'تم الدفع'} (يُسجَّل فعلياً)</label>` : ''}
     <div class="f"><label for="i_note">ملاحظة</label><textarea id="i_note" name="note" placeholder="اختياري">${esc(item ? item.note : '')}</textarea></div>
   </form>`;
