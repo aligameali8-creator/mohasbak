@@ -485,9 +485,25 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .w-up { color: var(--risk); font-size: var(--t-xs, .76rem); font-weight: 600; } .w-down { color: var(--good); font-size: var(--t-xs, .76rem); font-weight: 600; }
 .stmt-edit { width: 100%; background: none; border: 0; border-bottom: 1px dashed var(--line); font: inherit; color: inherit; cursor: pointer; text-align: start; padding-inline: 0; }
 .stmt-edit small svg { width: 12px; height: 12px; vertical-align: -1px; } .stmt-edit small { font-size: var(--t-xs, .75rem); }
+
+/* حقل التاريخ بعرض عربي واضح */
+.date-wrap { position: relative; display: block; }
+.date-wrap > input[type="date"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 1; margin: 0; }
+.date-show { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; cursor: pointer; }
+.date-show svg { width: 18px; height: 18px; color: var(--muted); flex: none; }
+.date-show.ph .ds-t { color: var(--muted); }
+.date-wrap:focus-within .date-show { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.today-more { font-size: var(--t-sm, .9rem); }
+.today-more summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: var(--t-xs, .8rem); list-style: none; padding: 4px 0; }
+.today-more summary::-webkit-details-marker { display: none; }
+.today-more summary::before { content: '▾ '; } .today-more[open] summary::before { content: '▴ '; }
+.today-more > *:not(summary) { margin-top: 6px; }
+.chips-more { display: contents; } .chips-more[hidden] { display: none !important; }
+.chips-more-btn svg { width: 14px; height: 14px; } .q-amts { margin-top: 8px; flex-wrap: wrap; } .q-amts .btn { min-width: 56px; font-variant-numeric: tabular-nums; }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="1e9a16d4a1";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="1ff7dd41fc";</script><script>
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -1900,15 +1916,22 @@ function todayBox() {
     ? `<div class="today-cmp"><button type="button" class="tc on" data-act="saving-quick"><small>مع ادخار ${nf(db.saving)} للراتب الجاي ${icon('edit')}</small><b>${nf(Math.round(db.perDay), 0)}</b><small>يومياً · يتبقى ${nf(db.saving)}</small></button>
        <div class="tc"><small>بدون ادخار</small><b>${nf(Math.round(noSavePerDay), 0)}</b><small>يومياً · يتبقى 0</small></div></div>`
     : `<div class="today-save"><span class="xs">تبي تدخر للراتب الجاي؟ اختر المبلغ:</span><div class="row" style="gap:6px">${[250, 500, 1000].filter((v) => v < freePool).map((v) => `<button type="button" class="btn sm" data-act="set-saving" data-v="${v}">${nf(v, 0)} <small class="muted">← ${nf(perDayIf(v), 0)} يومياً</small></button>`).join('')}<button type="button" class="btn sm ghost" data-act="saving-quick">مبلغ آخر</button></div></div>`;
+  const leftLine = freePool - db.spentToday < 0
+    ? `<b class="neg">عجز ${nf(Math.round(db.spentToday - freePool), 0)} ${curSym()}</b> بعد الالتزامات حتى الراتب`
+    : `يتبقى لك <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب (${dlabel(mismatch ? db.endExclusive : nextSal, { wd: true })})`;
+  const urgentIf = db.daysLeft <= 3 || bigBecauseNear;
   return `<div class="today-box ${over ? 'over' : ''}">
     <div class="today-row"><div><span class="small">${over ? 'تجاوزت مسموح اليوم بـ' : 'مسموح تصرف اليوم'}</span><strong class="amt">${nf(Math.abs(Math.round(db.todayLeft)), 0)} <span class="cur">${curSym()}</span></strong></div>
     <button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div>
-    ${paceHtml}${horizon}${warnCfg}
+    ${paceHtml}${warnCfg}
     <div class="today-bar"><i style="width:${pct}%"></i></div>
-    ${ifSpent}
-    <p class="today-left">${freePool - db.spentToday < 0 ? `<b class="neg">عجز ${nf(Math.round(db.spentToday - freePool), 0)} ${curSym()}</b> بعد الالتزامات حتى الراتب` : `يتبقى لك من الراتب بعد الالتزامات: <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب`}</p>
+    <p class="today-left"><span class="muted">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)} ·</span> ${leftLine}</p>
+    ${urgentIf ? ifSpent : ''}
     ${cmp}
-    <span class="xs">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)}.${paceMsgs.length ? '' : ' المبلغ اليومي يُعاد حسابه كل يوم: الباقي ÷ الأيام المتبقية، فإذا صرفت أقل اليوم يزيد مسموح بكرة.'}</span>
+    <details class="today-more"><summary>كيف انحسب المبلغ؟</summary>
+      ${horizon}${urgentIf ? '' : ifSpent}
+      <p class="xs">المسموح اليومي = ما يتبقى بعد الالتزامات${db.saving ? ' والادخار' : ''} ÷ الأيام الباقية حتى الراتب. يُعاد حسابه كل يوم: إذا صرفت أقل اليوم يزيد مسموح بكرة، وإذا صرفت أكثر ينقص.</p>
+    </details>
   </div>`;
 }
 /** نافذة سريعة لتغيير مبلغ الادخار للراتب الجاي مع أثره على المسموح اليومي */
@@ -2417,6 +2440,22 @@ function openSheet(title, body, foot, o) {
     if (first) requestAnimationFrame(() => { const sh = $('.sheet'); if (sh && !sh.contains(document.activeElement)) first.focus({ preventScroll: true }); });
   }
 }
+/* ───────── حقل التاريخ: نعرض التاريخ بالعربي بأنفسنا ─────────
+ * بعض جوالات أندرويد تخلط ترتيب أرقام التاريخ في الصفحات العربية (مثل «292026/10/»).
+ * نُبقي حقل التاريخ الأصلي شفافاً فوق النص لفتح تقويم الجوال، ونكتب التاريخ بوضوح: «الخميس 29 أكتوبر 2026». */
+function dateShowText(v) { if (!/^\d{4}-\d{2}-\d{2}$/.test(v || '')) return 'اختر التاريخ'; const p = E.parse(v); return `${WD[E.weekday(v)]} ${p.d} ${E.MONTHS_AR[p.m - 1]} ${p.y}`; }
+function enhanceDate(inp) {
+  if (inp.dataset.enh || !inp.parentNode) return;
+  inp.dataset.enh = '1';
+  const w = document.createElement('span'); w.className = 'date-wrap';
+  inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+  const sh = document.createElement('span'); sh.className = 'in date-show'; sh.setAttribute('aria-hidden', 'true');
+  sh.innerHTML = `<span class="ds-t"></span>${icon('calendar')}`; w.insertBefore(sh, inp);
+  const upd = () => { sh.firstChild.textContent = dateShowText(inp.value); sh.classList.toggle('ph', !inp.value); };
+  upd(); inp.addEventListener('input', upd); inp.addEventListener('change', upd);
+  inp.setAttribute('aria-label', inp.getAttribute('aria-label') || ((inp.id && $(`label[for="${inp.id}"]`)) ? $(`label[for="${inp.id}"]`).textContent : 'التاريخ'));
+}
+try { new MutationObserver(() => document.querySelectorAll('input[type="date"]:not([data-enh])').forEach(enhanceDate)).observe(document.documentElement, { childList: true, subtree: true }); } catch (e) { /* */ }
 function closeSheet() { unlockScroll(); const r = $('#sheet-root'); if (r) r.innerHTML = ''; ui.sheet = null; if (FINE_POINTER && ui.sheetReturnFocus && ui.sheetReturnFocus.focus && document.contains(ui.sheetReturnFocus)) try { ui.sheetReturnFocus.focus({ preventScroll: true }); } catch (e) { /* */ } }
 function refreshSheet() { if (ui.sheet && ui.sheet.refresh && $('.sheet-body')) { const html = ui.sheet.refresh(); if (html == null) closeSheet(); else $('.sheet-body').innerHTML = html; } }
 function confirmSheet(title, msg, okText, onOk, extra) {
@@ -2450,8 +2489,8 @@ function addChooser(date) {
 function quickSpend(date) {
   const t = today(), y = E.addDays(t, -1);
   openSheet('مصروف يومي', `<form class="form" data-form="spend" novalidate>
-    <div class="f"><label for="q_amt">كم صرفت؟</label><input class="in big" id="q_amt" name="amount" inputmode="decimal" autocomplete="off" placeholder="0"></div>
-    <div class="f"><span class="lbl">على ماذا؟</span>${catChips('expense', (state.recent || [])[0] || 'c_grocery', true)}</div>
+    <div class="f"><label for="q_amt">كم صرفت؟</label><input class="in big" id="q_amt" name="amount" inputmode="decimal" autocomplete="off" placeholder="0">${(() => { const fa = frequentAmounts(); return fa.length ? `<div class="row q-amts" style="gap:6px">${fa.map((v) => `<button type="button" class="btn sm" data-act="q-amt" data-v="${v}">${nf(v)}</button>`).join('')}</div>` : ''; })()}</div>
+    <div class="f"><span class="lbl">على ماذا؟</span>${catChips('expense', dailyRecent()[0] || 'c_dining', true)}</div>
     <div class="f"><label for="q_note">ملاحظة (اختياري)</label><input class="in" id="q_note" name="note" placeholder="مثال: قهوة، غداء العمل"></div>
     <div class="f"><label for="q_date">التاريخ</label><input class="in" type="date" id="q_date" name="date" value="${date || t}" max="${t}">
       <div class="row" style="gap:6px"><button type="button" class="btn sm" data-act="setdate" data-target="q_date" data-val="${t}">اليوم</button><button type="button" class="btn sm" data-act="setdate" data-target="q_date" data-val="${y}">أمس</button></div></div>
@@ -2532,13 +2571,31 @@ function adoptWhatIf() {
 }
 
 /* ───────── نموذج الدخل / المصروف / الاشتراك ───────── */
+/** أكثر المبالغ التي تكررها في المصاريف اليومية (من آخر 80 مصروفاً) لتسجيلها بلمسة */
+function frequentAmounts() {
+  const cnt = {};
+  state.items.filter((i) => i.type === 'daily' && !i.deletedAt).slice(-80).forEach((i) => { const a = Number(i.amount) || Number((Object.values(i.ledger || {})[0] || {}).amount) || 0; if (a > 0) cnt[a] = (cnt[a] || 0) + 1; });
+  return Object.entries(cnt).filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 5).map(([a]) => Number(a)).sort((a, b) => a - b);
+}
+/** آخر الفئات المستخدمة في المصاريف اليومية فقط (لا تختلط بفئات الالتزامات مثل الأقساط) */
+function dailyRecent() {
+  const out = [];
+  state.items.filter((i) => i.type === 'daily' && !i.deletedAt).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).some((i) => { if (!out.includes(i.categoryId)) out.push(i.categoryId); return out.length >= 3; });
+  return out;
+}
 const DAILY_FIRST = ['c_dining', 'c_coffee', 'c_grocery', 'c_fuel', 'c_delivery', 'c_shopping', 'c_games', 'c_personal', 'c_home', 'c_health', 'c_family', 'c_car'];
 function catChips(kind, sel, daily) {
   let cats = state.categories.filter((c) => c.kind === kind);
   if (daily) cats = cats.slice().sort((a, b) => { const x = DAILY_FIRST.indexOf(a.id), y = DAILY_FIRST.indexOf(b.id); return (x < 0 ? 99 : x) - (y < 0 ? 99 : y); });
-  const recent = (state.recent || []).filter((id) => cats.some((c) => c.id === id));
+  const recent = (daily ? dailyRecent() : (state.recent || [])).filter((id) => cats.some((c) => c.id === id));
   const ordered = recent.map((id) => cats.find((c) => c.id === id)).concat(cats.filter((c) => !recent.includes(c.id)));
-  return `<div class="chips" role="radiogroup" aria-label="الفئة">${ordered.map((c, i) => `<input type="radio" name="categoryId" id="cat_${c.id}" value="${c.id}" ${(sel ? sel === c.id : i === 0) ? 'checked' : ''}><label for="cat_${c.id}">${recent.includes(c.id) && i < recent.length ? icon('history') : ''}${esc(c.name)}</label>`).join('')}</div>`;
+  const chip = (c, i) => `<input type="radio" name="categoryId" id="cat_${c.id}" value="${c.id}" ${(sel ? sel === c.id : i === 0) ? 'checked' : ''}><label for="cat_${c.id}">${recent.includes(c.id) && i < recent.length ? icon('history') : ''}${esc(c.name)}</label>`;
+  if (!daily) return `<div class="chips" role="radiogroup" aria-label="الفئة">${ordered.map(chip).join('')}</div>`;
+  // المصروف اليومي: أهم 8 فئات ظاهرة، والباقي خلف «فئات أكثر» (والمختارة تبقى ظاهرة دائماً)
+  const MAIN = 8, selIdx = ordered.findIndex((c) => c.id === sel);
+  const main = ordered.slice(0, MAIN), extra = ordered.slice(MAIN);
+  if (selIdx >= MAIN) { main.push(ordered[selIdx]); extra.splice(selIdx - MAIN, 1); }
+  return `<div class="chips" role="radiogroup" aria-label="الفئة">${main.map(chip).join('')}<span class="chips-more" hidden>${extra.map((c, k) => chip(c, MAIN + k + 1)).join('')}</span>${extra.length ? `<button type="button" class="btn sm ghost chips-more-btn" data-act="more-cats">${icon('plus')} فئات أكثر</button>` : ''}</div>`;
 }
 function itemForm(preset, item) {
   const isEdit = !!item; const kind = item ? item.kind : (preset.kind === 'income' ? 'income' : 'expense');
@@ -3027,6 +3084,8 @@ const ACT = {
   'log-confirm': () => { state.settings.logConfirmed = today(); save(); render(); toast('ممتاز! نذكّرك بكرة بنفس الوقت'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   'saving-quick': () => savingQuickSheet(),
+  'more-cats': (el) => { const m = el.parentNode.querySelector('.chips-more'); if (m) m.hidden = false; el.remove(); },
+  'q-amt': (el) => { const a = $('#q_amt'); if (a) { a.value = el.dataset.v; a.dispatchEvent(new Event('input', { bubbles: true })); } },
   'check-update': async () => { toast('جاري التحقق…'); if (isNativeApp() && window.__nativeCheckUpdate) { await window.__nativeCheckUpdate(); toast(ui.nativeUpdate ? 'يوجد تحديث جديد. اضغط «نزّل التحديث»' : 'عندك آخر إصدار'); return; } checkUpdate(true); },
   'waste-range': (el) => { ui.wasteRange = el.dataset.r; render(); },
   'waste-cat': (el) => wasteCatSheet(el.dataset.c),
