@@ -501,9 +501,74 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .today-more > *:not(summary) { margin-top: 6px; }
 .chips-more { display: contents; } .chips-more[hidden] { display: none !important; }
 .chips-more-btn svg { width: 14px; height: 14px; } .q-amts { margin-top: 8px; flex-wrap: wrap; } .q-amts .btn { min-width: 56px; font-variant-numeric: tabular-nums; }
+.brand-mark.logo { background: none; padding: 0; overflow: hidden; } .brand-mark.logo svg { width: 100%; height: 100%; display: block; }
+
+/* ───── البطاقة الرئيسية (Hero) ───── */
+:root { --hero-a: #3A42B0; --hero-b: #1B2063; --hero-ink: #FFFFFF; --hero-soft: rgb(255 255 255 / 12%); --hero-good: #6FE0A8; --hero-warn: #FFC861; --hero-risk: #FF9488; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hero-a: #2B3190; --hero-b: #141844; } }
+:root[data-theme="dark"] { --hero-a: #2B3190; --hero-b: #141844; }
+.today-box { background: none !important; padding: 0 !important; gap: 10px; }
+.hero { position: relative; overflow: hidden; display: grid; gap: 14px; padding: 18px 16px 16px; border-radius: 22px; color: var(--hero-ink); background: radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / 10%) 0, transparent 55%), linear-gradient(155deg, var(--hero-a), var(--hero-b)); box-shadow: 0 10px 28px rgb(27 32 99 / 28%); }
+.hero::after { content: ''; position: absolute; inset-inline-start: -60px; bottom: -70px; width: 200px; height: 200px; border-radius: 50%; border: 26px solid rgb(255 255 255 / 5%); pointer-events: none; }
+.hero.is-over { --hero-a: #B83A33; --hero-b: #6B1D1A; box-shadow: 0 10px 28px rgb(107 29 26 / 30%); }
+.hero-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.hero-main { display: grid; gap: 2px; min-width: 0; }
+.hero-lbl { font-size: var(--t-sm); opacity: .85; }
+.hx-num { font-family: var(--f-display); font-size: clamp(2.2rem, 11vw, 2.9rem); font-weight: 700; line-height: 1.1; letter-spacing: -.01em; color: var(--hero-ink) !important; }
+.hx-num .cur { font-size: .42em; font-weight: 500; opacity: .8; color: var(--hero-ink); }
+.hero-sub { font-size: var(--t-sm); opacity: .8; }
+.hero-ring { position: relative; width: 84px; height: 84px; flex: none; }
+.hero-ring svg { width: 100%; height: 100%; }
+.hero-ring span { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1; }
+.hero-ring b { font-family: var(--f-display); font-size: 1.05rem; } .hero-ring small { font-size: .68rem; opacity: .8; }
+.hero-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ht { display: grid; gap: 1px; align-content: start; padding: 9px 10px; border-radius: 14px; background: var(--hero-soft); color: var(--hero-ink); text-align: start; border: 0; font: inherit; min-width: 0; }
+.ht small { font-size: .7rem; opacity: .82; overflow-wrap: anywhere; } .ht small svg { width: 12px; height: 12px; vertical-align: -2px; }
+.ht b { font-family: var(--f-display); font-size: var(--t-md); font-weight: 600; color: var(--hero-ink) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ht-btn { cursor: pointer; } .ht-btn:active { background: rgb(255 255 255 / 20%); }
+.hero-actions { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; }
+.hero-actions .btn { min-height: 46px; border-radius: 14px; font-weight: 700; justify-content: center; }
+.hero-spend { background: #fff !important; color: var(--hero-b) !important; border: 0 !important; }
+.hero-ghost { background: var(--hero-soft) !important; color: var(--hero-ink) !important; border: 1px solid rgb(255 255 255 / 18%) !important; }
+.hero-actions .btn svg { width: 18px; height: 18px; }
+@media (max-width: 360px) { .hero-tiles { grid-template-columns: 1fr 1fr; } .hero-tiles .ht:last-child { grid-column: span 2; } .hero-actions { grid-template-columns: 1fr 1fr; } .hero-spend { grid-column: span 2; } }
+.hero-actions .btn { white-space: nowrap; font-size: .9rem; padding-inline: 8px; gap: 5px; }
+.ht-btn::after { content: '✎'; position: absolute; inset-inline-end: 8px; top: 6px; font-size: .7rem; opacity: .7; } .ht-btn { position: relative; }
+
+/* حدود الصرف */
+.bud-list { display: grid; gap: 8px; }
+.bud-row { display: grid; grid-template-columns: auto minmax(0, 1fr) 96px; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 12px; }
+.bud-row .in { text-align: center; min-height: 42px; padding: 6px; }
+.bud-t { display: grid; min-width: 0; } .bud-t small { color: var(--muted); font-size: var(--t-xs); }
+.bud-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .02em; padding: 1px 7px; border-radius: 999px; vertical-align: 2px; }
+.bud-badge.near { background: var(--warn-soft); color: var(--warn); } .bud-badge.over { background: var(--risk-soft); color: var(--risk); }
+.bud-of { font-size: .72em; color: var(--muted); font-weight: 500; }
+.w-bar.bud i { background: var(--good); } .w-bar.bud.near i, .w-bar.bud.pace i { background: var(--warn); } .w-bar.bud.over i { background: var(--risk); }
+.bud-mini { display: grid; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); }
+.bm { display: grid; gap: 4px; } .bm-t { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; } .bm-t small { margin-inline-start: auto; color: var(--muted); font-size: var(--t-xs); }
+
+/* إخفاء المبالغ */
+.hide-amts .amt, .hide-amts .hx-num, .hide-amts .ht b, .hide-amts .stmt-row b, .hide-amts .mrow-n, .hide-amts .left-box, .hide-amts .w-t .amt, .hide-amts .donut span, .hide-amts .today-left b, .hide-amts .tc b { filter: blur(8px); user-select: none; }
+/* آخر العمليات */
+.rc-list { display: grid; }
+.rc-day { display: flex; justify-content: space-between; padding: 10px 2px 4px; font-size: var(--t-sm); font-weight: 700; color: var(--muted); }
+.rc-row { display: flex; gap: 10px; align-items: center; width: 100%; padding: 8px 2px; background: none; border: 0; border-bottom: 1px solid var(--line); font: inherit; color: var(--ink); text-align: start; cursor: pointer; }
+.rc-t { display: grid; flex: 1; min-width: 0; } .rc-t b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .rc-t small { color: var(--muted); font-size: var(--t-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent h2 svg { width: 18px; height: 18px; vertical-align: -3px; color: var(--accent); }
+/* الدائرة */
+.donut-wrap { display: flex; gap: 14px; align-items: center; }
+.donut { position: relative; width: 120px; height: 120px; flex: none; } .donut svg { width: 100%; height: 100%; }
+.donut span { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1; } .donut b { font-family: var(--f-display); font-size: 1.15rem; } .donut small { font-size: .7rem; color: var(--muted); }
+.donut-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-size: var(--t-sm); min-width: 0; }
+.donut-legend li { display: flex; gap: 6px; align-items: center; } .donut-legend i { width: 10px; height: 10px; border-radius: 3px; flex: none; } .donut-legend b { margin-inline-start: auto; font-variant-numeric: tabular-nums; padding-inline-start: 8px; }
+.comm-sum { display: grid; gap: 2px; } .comm-sum > b { font-family: var(--f-display); font-size: var(--t-2xl); font-weight: 700; line-height: 1.2; } .comm-sum .cur { font-size: .45em; color: var(--muted); }
+.li-end { white-space: nowrap; } .li-end .cur, .li-end small { white-space: nowrap; }
+.li-main { min-width: 0; } .li-t, .li-s { overflow-wrap: anywhere; }
+.notif > div { min-width: 0; overflow-wrap: anywhere; }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="1ff7dd41fc";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="6b8d97b8c9";</script><script>
+const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><defs><linearGradient id=\"lg-bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A42B0\"/><stop offset=\"1\" stop-color=\"#171B57\"/></linearGradient></defs><rect width=\"512\" height=\"512\" rx=\"114\" fill=\"url(#lg-bg)\"/><path d=\"M266.6 83.3A173.0 173.0 0 0 1 333.2 101.2L312.7 142.3A127.0 127.0 0 0 0 263.8 129.2Z\" fill=\"#5FD39B\"/><path d=\"M351.5 111.7A173.0 173.0 0 0 1 400.3 160.5L361.9 185.9A127.0 127.0 0 0 0 326.1 150.1Z\" fill=\"#5FD39B\"/><path d=\"M410.8 178.8A173.0 173.0 0 0 1 428.7 245.4L382.8 248.2A127.0 127.0 0 0 0 369.7 199.3Z\" fill=\"#5FD39B\"/><path d=\"M428.7 266.6A173.0 173.0 0 0 1 410.8 333.2L369.7 312.7A127.0 127.0 0 0 0 382.8 263.8Z\" fill=\"#F5B94A\"/><path d=\"M400.3 351.5A173.0 173.0 0 0 1 351.5 400.3L326.1 361.9A127.0 127.0 0 0 0 361.9 326.1Z\" fill=\"#5FD39B\"/><path d=\"M333.2 410.8A173.0 173.0 0 0 1 266.6 428.7L263.8 382.8A127.0 127.0 0 0 0 312.7 369.7Z\" fill=\"#5FD39B\"/><path d=\"M245.4 428.7A173.0 173.0 0 0 1 178.8 410.8L199.3 369.7A127.0 127.0 0 0 0 248.2 382.8Z\" fill=\"#F2837A\"/><path d=\"M160.5 400.3A173.0 173.0 0 0 1 111.7 351.5L150.1 326.1A127.0 127.0 0 0 0 185.9 361.9Z\" fill=\"#5FD39B\"/><path d=\"M101.2 333.2A173.0 173.0 0 0 1 83.3 266.6L129.2 263.8A127.0 127.0 0 0 0 142.3 312.7Z\" fill=\"#5FD39B\"/><path d=\"M83.3 245.4A173.0 173.0 0 0 1 101.2 178.8L142.3 199.3A127.0 127.0 0 0 0 129.2 248.2Z\" fill=\"#F5B94A\"/><path d=\"M111.7 160.5A173.0 173.0 0 0 1 160.5 111.7L185.9 150.1A127.0 127.0 0 0 0 150.1 185.9Z\" fill=\"#5FD39B\"/><path d=\"M178.8 101.2A173.0 173.0 0 0 1 245.4 83.3L248.2 129.2A127.0 127.0 0 0 0 199.3 142.3Z\" fill=\"#5FD39B\"/><circle cx=\"256\" cy=\"256\" r=\"88\" fill=\"#F5C766\"/><circle cx=\"256\" cy=\"256\" r=\"64\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".7\" stroke-width=\"10\"/><path d=\"M226 270l30-32 30 32\" fill=\"none\" stroke=\"#fff\" stroke-width=\"20\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
  * كل التواريخ نصوص YYYY-MM-DD وتُحسب بتوقيت UTC لتجنب انزياح المناطق الزمنية.
@@ -1083,6 +1148,14 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     if (db.spentToday > 0 && db.todayLeft < 0) { const nextPer = Math.max(0, (db.pool - db.spentToday) / Math.max(1, db.daysLeft - 1)); out.push({ key: `over:${today}`, level: 'warn', title: 'تجاوزت مسموح اليوم', body: db.perDay < 1 ? `صرفت ${mny(db.spentToday)} ر.س وما كان لك مسموح اليوم. كل ريال الآن يُخصم من التزاماتك أو ادخارك.` : nextPer < 1 ? `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. ما بقي لك مسموح للمصاريف حتى الراتب.` : `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. مسموحك من بكرة نزل إلى ${mny(nextPer)} ر.س يومياً (كان ${mny(db.perDay)}).` }); }
     out.unshift(...paceMessages(state, today));
     try {
+      const catName = (id) => ((state.categories || []).find((c) => c.id === id) || { name: 'أخرى' }).name, ck = cycleOf(today, state.settings);
+      for (const b of budgetsReport(state, today)) {
+        if (b.status === 'over') out.push({ key: `bud:${ck}:${b.cat}:100`, level: 'risk', title: `تجاوزت حدك في ${catName(b.cat)}`, body: `صرفت ${mny(b.spent)} من حد ${mny(b.limit)} ر.س هذا الشهر (زيادة ${mny(-b.left)}).` });
+        else if (b.status === 'near') out.push({ key: `bud:${ck}:${b.cat}:80`, level: 'warn', title: `قربت من حدك في ${catName(b.cat)}`, body: `صرفت ${mny(b.spent)} من ${mny(b.limit)} ر.س (${Math.round(b.pct * 100)}%). باقي لك ${mny(b.left)}.` });
+        else if (b.status === 'pace') out.push({ key: `budpace:${ck}:${b.cat}`, level: 'warn', title: `بهذا المعدل بتتجاوز حدك في ${catName(b.cat)}`, body: `المتوقع ${mny(b.projected)} من حد ${mny(b.limit)} ر.س حتى الراتب.` });
+      }
+    } catch (e) { /* */ }
+    try {
       const w = wasteReport(state, today, 'cycle'), t0 = w.top[0], catName = (id) => ((state.categories || []).find((c) => c.id === id) || { name: 'أخرى' }).name;
       if (t0 && w.days >= 3 && w.income > 0 && t0.share >= 0.35 && t0.amount >= w.income * 0.05)
         out.push({ key: `waste:${w.from}:${t0.cat}:${Math.floor(t0.amount / 500)}`, level: 'warn', title: `أكثر شيء يضيع فلوسك: ${catName(t0.cat)}`, body: `${mny(t0.amount)} ر.س خلال ${daysAr(w.days)} (${Math.round(t0.share * 100)}% من مصاريفك اليومية). بهذا المعدل ${mny(t0.projected)} ر.س حتى الراتب.` });
@@ -1185,6 +1258,21 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
         totalPrev: r2(Object.values(prevBy).reduce((a, x) => a + x.amount, 0)) };
     });
   }
+  /* ───────────── حدود الصرف لكل فئة (شهرياً) ───────────── */
+  function budgetsReport(state, today) {
+    return memo('bud', state, String(today), () => {
+      const s = state.settings, lim = s.catBudgets || {}, w = wasteReport(state, today, 'cycle');
+      const out = [];
+      for (const [cat, raw] of Object.entries(lim)) {
+        const limit = Number(raw) || 0; if (limit <= 0) continue;
+        const x = w.cats.find((c) => c.cat === cat) || { amount: 0, count: 0, perDay: 0 };
+        const spent = x.amount, pct = spent / limit, projected = r2(spent + (x.amount / w.days) * w.leftDays);
+        const state2 = pct >= 1 ? 'over' : pct >= 0.8 ? 'near' : projected > limit * 1.05 && w.days >= 3 ? 'pace' : 'ok';
+        out.push({ cat, limit, spent, left: r2(limit - spent), pct, projected, status: state2 });
+      }
+      return out.sort((a, b) => b.pct - a.pct);
+    });
+  }
   function paceMessages(state, today) {
     const p = spendingPace(state, today), out = [];
     if (!p || p.status === 'none') return out;
@@ -1282,7 +1370,7 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
     // core
     cycleRange, cycleOf, cycleName, versionAt, setVersion, ruleDates, occurrences, cycleOccurrences,
     buildInstallmentPlan, planStatus, payInstallment, unpayInstallment, earlyPayoff, postponeInstallment,
-    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, spendingPace, paceMessages, wasteReport, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
+    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, spendingPace, paceMessages, wasteReport, budgetsReport, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
   };
 });
 
@@ -1497,7 +1585,7 @@ const IC = {
   alert: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>', undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>',
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0114 0M16 4a3.5 3.5 0 010 7M18 14a6 6 0 014 6"/>', history: '<path d="M3 12a9 9 0 103-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
-  arrow: '<path d="M19 12H5M11 18l-6-6 6-6"/>', coins: '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.7-2.7-3-6-3"/>', coffee: '<path d="M4 9h13v5a5 5 0 01-5 5H9a5 5 0 01-5-5z"/><path d="M17 11h1.5a2.5 2.5 0 010 5H17M8 3v3M12 3v3"/>', bike: '<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l4-7h5l3 7M10 10L8 6H5M15 10l1-3h3"/>', bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>', game: '<rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3M5.5 12.5h3M15.5 12h.01M18 14h.01"/>'
+  arrow: '<path d="M19 12H5M11 18l-6-6 6-6"/>', coins: '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.7-2.7-3-6-3"/>', eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', eyeOff: '<path d="M3 3l18 18M10.6 5.1A10.6 10.6 0 0112 5c6.5 0 10 7 10 7a17 17 0 01-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a10 10 0 004.6-1.1M9.9 9.9a3 3 0 004.2 4.2"/>', coffee: '<path d="M4 9h13v5a5 5 0 01-5 5H9a5 5 0 01-5-5z"/><path d="M17 11h1.5a2.5 2.5 0 010 5H17M8 3v3M12 3v3"/>', bike: '<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l4-7h5l3 7M10 10L8 6H5M15 10l1-3h3"/>', bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>', game: '<rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3M5.5 12.5h3M15.5 12h.01M18 14h.01"/>'
 };
 const icon = (n, cls) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${cls || 'ic'}">${IC[n] || IC.dots}</svg>`;
 
@@ -1727,7 +1815,7 @@ const TABS = [{ v: 'home', t: 'الرئيسية', i: 'home' }, { v: 'month', t: 
 function shell() {
   return `<div class="app">
   <aside class="rail" aria-label="التنقل">
-    <div class="brand"><span class="brand-mark">${icon('coins')}</span><span>محاسبك المالي</span></div>
+    <div class="brand"><span class="brand-mark logo">${LOGO_SVG}</span><span>محاسبك المالي</span></div>
     <button class="btn primary rail-add" data-act="add">${icon('plus')} إضافة عملية</button>
     ${NAV.map((n) => `<button class="rail-link" data-nav="${n.v}">${icon(n.i)}<span>${n.t}</span>${n.v === 'alerts' ? '<span class="chip" data-badge style="margin-inline-start:auto" hidden></span>' : ''}</button>`).join('')}
   </aside>
@@ -1742,6 +1830,7 @@ function topbar(title, extra) {
   const unread = E.notifications(state, today()).filter((n) => !n.read).length;
   return `<header class="topbar">
     <h1>${title}</h1>${extra || ''}
+    <button class="icon-btn" data-act="toggle-hide" aria-label="${state.settings.hideAmounts ? 'إظهار المبالغ' : 'إخفاء المبالغ'}" aria-pressed="${!!state.settings.hideAmounts}">${icon(state.settings.hideAmounts ? 'eyeOff' : 'eye')}</button>
     <button class="icon-btn" data-nav="alerts" aria-label="التنبيهات${unread ? '، ' + unread + ' غير مقروءة' : ''}">${icon('bell')}${unread ? `<span class="badge-dot">${nf(unread, 0)}</span>` : ''}</button>
     <button class="icon-btn" data-nav="options" aria-label="الإعدادات">${icon('gear')}</button>
   </header>`;
@@ -1749,6 +1838,7 @@ function topbar(title, extra) {
 function applyTheme() {
   const t = state ? state.settings.theme : 'auto';
   if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+  document.documentElement.classList.toggle('hide-amts', !!(state && state.settings.hideAmounts));
 }
 const isDemo = () => !!(state && state.settings.onboarded && (state.settings.demo === true || (state.settings.demo !== false && (state.audit || []).some((a) => a.action === 'seed'))));
 const itemsWord = (n) => n === 0 ? 'لا بنود' : n === 1 ? 'بند واحد' : n === 2 ? 'بندان' : n <= 10 ? `${nf(n, 0)} بنود` : `${nf(n, 0)} بنداً`;
@@ -1861,7 +1951,6 @@ function stmtCard(d, opts) {
   return `<section class="card stmt" aria-label="كشف ${esc(cycleTitle(d.key))}">
     ${opts.tabs || ''}
     <div class="stmt-head"><div style="min-width:0"><h2>${cycleTitle(d.key)}</h2><span class="small muted">${sub}</span></div></div>
-    ${d.isCur ? todayBox() : ''}
     <div class="stmt-bar" role="img" aria-label="انخصم ${Math.round(pct(d.deducted))}% وباقي ${Math.round(pct(d.pending))}%"><i class="done" style="width:${pct(d.deducted)}%"></i><i class="next" style="width:${pct(d.pending)}%"></i></div>
     <div class="stmt-rows">
       ${(() => { const prim = state.items.find((i) => i.kind === 'income' && i.isPrimary && !i.deletedAt) || state.items.find((i) => i.kind === 'income' && !i.deletedAt);
@@ -1889,7 +1978,8 @@ function todayBox() {
   if (freePool <= 0) {
     const overspent = db.dailyTotal > 0;
     const def = Math.round(-(freePool - db.spentToday));
-    return `<div class="today-box over"><div class="today-row"><div><span class="small">مسموح تصرف اليوم</span><strong class="amt">0</strong></div><button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div>
+    return `<div class="today-box over"><section class="hero is-over" aria-label="ملخص اليوم"><div class="hero-top"><div class="hero-main"><span class="hero-lbl">مسموح تصرف اليوم</span><strong class="hx-num amt">0 <span class="cur">${curSym()}</span></strong><span class="hero-sub">${def > 0 ? `عجز ${nf(def, 0)} ${curSym()} حتى الراتب` : 'لا يبقى شيء للمصاريف حتى الراتب'}</span></div>${heroRing(0)}</div>
+      <div class="hero-actions"><button class="btn hero-spend" data-act="quick-spend">${icon('plus')} سجّل مصروف</button><button class="btn hero-ghost" data-act="new" data-kind="income">${icon('wallet')} دخل</button><button class="btn hero-ghost" data-act="whatif">${icon('spark')} ماذا لو؟</button></div></section>
     ${paceHtml}
     <p class="today-left">${def > 0 ? `<b class="neg">عجز ${nf(def, 0)} ${curSym()}</b> حتى الراتب (${dw(db.daysLeft)})` : 'لا يبقى شيء للمصاريف حتى الراتب'}</p>
     <p class="xs">${overspent ? 'مصاريفك اليومية هذا الشهر تجاوزت المتاح بعد الالتزامات. أي مصروف إضافي يزيد العجز.' : 'الالتزامات وحدها تستهلك الراتب حتى الراتب القادم. أي مصروف إضافي يصير عجزاً.'}</p></div>`;
@@ -1920,23 +2010,73 @@ function todayBox() {
     ? `<b class="neg">عجز ${nf(Math.round(db.spentToday - freePool), 0)} ${curSym()}</b> بعد الالتزامات حتى الراتب`
     : `يتبقى لك <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب (${dlabel(mismatch ? db.endExclusive : nextSal, { wd: true })})`;
   const urgentIf = db.daysLeft <= 3 || bigBecauseNear;
+  const spendStart = Math.max(1, db.income - db.commitments - db.saving);
+  const leftAfterSave = Math.max(0, db.pool - db.spentToday);
+  const ratio = Math.max(0, Math.min(1, leftAfterSave / spendStart));
+  const pendingC = E.r2(E.cycleOccurrences(state, db.key).filter((o) => o.kind === 'expense' && o.item.type !== 'daily' && o.status !== 'skipped' && o.date > today()).reduce((a, o) => a + o.amount, 0));
   return `<div class="today-box ${over ? 'over' : ''}">
-    <div class="today-row"><div><span class="small">${over ? 'تجاوزت مسموح اليوم بـ' : 'مسموح تصرف اليوم'}</span><strong class="amt">${nf(Math.abs(Math.round(db.todayLeft)), 0)} <span class="cur">${curSym()}</span></strong></div>
-    <button class="btn primary" data-act="quick-spend">${icon('plus')} سجّل مصروف</button></div>
+    <section class="hero ${over ? 'is-over' : ''}" aria-label="ملخص اليوم">
+      <div class="hero-top">
+        <div class="hero-main">
+          <span class="hero-lbl">${over ? 'تجاوزت مسموح اليوم بـ' : 'مسموح تصرف اليوم'}</span>
+          <strong class="hx-num amt">${nf(Math.abs(Math.round(db.todayLeft)), 0)} <span class="cur">${curSym()}</span></strong>
+          <span class="hero-sub">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)}</span>
+        </div>
+        ${heroRing(ratio)}
+      </div>
+      <div class="hero-tiles">
+        <div class="ht"><small>${icon('calendar')} الراتب القادم</small><b>بعد ${dw(db.daysLeft)}</b><small>${dlabel(mismatch ? db.endExclusive : nextSal)}</small></div>
+        <div class="ht"><small>${icon('receipt')} خصميات باقية</small><b class="amt">${pendingC > 0 ? nf(Math.round(pendingC), 0) : 'لا شيء'}</b><small>حتى الراتب</small></div>
+        <button type="button" class="ht ht-btn" data-act="saving-quick"><small>${icon('target')} ادخار الشهر</small><b class="amt">${db.saving ? nf(Math.round(db.saving), 0) : 'حدّده'}</b><small>${db.saving ? 'للراتب الجاي' : 'اختياري'}</small></button>
+      </div>
+      <div class="hero-actions">
+        <button class="btn hero-spend" data-act="quick-spend">${icon('plus')} سجّل مصروف</button>
+        <button class="btn hero-ghost" data-act="new" data-kind="income">${icon('wallet')} دخل</button>
+        <button class="btn hero-ghost" data-act="whatif">${icon('spark')} ماذا لو؟</button>
+      </div>
+    </section>
     ${paceHtml}${warnCfg}
-    <div class="today-bar"><i style="width:${pct}%"></i></div>
-    <p class="today-left"><span class="muted">صرفت اليوم ${nf(db.spentToday)} من ${nf(Math.round(db.perDay), 0)} ·</span> ${leftLine}</p>
+    <p class="today-left">${leftLine}</p>
     ${urgentIf ? ifSpent : ''}
     ${cmp}
     <details class="today-more"><summary>كيف انحسب المبلغ؟</summary>
       ${horizon}${urgentIf ? '' : ifSpent}
-      <p class="xs">المسموح اليومي = ما يتبقى بعد الالتزامات${db.saving ? ' والادخار' : ''} ÷ الأيام الباقية حتى الراتب. يُعاد حسابه كل يوم: إذا صرفت أقل اليوم يزيد مسموح بكرة، وإذا صرفت أكثر ينقص.</p>
+      <p class="xs">المسموح اليومي = ما يتبقى بعد الالتزامات${db.saving ? ' والادخار' : ''} ÷ الأيام الباقية حتى الراتب. يُعاد حسابه كل يوم: إذا صرفت أقل اليوم يزيد مسموح بكرة، وإذا صرفت أكثر ينقص. الحلقة توضح كم بقي من فلوس مصاريف هذا الشهر.</p>
     </details>
   </div>`;
+}
+/** حلقة: كم بقي من فلوس مصاريف الشهر */
+function heroRing(ratio) {
+  const r = 34, c = 2 * Math.PI * r, pct = Math.round(ratio * 100), col = ratio > 0.5 ? 'var(--hero-good)' : ratio > 0.2 ? 'var(--hero-warn)' : 'var(--hero-risk)';
+  return `<div class="hero-ring" role="img" aria-label="باقي ${pct}% من فلوس مصاريف الشهر"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="${r}" fill="none" stroke="rgb(255 255 255 / 18%)" stroke-width="8"/><circle cx="40" cy="40" r="${r}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(c * ratio).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 40 40)"/></svg><span><b>${nf(pct, 0)}%</b><small>باقي</small></span></div>`;
 }
 /** نافذة سريعة لتغيير مبلغ الادخار للراتب الجاي مع أثره على المسموح اليومي */
 /** وين تروح فلوسك؟ أعلى 3 فئات من المصاريف اليومية (بدون الالتزامات)، تتحدث كل يوم */
 const timesAr = (n) => (n === 1 ? 'مرة واحدة' : n === 2 ? 'مرتين' : n <= 10 ? `${nf(n, 0)} مرات` : `${nf(n, 0)} مرة`);
+/** آخر العمليات: آخر المصاريف اليومية مجمّعة باليوم */
+function recentCard() {
+  const t = today(), list = state.items.filter((i) => i.type === 'daily' && !i.deletedAt && i.rule && i.rule.date <= t).sort((a, b) => (b.rule.date + (b.createdAt || '')).localeCompare(a.rule.date + (a.createdAt || ''))).slice(0, 6);
+  if (!list.length) return '';
+  const amtOf = (i) => Number(Object.values(i.ledger || {})[0] && Object.values(i.ledger)[0].amount) || Number(i.amount) || 0;
+  const dayName = (d) => d === t ? 'اليوم' : d === E.addDays(t, -1) ? 'أمس' : dlabel(d, { wd: true });
+  let last = '', html = '';
+  list.forEach((i) => {
+    if (i.rule.date !== last) { last = i.rule.date; const sumDay = state.items.filter((x) => x.type === 'daily' && !x.deletedAt && x.rule && x.rule.date === last).reduce((a, x) => a + amtOf(x), 0); html += `<div class="rc-day"><span>${dayName(last)}</span><small class="amt">−${nf(sumDay)}</small></div>`; }
+    const c = catOf(i.categoryId);
+    html += `<button class="rc-row" data-act="detail" data-id="${i.id}" style="--cc:var(--${c.color})"><span class="w-ic">${icon(c.icon)}</span><span class="rc-t"><b>${esc(i.name)}</b><small>${i.name === c.name ? (i.note ? esc(i.note) : 'بدون ملاحظة') : esc(c.name)}${i.note && i.name !== c.name && i.note !== i.name ? ' · ' + esc(i.note) : ''}</small></span><b class="amt neg">−${nf(amtOf(i))}</b></button>`;
+  });
+  return `<section class="card recent"><div class="card-h"><h2>${icon('history')} آخر العمليات</h2><button class="btn sm ghost" data-act="show-daily-list">عرض الكل</button></div><div class="rc-list">${html}</div></section>`;
+}
+/** دائرة توزيع المصاريف اليومية: أعلى 5 فئات + «أخرى»، والمجموع في الوسط */
+function donutSvg(w) {
+  const top = w.cats.slice(0, 5), restAmt = w.cats.slice(5).reduce((a, x) => a + x.amount, 0);
+  const parts = top.map((x) => ({ v: x.amount, col: `var(--${catOf(x.cat).color})`, n: catOf(x.cat).name })).concat(restAmt > 0 ? [{ v: restAmt, col: 'var(--muted)', n: 'أخرى' }] : []);
+  const total = parts.reduce((a, x) => a + x.v, 0) || 1, r = 42, c = 2 * Math.PI * r;
+  let off = 0;
+  const arcs = parts.map((x) => { const len = (x.v / total) * c, gap = parts.length > 1 ? Math.min(2.5, len * 0.3) : 0; const el = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${x.col}" stroke-width="16" stroke-dasharray="${Math.max(0, len - gap).toFixed(2)} ${c.toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 60 60)"><title>${esc(x.n)}: ${nf(Math.round(x.v), 0)}</title></circle>`; off += len; return el; }).join('');
+  return `<div class="donut" role="img" aria-label="توزيع المصاريف اليومية"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="16"/>${arcs}</svg><span><b class="amt">${nf(Math.round(w.total), 0)}</b><small>${curSym()}</small></span></div>
+    <ul class="donut-legend">${parts.map((x) => `<li><i style="background:${x.col}"></i>${esc(x.n)} <b>${nf(Math.round((x.v / total) * 100), 0)}%</b></li>`).join('')}</ul>`;
+}
 function wasteCard() {
   const range = ui.wasteRange || 'cycle', w = E.wasteReport(state, today(), range);
   const dw = (n) => (n === 1 ? 'يوم واحد' : n === 2 ? 'يومين' : n <= 10 ? `${nf(n, 0)} أيام` : `${nf(n, 0)} يوماً`);
@@ -1947,13 +2087,16 @@ function wasteCard() {
   const head = range === 'cycle'
     ? `صرفت <b>${nf(Math.round(w.total), 0)} ${curSym()}</b> على المصاريف اليومية خلال ${dw(w.days)} من هذا الشهر${pctIncome ? `، يعني ${nf(pctIncome, 0)}% من راتبك` : ''}.`
     : `منذ بدأت التسجيل (${dw(w.days)}) صرفت <b>${nf(Math.round(w.total), 0)} ${curSym()}</b> على المصاريف اليومية، بمعدل ${nf(Math.round((w.total / w.days) * 30), 0)} ${curSym()} شهرياً${pctIncome ? ` (${nf(pctIncome, 0)}% من راتبك)` : ''}.`;
+  const buds = range === 'cycle' ? E.budgetsReport(state, today()) : [], budOf = (id) => buds.find((b) => b.cat === id);
+  const badge = (b) => b.status === 'over' ? '<span class="bud-badge over">تجاوزت الحد</span>' : b.status === 'near' ? '<span class="bud-badge near">قريب من الحد</span>' : b.status === 'pace' ? '<span class="bud-badge near">بيتجاوز بهذا المعدل</span>' : '';
   const rows = w.top.map((x, i) => {
+    const bd = budOf(x.cat);
     const c = catOf(x.cat), up = range === 'cycle' && x.prev > 0 ? Math.round((x.amount / x.prev - 1) * 100) : null;
     const trend = up === null ? '' : up >= 15 ? `<span class="w-up">↑ ${nf(up, 0)}% عن نفس الفترة الشهر الماضي</span>` : up <= -15 ? `<span class="w-down">↓ ${nf(-up, 0)}% عن الشهر الماضي</span>` : '';
     return `<button class="w-row" data-act="waste-cat" data-c="${x.cat}" style="--cc:var(--${c.color})">
       <span class="w-rank">${nf(i + 1, 0)}</span><span class="w-ic">${icon(c.icon)}</span>
-      <span class="w-main"><span class="w-t"><b>${esc(c.name)}</b><b class="amt">${nf(Math.round(x.amount), 0)}</b></span>
-        <span class="w-bar"><i style="width:${Math.max(4, Math.round(x.share * 100))}%"></i></span>
+      <span class="w-main"><span class="w-t"><b>${esc(c.name)} ${bd ? badge(bd) : ''}</b><b class="amt">${nf(Math.round(x.amount), 0)}${bd ? `<small class="bud-of"> / ${nf(bd.limit, 0)}</small>` : ''}</b></span>
+        ${bd ? `<span class="w-bar bud ${bd.status}"><i style="width:${Math.max(3, Math.min(100, Math.round(bd.pct * 100)))}%"></i></span>` : `<span class="w-bar"><i style="width:${Math.max(4, Math.round(x.share * 100))}%"></i></span>`}
         <small>${nf(Math.round(x.share * 100), 0)}% من مصاريفك اليومية · ${timesAr(x.count)} · متوسط ${nf(Math.round(x.amount / x.count), 0)} للمرة</small>
         ${range === 'cycle' && w.leftDays > 0 ? `<small>بهذا المعدل: <b>${nf(Math.round(x.projected), 0)} ${curSym()}</b> حتى الراتب</small>` : range === 'all' ? `<small>بمعدل <b>${nf(Math.round(x.perMonth), 0)} ${curSym()}</b> شهرياً · ${nf(Math.round(x.perMonth * 12), 0)} في السنة</small>` : ''}${trend}</span></button>`;
   }).join('');
@@ -1961,10 +2104,14 @@ function wasteCard() {
   const save = range === 'cycle' ? Math.round((t0.projected - t0.amount) / 2) : Math.round(t0.perMonth / 2);
   const alarm = t0.share >= 0.3 && w.income > 0 && (range === 'cycle' ? t0.projected : t0.perMonth) >= w.income * 0.08
     ? `<div class="pace-alert lvl-warn">${icon('alert')}<div><b>${esc(name(t0.cat))} أكثر شيء يضيع فلوسك: ${nf(Math.round(t0.share * 100), 0)}% من مصاريفك اليومية</b><span>${range === 'cycle' ? `لو نصّفتها من اليوم لين الراتب توفّر حوالي ${nf(save, 0)} ${curSym()}.` : `لو نصّفتها توفّر حوالي ${nf(save, 0)} ${curSym()} شهرياً، يعني ${nf(save * 12, 0)} في السنة.`}</span></div></div>` : '';
+  const otherBuds = buds.filter((b) => !w.top.some((x) => x.cat === b.cat));
+  const budRows = otherBuds.length ? `<div class="bud-mini">${otherBuds.map((b) => { const c = catOf(b.cat); return `<div class="bm" style="--cc:var(--${c.color})"><span class="bm-t"><b>${esc(c.name)}</b> ${badge(b)}<small>${nf(Math.round(b.spent), 0)} / ${nf(b.limit, 0)}</small></span><span class="w-bar bud ${b.status}"><i style="width:${Math.max(3, Math.min(100, Math.round(b.pct * 100)))}%"></i></span></div>`; }).join('')}</div>` : '';
   const rest = w.cats.slice(3), restSum = rest.reduce((a, x) => a + x.amount, 0);
   return `<section class="card waste"><div class="card-h"><h2>${icon('search')} وين تروح فلوسك؟</h2>${seg}</div>
+    <div class="donut-wrap">${donutSvg(w)}</div>
     <p class="small">${head}</p>${alarm}
-    <div class="w-list">${rows}</div>
+    <div class="w-list">${rows}</div>${budRows}
+    <button type="button" class="btn sm" data-act="budgets">${icon('target')} ${Object.keys(state.settings.catBudgets || {}).length ? 'تعديل حدود الصرف' : 'حدّد سقفاً شهرياً لكل فئة'}</button>
     ${rest.length ? `<p class="xs muted">${rest.length === 1 ? 'وفئة واحدة أخرى' : rest.length === 2 ? 'وفئتان أخريان' : `و${nf(rest.length, 0)} ${rest.length <= 10 ? 'فئات أخرى' : 'فئة أخرى'}`} بمجموع ${nf(Math.round(restSum), 0)} ${curSym()}: ${rest.slice(0, 4).map((x) => esc(name(x.cat))).join('، ')}${rest.length > 4 ? '…' : ''}</p>` : ''}
     <p class="xs muted">الأرقام من مصاريفك اليومية فقط (بدون الإيجار والأقساط والفواتير)، وتتحدث مع كل مصروف تسجله.</p></section>`;
 }
@@ -2077,8 +2224,10 @@ function viewHome() {
   window.__remindShown = reminderDue();
   const nativeUpd = ui.nativeUpdate && window.__APK_URL ? `<div class="notice lvl-good">${icon('download')}<div><strong>يوجد تحديث جديد للتطبيق</strong><p class="small">نزّل النسخة الجديدة وثبّتها فوق الحالية. بياناتك تبقى كما هي.</p><div class="row" style="margin-top:6px"><a class="btn sm primary" href="${window.__APK_URL}">${icon('download')} نزّل التحديث</a></div><p class="xs muted">بعد التنزيل افتح الملف واضغط «تثبيت» أو «تحديث». إذا رجعت الرسالة بعد التثبيت، انتظر دقائق: النسخة الجديدة لسا تُجهَّز.</p></div></div>` : '';
   return `${topbar(`${hi}${name}`)}${nativeUpd}${demoBar}${reminderCard()}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
+  ${todayBox()}
   ${stmtCard(d, { tabs, cta: true })}
   ${wasteCard()}
+  ${recentCard()}
   ${dedList(d)}
   ${notice}
   ${monthsAhead(cur, 6)}
@@ -2289,7 +2438,11 @@ function viewItems() {
     if (f === 'installment' || f === 'subscription') return it.type === f;
     return true;
   });
-  return `${topbar('كل البنود', `<button class="btn sm primary" data-act="add">${icon('plus')} إضافة</button>`)}
+  const nk = E.keyAdd(E.cycleOf(today(), state.settings), 1), ns = E.summarizeCycle(state, nk);
+  const comm = E.cycleOccurrences(state, nk).filter((o) => o.kind === 'expense' && o.item.type !== 'daily' && o.status !== 'skipped');
+  const commSum = E.r2(comm.reduce((a, o) => a + o.amount, 0)), commN = new Set(comm.map((o) => o.itemId)).size;
+  const commCard = commN ? `<section class="card comm-sum"><span class="small muted">التزاماتك الشهرية (${esc(cycleTitle(nk))})</span><b class="amt">${nf(Math.round(commSum), 0)} <span class="cur">${curSym()}</span></b><span class="small">${nf(commN, 0)} التزام${ns.income > 0 ? ` · <b class="${commSum / ns.income > 0.5 ? 'neg' : ''}">${nf(Math.round((commSum / ns.income) * 100), 0)}%</b> من دخلك (${nf(Math.round(ns.income), 0)})` : ''}</span></section>` : '';
+  return `${topbar('كل البنود', `<button class="btn sm primary" data-act="add">${icon('plus')} إضافة</button>`)}${f === 'all' ? commCard : ''}
   <div class="seg" role="group" aria-label="تصفية">${filters.map(([k, t]) => `<button data-act="ifilter" data-f="${k}" aria-pressed="${f === k}">${t}</button>`).join('')}</div>
   ${f === 'daily' && dailyTotalCount > MAXD ? `<p class="small muted">آخر ${nf(MAXD, 0)} مصروفاً من ${nf(dailyTotalCount, 0)}. للبحث في الأقدم استخدم التقارير ← بحث وفلاتر.</p>` : ''}
   <section class="card"><div class="list">${list.length ? list.map((it) => { const st = itemStatus(it), cat = catOf(it.categoryId), amt = it.type === 'installment' && it.plan ? E.planStatus(it.plan).monthly : (E.versionAt(it, today()).amount || 0); return `<div class="li clickable" data-act="detail" data-id="${it.id}" style="--cc:var(--${it.kind === 'income' ? 'good' : cat.color})"><div class="li-ic">${icon(it.kind === 'income' ? 'wallet' : cat.icon)}</div><div class="li-main"><div class="li-t">${esc(it.name)}</div><div class="li-s"><span>${it.kind === 'income' ? 'دخل' : E.EXPENSE_TYPES[it.type]}</span><span>· ${ruleText(it)}</span></div></div><div class="li-end">${money(amt)}<span class="chip">${st.t}</span></div></div>`; }).join('') : emptyBlock('list', 'لا توجد بنود هنا', 'استخدم زر الإضافة لإنشاء دخل أو مصروف أو قسط.')}</div></section>`;
@@ -2504,6 +2657,10 @@ function submitSpend(form) {
   const it = Seed.mk({ kind: 'expense', type: 'daily', priority: 'flexible', name: (d.note || '').trim() || cat.name, categoryId: d.categoryId, rule: { freq: 'once', date, start: date }, versions: [{ from: date, amount }], ledger: { [date]: { status: 'paid', amount, on: date, at: nowISO() } }, createdAt: nowISO() });
   closeSheet();
   commit(`سُجّل ${moneyText(amount)} على ${it.name}`, (st) => { st.items.push(it); st.recent = [it.categoryId].concat((st.recent || []).filter((x) => x !== it.categoryId)).slice(0, 4); }, { action: 'create', entity: 'item', id: it.id });
+  try {
+    const b = E.budgetsReport(state, today()).find((x) => x.cat === it.categoryId);
+    if (b && (b.status === 'over' || b.status === 'near')) toast(b.status === 'over' ? `سُجّل ✓ لكن تجاوزت حدك في ${cat.name}: ${nf(Math.round(b.spent), 0)} من ${nf(b.limit, 0)}` : `سُجّل ✓ قربت من حدك في ${cat.name}: باقي ${nf(Math.round(b.left), 0)} من ${nf(b.limit, 0)}`, { undo: true });
+  } catch (e) { /* */ }
 }
 
 /* ───────── ماذا لو؟ ───────── */
@@ -2875,7 +3032,7 @@ async function setPin(pin) {
 /* ───────── شاشة الترحيب والإعداد الأول ───────── */
 function welcomeScreen() {
   return `<div class="center-screen"><div class="wizard">
-    <div class="brand" style="font-size:1.25rem"><span class="brand-mark" style="width:44px;height:44px">${icon('coins')}</span>محاسبك المالي</div>
+    <div class="brand" style="font-size:1.25rem"><span class="brand-mark logo" style="width:44px;height:44px">${LOGO_SVG}</span>محاسبك المالي</div>
     <h1 style="font-size:var(--t-2xl)">اعرف أين يذهب مالك، ومتى تتحسن سيولتك.</h1>
     <p class="muted">أدخل راتبك والتزاماتك مرة واحدة، ويحسب لك التطبيق خطة كل دورة راتب وتوقع 12–24 شهراً، مع سبب كل رقم ونصيحة. بياناتك تبقى على جهازك.</p>
     ${ui.cloudOffer ? `<div class="notice">${icon('cloud')}<div><strong>وجدنا نسخة مزامنة مشفرة لحسابك</strong><p class="small">استعدها بإدخال رمز القفل.</p><button class="btn sm primary" data-act="cloud-restore" style="margin-top:6px">استعادة</button></div></div>` : ''}
@@ -3084,6 +3241,9 @@ const ACT = {
   'log-confirm': () => { state.settings.logConfirmed = today(); save(); render(); toast('ممتاز! نذكّرك بكرة بنفس الوقت'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   'saving-quick': () => savingQuickSheet(),
+  'toggle-hide': () => { state.settings.hideAmounts = !state.settings.hideAmounts; save(); render(); toast(state.settings.hideAmounts ? 'المبالغ مخفية. اضغط العين لإظهارها' : 'المبالغ ظاهرة'); },
+  'show-daily-list': () => { ui.itemsFilter = 'daily'; go('items'); },
+  budgets: () => budgetsSheet(),
   'more-cats': (el) => { const m = el.parentNode.querySelector('.chips-more'); if (m) m.hidden = false; el.remove(); },
   'q-amt': (el) => { const a = $('#q_amt'); if (a) { a.value = el.dataset.v; a.dispatchEvent(new Event('input', { bubbles: true })); } },
   'check-update': async () => { toast('جاري التحقق…'); if (isNativeApp() && window.__nativeCheckUpdate) { await window.__nativeCheckUpdate(); toast(ui.nativeUpdate ? 'يوجد تحديث جديد. اضغط «نزّل التحديث»' : 'عندك آخر إصدار'); return; } checkUpdate(true); },
@@ -3180,6 +3340,18 @@ function scheduleWebReminder() {
     render();
   }, mins * 60000);
 }
+/* ───────── حدود الصرف الشهرية لكل فئة ───────── */
+function budgetsSheet() {
+  const lim = state.settings.catBudgets || {}, w = E.wasteReport(state, today(), 'cycle');
+  const ck = E.cycleOf(today(), state.settings), pr = E.cycleRange(E.keyAdd(ck, -1), state.settings);
+  const prevW = {}; state.items.filter((i) => i.type === 'daily' && !i.deletedAt).forEach((i) => { for (const o of E.occurrences(i, pr.start, pr.end)) prevW[i.categoryId] = (prevW[i.categoryId] || 0) + o.amount; });
+  const ids = [...new Set(DAILY_FIRST.concat(w.cats.map((c) => c.cat)).concat(Object.keys(lim)))].filter((id) => state.categories.some((c) => c.id === id && c.kind === 'expense'));
+  openSheet('حدود الصرف الشهرية', `<form class="form" data-form="budgets" novalidate>
+    <p class="small muted">حدّد كم تبي تصرف بالشهر على كل فئة. يطلع لك شريط يوضح قربك من الحد، وتنبيه عند 80% وعند التجاوز. اتركه فاضي إذا ما تبي حد.</p>
+    <div class="bud-list">${ids.map((id) => { const c = catOf(id), x = w.cats.find((k) => k.cat === id), pv = Math.round(prevW[id] || 0);
+      return `<div class="bud-row" style="--cc:var(--${c.color})"><span class="w-ic">${icon(c.icon)}</span><div class="bud-t"><b>${esc(c.name)}</b><small>هذا الشهر ${nf(Math.round(x ? x.amount : 0), 0)}${pv ? ` · الشهر الماضي ${nf(pv, 0)}` : ''}</small></div><input class="in" name="b_${id}" inputmode="decimal" aria-label="حد ${esc(c.name)}" placeholder="${pv ? nf(Math.round(pv * 0.8 / 50) * 50 || 50, 0) : 'بلا حد'}" value="${lim[id] ? lim[id] : ''}"></div>`; }).join('')}</div>
+  </form>`, '<button class="btn" data-act="close">إلغاء</button><button class="btn primary" data-act="submit-form" data-form="budgets">حفظ الحدود</button>');
+}
 /** يضبط مجموع الادخار من الراتب (العام + الأهداف): نغيّر الجزء العام فقط */
 function setSavingTotal(total) {
   const goals = E.r2(E.dailyBudget(state, today()).saving - (Number(state.settings.savingMonthly) || 0));
@@ -3189,6 +3361,12 @@ function setSavingTotal(total) {
 }
 const FORMS = {
   spend: submitSpend, whatif: submitWhatIf,
+  budgets: (f) => {
+    const d = fdata(f), out = {}, errs = [];
+    Object.entries(d).forEach(([k, v]) => { if (!k.startsWith('b_') || String(v).trim() === '') return; const n = num(v); if (!Number.isFinite(n) || n < 0) errs.push(`مبلغ غير صحيح في ${catOf(k.slice(2)).name}`); else if (n > 0) out[k.slice(2)] = E.r2(n); });
+    if (errs.length) return showErrors(f, errs);
+    closeSheet(); commit(Object.keys(out).length ? `حُفظت حدود ${nf(Object.keys(out).length, 0)} ${Object.keys(out).length <= 10 ? 'فئات' : 'فئة'}` : 'أُلغيت كل الحدود', (st) => { st.settings.catBudgets = out; });
+  },
   savequick: (f) => { const v = num(fdata(f).amount); if (!Number.isFinite(v) || v < 0) return showErrors(f, ['اكتب مبلغاً صحيحاً']); setSavingTotal(v); },
   item: submitItemForm, inst: submitInst, pay: submitPay,
   pause: (f) => { const d = fdata(f); if (d.to && d.to <= d.from) return showErrors(f, ['تاريخ الانتهاء يجب أن يكون بعد البداية.']); const id = ui.ctxId, it = state.items.find((x) => x.id === id); closeSheetKeepDetail(); commit(`أُوقف «${it.name}» من ${d.from}${d.to ? ' حتى ' + d.to : ''}`, (st) => { st.items.find((y) => y.id === id).pauses.push({ from: d.from, to: d.to || null }); }, { action: 'pause', entity: 'item', id }); },
