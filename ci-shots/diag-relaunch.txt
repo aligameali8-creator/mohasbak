@@ -1,0 +1,12 @@
+devices: List of devices attached
+emulator-5554	device
+
+
+pid: 5774
+
+focus:   mCurrentFocus=Window{a442a6d u0 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}
+  mFocusedApp=ActivityRecord{4f95343 u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t7}
+  mCurrentFocus=Window{799eded u0 com.mohasbak.app/com.mohasbak.app.MainActivity}
+  mFocusedApp=ActivityRecord{6e723bb u0 com.mohasbak.app/.MainActivity t9}
+
+sockets: 0000000000000000: 00000002 00000000 00010000 0001 01 76892 @webview_devtools_remote_5774

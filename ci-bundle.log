@@ -1,0 +1,40 @@
+> Task :capacitor-cordova-android-plugins:mergeReleaseJniLibFolders
+> Task :capacitor-cordova-android-plugins:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-cordova-android-plugins:copyReleaseJniLibsProjectOnly
+> Task :capacitor-filesystem:mergeReleaseJniLibFolders
+> Task :capacitor-filesystem:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-filesystem:copyReleaseJniLibsProjectOnly
+> Task :capacitor-local-notifications:mergeReleaseJniLibFolders
+> Task :capacitor-local-notifications:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-local-notifications:copyReleaseJniLibsProjectOnly
+> Task :capacitor-share:mergeReleaseJniLibFolders
+> Task :capacitor-share:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-share:copyReleaseJniLibsProjectOnly
+> Task :app:writeReleaseAppMetadata
+> Task :app:mergeReleaseNativeLibs NO-SOURCE
+> Task :app:stripReleaseDebugSymbols NO-SOURCE
+> Task :capacitor-android:prepareReleaseArtProfile
+> Task :capacitor-app:prepareReleaseArtProfile
+> Task :capacitor-cordova-android-plugins:prepareReleaseArtProfile
+> Task :capacitor-filesystem:prepareReleaseArtProfile
+> Task :capacitor-local-notifications:prepareReleaseArtProfile
+> Task :capacitor-share:prepareReleaseArtProfile
+> Task :app:mergeReleaseArtProfile
+> Task :app:mergeReleaseJavaResource
+> Task :app:collectReleaseDependencies
+> Task :app:configureReleaseDependencies
+> Task :app:extractReleaseNativeSymbolTables NO-SOURCE
+> Task :app:parseReleaseIntegrityConfig
+> Task :app:mergeExtDexRelease
+> Task :app:mergeDexRelease
+> Task :app:buildReleasePreBundle
+> Task :app:compileReleaseArtProfile
+> Task :app:packageReleaseBundle
+> Task :app:signReleaseBundle
+> Task :app:produceReleaseBundleIdeListingFile
+> Task :app:createReleaseBundleListingFileRedirect
+> Task :app:bundleRelease
+[Incubating] Problems report is available at: file:///home/runner/work/mohasbak/mohasbak/android-app/android/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 50s
+149 actionable tasks: 149 executed
