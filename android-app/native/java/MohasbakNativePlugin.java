@@ -19,8 +19,19 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.android.billingclient.api.*;
 import com.getcapacitor.JSArray;
+import com.getcapacitor.PermissionState;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
+import android.Manifest;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import org.json.JSONArray;
 
-@CapacitorPlugin(name = "MohasbakNative")
+@CapacitorPlugin(name = "MohasbakNative", permissions = {
+    @Permission(alias = "sms", strings = { Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS })
+})
 public class MohasbakNativePlugin extends Plugin {
     private static final int AUTH = BiometricManager.Authenticators.BIOMETRIC_WEAK | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
 
@@ -42,9 +53,11 @@ public class MohasbakNativePlugin extends Plugin {
     public void consumeAction(PluginCall call) {
         SharedPreferences p = getContext().getSharedPreferences(MohasbakWidget.PREFS, Context.MODE_PRIVATE);
         String a = p.getString("pending_action", null);
-        p.edit().remove("pending_action").apply();
+        String sh = p.getString("pending_share", null);
+        p.edit().remove("pending_action").remove("pending_share").apply();
         JSObject r = new JSObject();
         r.put("action", a);
+        if (sh != null) r.put("share", sh);
         call.resolve(r);
     }
 
@@ -221,5 +234,79 @@ public class MohasbakNativePlugin extends Plugin {
             billing.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build(), l);
             billing.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(), l);
         });
+    }
+
+    /* ───── رسائل البنك تلقائياً: متاحة فقط إذا كانت الصلاحية معلنة (نسخة الاختبار حتى موافقة Google) ───── */
+    private boolean smsDeclared() {
+        try {
+            PackageInfo pi = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), PackageManager.GET_PERMISSIONS);
+            if (pi.requestedPermissions == null) return false;
+            for (String s : pi.requestedPermissions) if (Manifest.permission.READ_SMS.equals(s)) return true;
+        } catch (Exception e) { /* */ }
+        return false;
+    }
+
+    @PluginMethod
+    public void smsStatus(PluginCall call) {
+        JSObject r = new JSObject();
+        boolean d = smsDeclared();
+        r.put("available", d);
+        r.put("granted", d && getPermissionState("sms") == PermissionState.GRANTED);
+        call.resolve(r);
+    }
+
+    @PluginMethod
+    public void requestSms(PluginCall call) {
+        if (!smsDeclared()) { call.reject("unavailable"); return; }
+        if (getPermissionState("sms") == PermissionState.GRANTED) { smsPermCb(call); return; }
+        requestPermissionForAlias("sms", call, "smsPermCb");
+    }
+
+    @PermissionCallback
+    private void smsPermCb(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("granted", getPermissionState("sms") == PermissionState.GRANTED);
+        call.resolve(r);
+    }
+
+    /** رسائل الوارد منذ تاريخ معيّن (للمراجعة على الجهاز فقط — لا تُرسل لأي مكان) */
+    @PluginMethod
+    public void smsInbox(PluginCall call) {
+        if (!smsDeclared() || getPermissionState("sms") != PermissionState.GRANTED) { call.reject("no-permission"); return; }
+        long since = call.getLong("since", System.currentTimeMillis() - 31L * 86400000L);
+        int limit = call.getInt("limit", 400);
+        JSArray out = new JSArray();
+        Cursor c = null;
+        try {
+            c = getContext().getContentResolver().query(Uri.parse("content://sms/inbox"), new String[] { "body", "date", "address" }, "date > ?", new String[] { String.valueOf(since) }, "date DESC");
+            while (c != null && c.moveToNext() && out.length() < limit) {
+                JSObject m = new JSObject();
+                m.put("body", c.getString(0));
+                m.put("date", c.getLong(1));
+                m.put("from", c.getString(2));
+                out.put(m);
+            }
+        } catch (Exception e) { call.reject("read-failed"); return; }
+        finally { if (c != null) c.close(); }
+        JSObject r = new JSObject();
+        r.put("messages", out);
+        call.resolve(r);
+    }
+
+    /** الرسائل التي وصلت والتطبيق مغلق (يحفظها SmsReceiver) — تُقرأ مرة وتُمسح */
+    @PluginMethod
+    public void smsQueue(PluginCall call) {
+        SharedPreferences p = getContext().getSharedPreferences(MohasbakWidget.PREFS, Context.MODE_PRIVATE);
+        String q = p.getString("sms_queue", "[]");
+        p.edit().remove("sms_queue").apply();
+        JSObject r = new JSObject();
+        try { r.put("messages", new JSArray(q)); } catch (Exception e) { r.put("messages", new JSArray()); }
+        call.resolve(r);
+    }
+
+    @PluginMethod
+    public void smsAuto(PluginCall call) {
+        getContext().getSharedPreferences(MohasbakWidget.PREFS, Context.MODE_PRIVATE).edit().putBoolean("sms_auto", call.getBoolean("on", false)).apply();
+        call.resolve();
     }
 }

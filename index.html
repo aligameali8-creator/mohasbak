@@ -574,9 +574,26 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .dur { font-weight: 600; } .dur-permanent { color: var(--calm); } .dur-limited { color: var(--warn); } .dur-done { color: var(--good); }
 .dur-card { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
 .dur-card svg { width: 18px; height: 18px; flex: none; margin-top: 3px; color: var(--accent); } .dur-card p { margin: 2px 0 6px; } .dur-card.dur-limited { background: var(--warn-soft); } .dur-card.dur-limited svg { color: var(--warn); }
+
+/* من رسالة البنك */
+.sms-link { align-self: flex-start; margin-top: -4px; color: var(--accent, #3B43A6); }
+.sms-form textarea { min-height: 110px; font-size: 14px; line-height: 1.6; resize: vertical; }
+.sms-list { display: grid; gap: 8px; margin-top: 4px; }
+.sms-row { border: 1px solid var(--line, #e3e5ef); border-radius: 14px; padding: 10px 12px; display: grid; gap: 8px; background: var(--card, #fff); min-width: 0; }
+.sms-row.income { border-inline-start: 4px solid #1a9b6c; }
+.sms-row.expense { border-inline-start: 4px solid #d2503f; }
+.sms-row.dup { opacity: .85; background: color-mix(in srgb, #f4a62a 8%, var(--card, #fff)); }
+.sms-chk { display: flex; gap: 10px; align-items: flex-start; min-width: 0; cursor: pointer; }
+.sms-chk input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
+.sms-chk > span { display: grid; min-width: 0; }
+.sms-chk strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sms-edit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 8px; }
+.sms-edit .in { min-width: 0; }
+.sms-dup { color: #9a5a00; display: flex; gap: 6px; align-items: center; }
+.sms-dup svg { width: 14px; height: 14px; flex: none; }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="cb678b3d9f";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="b6b0c067b7";</script><script>
 const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><defs><linearGradient id=\"lg-bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A42B0\"/><stop offset=\"1\" stop-color=\"#171B57\"/></linearGradient></defs><rect width=\"512\" height=\"512\" rx=\"114\" fill=\"url(#lg-bg)\"/><path d=\"M266.6 83.3A173.0 173.0 0 0 1 333.2 101.2L312.7 142.3A127.0 127.0 0 0 0 263.8 129.2Z\" fill=\"#5FD39B\"/><path d=\"M351.5 111.7A173.0 173.0 0 0 1 400.3 160.5L361.9 185.9A127.0 127.0 0 0 0 326.1 150.1Z\" fill=\"#5FD39B\"/><path d=\"M410.8 178.8A173.0 173.0 0 0 1 428.7 245.4L382.8 248.2A127.0 127.0 0 0 0 369.7 199.3Z\" fill=\"#5FD39B\"/><path d=\"M428.7 266.6A173.0 173.0 0 0 1 410.8 333.2L369.7 312.7A127.0 127.0 0 0 0 382.8 263.8Z\" fill=\"#F5B94A\"/><path d=\"M400.3 351.5A173.0 173.0 0 0 1 351.5 400.3L326.1 361.9A127.0 127.0 0 0 0 361.9 326.1Z\" fill=\"#5FD39B\"/><path d=\"M333.2 410.8A173.0 173.0 0 0 1 266.6 428.7L263.8 382.8A127.0 127.0 0 0 0 312.7 369.7Z\" fill=\"#5FD39B\"/><path d=\"M245.4 428.7A173.0 173.0 0 0 1 178.8 410.8L199.3 369.7A127.0 127.0 0 0 0 248.2 382.8Z\" fill=\"#F2837A\"/><path d=\"M160.5 400.3A173.0 173.0 0 0 1 111.7 351.5L150.1 326.1A127.0 127.0 0 0 0 185.9 361.9Z\" fill=\"#5FD39B\"/><path d=\"M101.2 333.2A173.0 173.0 0 0 1 83.3 266.6L129.2 263.8A127.0 127.0 0 0 0 142.3 312.7Z\" fill=\"#5FD39B\"/><path d=\"M83.3 245.4A173.0 173.0 0 0 1 101.2 178.8L142.3 199.3A127.0 127.0 0 0 0 129.2 248.2Z\" fill=\"#F5B94A\"/><path d=\"M111.7 160.5A173.0 173.0 0 0 1 160.5 111.7L185.9 150.1A127.0 127.0 0 0 0 150.1 185.9Z\" fill=\"#5FD39B\"/><path d=\"M178.8 101.2A173.0 173.0 0 0 1 245.4 83.3L248.2 129.2A127.0 127.0 0 0 0 199.3 142.3Z\" fill=\"#5FD39B\"/><circle cx=\"256\" cy=\"256\" r=\"88\" fill=\"#F5C766\"/><circle cx=\"256\" cy=\"256\" r=\"64\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".7\" stroke-width=\"10\"/><path d=\"M226 270l30-32 30 32\" fill=\"none\" stroke=\"#fff\" stroke-width=\"20\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
@@ -1541,6 +1558,123 @@ const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 51
   return { uid, emptyState, demoState, CATEGORIES, ACCOUNTS, mk };
 });
 
+/* محاسبك المالي — قراءة رسائل البنوك والمحافظ السعودية (عربي وإنجليزي)
+ * يستخرج من الرسالة: المبلغ، الجهة (التاجر)، نوع العملية (خصم/إيداع)، التاريخ إن وُجد، ويقترح فئة.
+ * كل المعالجة على الجهاز. رسائل رمز التحقق (OTP) والإعلانات تُتجاهل. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.BankSMS = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  const AR_DIGITS = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9', '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9', '٫': '.', '٬': ',' };
+  const norm = (s) => String(s || '').replace(/[٠-٩۰-۹٫٬]/g, (c) => AR_DIGITS[c]).replace(/‏|‎|‪|‫|‬/g, '').replace(/\r/g, '');
+  const num = (s) => { const x = Number(String(s).replace(/,/g, '')); return Number.isFinite(x) ? x : NaN; };
+
+  const OTP = /(رمز\s*(التحقق|التفعيل|الدخول|المرور)|كلمة\s*(المرور|السر)\s*(المؤقتة|لمرة)|OTP|one[-\s]?time|verification\s*code|passcode|لا\s*تشارك|do\s*not\s*share)/i;
+  const PROMO = /(عرض|خصم\s*\d+\s*%|استمتع|احصل على|اربح|offer|promo|cashback\s*up\s*to)/i;
+  const CREDIT = /(إيداع|ايداع|حوالة\s*واردة|تحويل\s*وارد|وارد|استرداد|مسترد|إرجاع|ارجاع|راتب|Deposit|Credit(ed)?|Incoming|Received|Refund|Reversal|Salary|استلمت|استلام|تم\s*استلام|received\s*from)/i;
+  const DECLINED = /(مرفوض|مرفوضة|رفض|لم\s*تتم|فشل|غير\s*كاف|Declined|Rejected|Failed|insufficient)/i;
+  const DUE_ONLY = /(مستحق|مستحقة|تستحق|يرجى\s*السداد|آخر\s*موعد|due\s*(date|on)|is\s*due)/i;
+  const DEBIT = /(شراء|مشتريات|نقاط\s*البيع|سحب|صراف|خصم|مدفوعات|دفع|سداد|حوالة\s*صادرة|تحويل\s*صادر|صادر|أبل\s*باي|ابل\s*باي|مدى|Purchase|POS|Withdraw(al)?|ATM|Debit(ed)?|Payment|Paid|Spent|Outgoing|Transfer\s*to|Apple\s*Pay|mada|تم\s*تحويل|حولت|أرسلت|ارسلت|Sent)/i;
+  const BAL_LINE = /(الرصيد|رصيد|المتاح|Balance|Avail|Available|Bal\b|الحد\s*المتاح)/i;
+  const CUR = '(?:SAR|SR|ر\\.?\\s?س|ريال|رس|﷼|⃁)';
+  const AMT = '(\\d{1,3}(?:,\\d{3})+(?:\\.\\d{1,2})?|\\d+(?:\\.\\d{1,2})?)';
+  const RX_BEFORE = new RegExp(CUR + '\\s*' + AMT, 'i');
+  const RX_AFTER = new RegExp(AMT + '\\s*' + CUR, 'i');
+  const RX_LABEL = /(?:مبلغ|المبلغ|بمبلغ|بقيمة|قيمة|Amount|Amt|of)\s*[:：]?\s*(?:SAR|SR|ر\.?\s?س|ريال)?\s*(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)/i;
+
+  function findAmount(text) {
+    const lines = text.split(/\n|;|؛|\|/).map((l) => l.trim()).filter(Boolean);
+    // 1) سطر فيه «مبلغ/Amount» وليس رصيداً
+    for (const l of lines) { if (BAL_LINE.test(l) && !/مبلغ|Amount/i.test(l)) continue; const m = l.match(RX_LABEL); if (m) return num(m[1]); }
+    // 2) أول مبلغ بعملة في سطر ليس رصيداً
+    for (const l of lines) {
+      if (BAL_LINE.test(l)) continue;
+      const m = l.match(RX_BEFORE) || l.match(RX_AFTER);
+      if (m) return num(m[1]);
+    }
+    // 3) نص بلا أسطر: أول مبلغ بعملة قبل كلمة الرصيد
+    const cut = text.split(BAL_LINE)[0];
+    const m = cut.match(RX_BEFORE) || cut.match(RX_AFTER);
+    return m ? num(m[1]) : NaN;
+  }
+  function findMerchant(text) {
+    const pats = [
+      /(?:المفوتر|الجهة|التاجر|المتجر|لدى|عند|من|لـ|إلى|الى)\s*[:：]\s*([^\n;؛]+)/,
+      /(?:^|\n)\s*(?:At|Merchant|From|To)\s*[:：]?\s*([^\n;]+)/i,
+      /\b(?:at|AT)\s+([A-Za-z0-9&'\-. ]{2,40})(?:\s+on\b|\s+card\b|[\n.,]|$)/,
+      /(?:من|لدى|إلى|الى)\s+([^\n;؛\d][^\n;؛]{1,40})/
+    ];
+    for (const p of pats) { const m = text.match(p); if (m) { const v = m[1].split(/\.\s|،\s*(?=الرصيد)|\s(?:الرصيد|رصيد|Balance|Avl\b|Available|بطاقة|Card\b|عبر|via|باستخدام|بتاريخ|في\s+\d)/i)[0].replace(/\s{2,}/g, ' ').replace(/[*#]+/g, '').trim(); if (v && !/^\d/.test(v) && !/^(حساب|بطاقة|account|card)/i.test(v) && !BAL_LINE.test(v) && !RX_AFTER.test(v) && v.length <= 45) return v.replace(/[.,،]+$/, ''); } }
+    return '';
+  }
+  function findDate(text) {
+    let m = text.match(/(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+    m = text.match(/\b(\d{1,2})[-/.](\d{1,2})[-/.](20\d{2})\b/);
+    if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    m = text.match(/\b(\d{2})[-/](\d{1,2})[-/](\d{1,2})\s+\d{1,2}:\d{2}/); // 25-10-02 14:33 (سنة-شهر-يوم مختصرة)
+    if (m) return `20${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+    return null;
+  }
+  const CATS = [
+    ['c_coffee', /(starbucks|ستاربكس|dunkin|دانكن|tim\s*hortons|تيم\s*هورتنز|barn'?s|بارنز|half\s*million|هاف\s*مليون|dose|دوز|كوفي|coffee|cafe|caf[eé]|كافيه|قهوة|كيف|بن\s|\bbrew|espresso|كرك)/i],
+    ['c_delivery', /(jahez|جاهز|hunger\s*station|هنقرستيشن|هنقر|to\s*you|تويو|mrsool|مرسول|the\s*chefs|ذا\s*شفز|keeta|كيتا|ninja|نينجا|careem\s*food|talabat|طلبات|nana|نعناع)/i],
+    ['c_grocery', /(panda|بنده|othaim|العثيمين|danube|الدانوب|carrefour|كارفور|tamimi|التميمي|lulu|لولو|nesto|نستو|farm\s*super|المزرعة|سوبر\s*ماركت|supermarket|hyper|هايبر|بقالة|ميني\s*ماركت|tamimi|bin\s*dawood|بن\s*داود|manuel|مانويل)/i],
+    ['c_fuel', /(petromin|بترومين|aldrees|الدريس|sasco|ساسكو|naft|نفط|محطة|بنزين|وقود|fuel|gas\s*station|petrol|maha|المها)/i],
+    ['c_dining', /(restaurant|مطعم|مطاعم|mcdonald|ماكدونالدز|kfc|كنتاكي|albaik|البيك|burger|برجر|pizza|بيتزا|herfy|هرفي|kudu|كودو|shawarma|شاورما|maestro|مايسترو|hardee|هارديز|subway|صب\s*واي|grill|مشويات|بخاري|مندي|كبسة)/i],
+    ['c_health', /(صيدلية|nahdi|النهدي|al\s*dawaa|الدواء|whites|وايتس|pharma|صحة|clinic|عيادة|مستشفى|hospital|مختبر|lab)/i],
+    ['c_shopping', /(noon|نون|amazon|أمازون|امازون|shein|شي\s*ان|namshi|نمشي|centrepoint|سنتربوينت|zara|زارا|h&m|jarir|جرير|extra|اكسترا|ikea|ايكيا|max|ماكس|redtag|رد\s*تاغ|trendyol|ترينديول|mall|مول)/i],
+    ['c_games', /(playstation|بلايستيشن|psn|steam|ستيم|xbox|nintendo|pubg|ببجي|midasbuy|razer|جواكر|jawaker|roblox|روبلوكس|fortnite|فورتنايت|game|العاب|ألعاب)/i],
+    ['c_telecom', /(\bstc\b|اس\s*تي\s*سي|mobily|موبايلي|\bzain\b|زين|sawa|سوا|virgin\s*mobile|فيرجن|salam|سلام\s*موبايل|lebara|ليبارا)/i],
+    ['c_subs', /(netflix|نتفليكس|shahid|شاهد|spotify|سبوتيفاي|anghami|أنغامي|youtube|apple\.com|itunes|icloud|osn|disney|starzplay|ستارز|chatgpt|openai|claude|anthropic)/i],
+    ['c_car', /(uber|أوبر|careem|كريم|bolt|بولت|jeeny|جيني|parking|مواقف|صيانة\s*سيارات|car\s*wash|مغسلة)/i],
+    ['c_bnpl', /(tabby|تابي|tamara|تمارا|قسط|installment)/i],
+    ['c_utils', /(الكهرباء|كهرباء|sec\b|saudi\s*electricity|المياه|مياه\s*الوطنية|nwc)/i]
+  ];
+  function guessCategory(merchant, text) {
+    const hay = `${merchant || ''} ${text || ''}`;
+    if (/(tabby|تابي|tamara|تمارا)/i.test(hay)) return 'c_bnpl'; // الدفع لاحقاً يغلب اسم المتجر
+    for (const [c, rx] of CATS) if (rx.test(merchant || '')) return c;
+    for (const [c, rx] of CATS) if (rx.test(hay)) return c;
+    return 'c_other';
+  }
+  /** يحلل رسالة واحدة. يرجع null إذا ليست عملية مالية (رمز تحقق، إعلان، بلا مبلغ). */
+  function parse(raw) {
+    const text = norm(raw).trim();
+    if (!text || text.length < 8) return null;
+    if (OTP.test(text) || DECLINED.test(text)) return null;
+    if (DUE_ONLY.test(text) && !/(تم\s*(السداد|الدفع|الخصم)|سداد\s*فاتورة|paid)/i.test(text)) return null; // تذكير فاتورة وليس دفعاً
+    const amount = findAmount(text);
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 1e7) return null;
+    const credit = CREDIT.test(text), debit = DEBIT.test(text);
+    if (!credit && !debit && PROMO.test(text)) return null;
+    // الإيداع والاسترداد والراتب = دخل؛ أي عملية فيها خصم صريح = مصروف (حتى لو ذُكر «وارد» في سياق آخر)
+    const kind = debit && !/(حوالة\s*واردة|تحويل\s*وارد|إيداع|ايداع|استرداد|Refund|Deposit|Credited|Salary|راتب)/i.test(text) ? 'expense' : credit ? 'income' : debit ? 'expense' : 'unknown';
+    if (kind === 'unknown') return null;
+    const merchant = findMerchant(text);
+    const isTransfer = /(حوالة|تحويل|Transfer)/i.test(text);
+    const isAtm = /(سحب|صراف|ATM|Withdraw)/i.test(text);
+    const category = kind === 'expense' ? (isAtm ? 'c_personal' : guessCategory(merchant, text)) : (/(راتب|Salary)/i.test(text) ? 'c_salary' : 'c_side');
+    const title = merchant || (isAtm ? 'سحب نقدي' : isTransfer ? (kind === 'income' ? 'حوالة واردة' : 'حوالة صادرة') : kind === 'income' ? 'إيداع' : 'مشتريات');
+    return { kind, amount: Math.round(amount * 100) / 100, merchant, title, category, date: findDate(text), isTransfer, isAtm, raw: text.slice(0, 400) };
+  }
+  /** يفصل نصاً فيه عدة رسائل (لصق جماعي) ويحلل كل واحدة */
+  function parseMany(raw) {
+    const text = norm(raw);
+    let parts = text.split(/\n\s*\n+|(?=\n?(?:شراء|سحب|حوالة|تحويل|إيداع|ايداع|Purchase|POS|Withdrawal|Payment)\b)/i).map((s) => s.trim()).filter((s) => s.length >= 8);
+    if (parts.length <= 1) parts = [text.trim()];
+    const out = [];
+    for (const p of parts) { const r = parse(p); if (r) out.push(r); }
+    // دمج: إذا التقسيم أعطى نتائج أقل من تحليل النص كاملاً كرسالة واحدة
+    if (!out.length) { const r = parse(text); if (r) out.push(r); }
+    return out;
+  }
+  /** فلتر سريع: هل الرسالة تبدو من بنك (لاختيار الرسائل من صندوق الوارد) */
+  function looksBank(raw) { const t = norm(raw); return !OTP.test(t) && (RX_BEFORE.test(t) || RX_AFTER.test(t) || RX_LABEL.test(t)) && (DEBIT.test(t) || CREDIT.test(t)); }
+  return { parse, parseMany, looksBank, guessCategory, norm };
+});
+
 /* محاسبك المالي — النواة: الحالة، التخزين المشفر، المزامنة، التنسيق، الأيقونات، الرسوم */
 'use strict';
 const E = window.FinEngine, Seed = window.FinSeed;
@@ -1599,7 +1733,7 @@ const IC = {
   trend: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h4"/>',
   grid: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',
-  plus: '<path d="M12 5v14M5 12h14"/>', bell: '<path d="M6 16V11a6 6 0 1112 0v5l2 2H4z"/><path d="M10 20a2 2 0 004 0"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', msg: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>', bell: '<path d="M6 16V11a6 6 0 1112 0v5l2 2H4z"/><path d="M10 20a2 2 0 004 0"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
   wallet: '<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="15" r="1.3"/>',
   spark: '<path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/>', key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/>',
@@ -2110,6 +2244,11 @@ function heroRing(ratio) {
 const timesAr = (n) => (n === 1 ? 'مرة واحدة' : n === 2 ? 'مرتين' : n <= 10 ? `${nf(n, 0)} مرات` : `${nf(n, 0)} مرة`);
 /** آخر العمليات: آخر المصاريف اليومية مجمّعة باليوم */
 /** التزامات سُجّلت «مرة واحدة» في هذا الراتب: نسأل هل تتكرر كل شهر (بلمسة) */
+function smsPendingCard() {
+  let n = 0; try { n = (JSON.parse(localStorage.getItem('mohasbak.smsq') || '[]') || []).length; } catch (e) { /* */ }
+  if (!n) return '';
+  return `<div class="notice lvl-good sms-pending">${icon('msg')}<div><strong>${n === 1 ? 'وصلت عملية من البنك' : `عندك ${nf(n, 0)} رسائل من البنك`} بانتظار تأكيدك</strong><p class="small">راجعها وسجّلها بلمسة بدل ما تكتبها يدوياً.</p><div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="sms-review">${icon('check')} راجع وسجّل</button><button class="btn sm ghost" data-act="sms-clear">تجاهل</button></div></div></div>`;
+}
 function repeatAskCard() {
   const ck = E.cycleOf(today(), state.settings), r = E.cycleRange(ck, state.settings);
   const list = state.items.filter((i) => i.kind === 'expense' && !i.deletedAt && !i.repeatAsked && i.type !== 'daily' && i.type !== 'installment' && i.type !== 'emergency' && i.rule && i.rule.freq === 'once' && (i.rule.date || i.rule.start) >= r.start && (i.rule.date || i.rule.start) < r.end).slice(0, 5);
@@ -2291,6 +2430,7 @@ function viewHome() {
   window.__remindShown = reminderDue();
   const nativeUpd = ui.nativeUpdate && window.__APK_URL ? `<div class="notice lvl-good">${icon('download')}<div><strong>يوجد تحديث جديد للتطبيق</strong><p class="small">نزّل النسخة الجديدة وثبّتها فوق الحالية. بياناتك تبقى كما هي.</p><div class="row" style="margin-top:6px"><a class="btn sm primary" href="${window.__APK_URL}">${icon('download')} نزّل التحديث</a></div><p class="xs muted">بعد التنزيل افتح الملف واضغط «تثبيت» أو «تحديث». إذا رجعت الرسالة بعد التثبيت، انتظر دقائق: النسخة الجديدة لسا تُجهَّز.</p></div></div>` : '';
   return `${topbar(`${hi}${name}`)}${nativeUpd}${demoBar}${reminderCard()}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
+  ${smsPendingCard()}
   ${todayBox()}
   ${stmtCard(d, { tabs, cta: true })}
   ${repeatAskCard()}
@@ -2560,6 +2700,13 @@ function viewOptions() {
     ${state.security.pinEnabled ? '<p class="xs muted">لديك رمز قفل وتشفير مفعّل؛ ألغه أولاً لاستخدام البصمة بدلاً منه.</p>' : ''}
     <p class="xs muted">لإضافة الودجت: اضغط مطولاً على مكان فارغ في الشاشة الرئيسية ← الأدوات (Widgets) ← محاسبك المالي.</p>
   </section>` : ''}
+  <section class="card form"><h2>رسائل البنك</h2>
+    <p class="small muted">بدل الكتابة: الصق رسالة الخصم من البنك أو شاركها للتطبيق من تطبيق الرسائل، ونقرأ المبلغ والجهة ونقترح الفئة. كل القراءة على جوالك.</p>
+    <button class="btn" data-act="sms">${icon('msg')} الصق رسالة بنك</button>
+    ${window.__nativeSms && window.__nativeSms.available ? `<hr class="sep"><label class="check"><input type="checkbox" data-act="sms-auto" ${s.smsAuto && window.__nativeSms.granted ? 'checked' : ''}> اقرأ رسائل البنك تلقائياً واقترح تسجيلها (نسخة الاختبار)</label>
+    ${s.smsAuto && window.__nativeSms.granted ? `<button class="btn sm" data-act="sms-inbox">${icon('search')} راجع رسائل هذا الشهر</button>` : ''}
+    <p class="xs muted">يصلك إشعار مع كل عملية بنكية جديدة لتأكيدها بلمسة. لا نقرأ إلا رسائل البنوك والمحافظ، ولا نرسل شيئاً خارج جوالك.</p>` : ''}
+  </section>
   <section class="card form"><h2>الأمان والخصوصية</h2>
     <div class="notice">${icon('lock')}<div class="small">${state.security.pinEnabled ? 'بياناتك مشفرة بمفتاح AES‑256 مشتق من رمزك (PBKDF2، 250 ألف تكرار). الرمز لا يُخزَّن، ولا يمكن استعادة البيانات بدونه.' : 'فعّل رمز القفل ليُشفَّر كل ما يُخزَّن على جهازك وفي المزامنة.'}</div></div>
     <div class="row">${state.security.pinEnabled ? `<button class="btn" data-act="pin-set">تغيير الرمز</button><button class="btn danger" data-act="pin-off">إلغاء القفل</button><button class="btn" data-act="lock-now">${icon('lock')} قفل الآن</button>` : `<button class="btn primary" data-act="pin-set">${icon('lock')} تفعيل رمز القفل</button>`}</div>
@@ -2570,7 +2717,7 @@ function viewOptions() {
     <details><summary class="small" style="cursor:pointer;min-height:36px">سياسة الخصوصية بلغة واضحة</summary><ul class="small muted" style="padding-inline-start:18px">
       <li>بياناتك تبقى على جهازك افتراضياً. لا نرسلها لأي خادم إلا إذا فعّلت المزامنة.</li><li>لا إعلانات، ولا بيع أو مشاركة للبيانات، ولا تحليلات سلوكية.</li>
       <li>المزامنة تخزن نسخة مشفرة فقط، والمفتاح رمزك الذي لا يغادر جهازك.</li><li>يمكنك تصدير كل بياناتك أو حذفها نهائياً في أي وقت من هذه الصفحة.</li>
-      <li>التطبيق يطلب أقل صلاحيات ممكنة: لا موقع، ولا جهات اتصال، ولا كاميرا.</li></ul></details>
+      <li>التطبيق يطلب أقل صلاحيات ممكنة: لا موقع، ولا جهات اتصال، ولا كاميرا.</li><li>قراءة رسائل البنك اختيارية، وتتم على جوالك فقط، ولا تُرسل الرسائل لأي جهة.</li></ul></details>
   </section>
   <section class="card form"><h2>النسخ الاحتياطي والتصدير</h2>
     <div class="row"><button class="btn" data-act="export-xlsx">${icon('download')} Excel كامل</button><button class="btn" data-act="export-pdf" data-key="${E.cycleOf(today(), s)}">${icon('download')} PDF للشهر</button><button class="btn" data-act="export-json">${icon('download')} نسخة احتياطية JSON</button></div>
@@ -2707,7 +2854,7 @@ const num = (v) => E.parseAmount(v);
 
 /* ───────── اختيار نوع الإضافة ───────── */
 function addChooser(date) {
-  const opts = [['daily', 'مصروف يومي', 'cart', 'قهوة، بقالة، بنزين، مطعم — بثانيتين'], ['expense', 'التزام ثابت أو متكرر', 'receipt', 'إيجار، مصروف البيت، فواتير، مجدول'], ['emergency', 'مصروف طارئ سريع', 'bolt', 'صيدلية، بنشر، صيانة — خلال ثوانٍ'], ['income', 'دخل', 'wallet', 'راتب، موسمي، مرة واحدة، متغير'], ['installment', 'شراء مقسط', 'layers', 'تابي، تمارا، نون، أمازون…'], ['subscription', 'اشتراك', 'repeat', 'شهري أو سنوي'], ['whatif', 'ماذا لو؟', 'spark', 'جرّب أثر قرار قبل ما تتخذه']];
+  const opts = [['daily', 'مصروف يومي', 'cart', 'قهوة، بقالة، بنزين، مطعم — بثانيتين'], ['expense', 'التزام ثابت أو متكرر', 'receipt', 'إيجار، مصروف البيت، فواتير، مجدول'], ['emergency', 'مصروف طارئ سريع', 'bolt', 'صيدلية، بنشر، صيانة — خلال ثوانٍ'], ['sms', 'من رسالة البنك', 'msg', 'الصق رسالة الخصم ونسجلها لك بلمسة'], ['income', 'دخل', 'wallet', 'راتب، موسمي، مرة واحدة، متغير'], ['installment', 'شراء مقسط', 'layers', 'تابي، تمارا، نون، أمازون…'], ['subscription', 'اشتراك', 'repeat', 'شهري أو سنوي'], ['whatif', 'ماذا لو؟', 'spark', 'جرّب أثر قرار قبل ما تتخذه']];
   openSheet('إضافة', `<div class="more-grid">${opts.map(([k, t, i, d]) => `<button class="more-link" data-act="new" data-kind="${k}" ${date ? `data-date="${date}"` : ''}>${icon(i)}<span><strong>${t}</strong><span class="xs muted" style="display:block">${d}</span></span></button>`).join('')}</div>`);
 }
 
@@ -2716,6 +2863,7 @@ function quickSpend(date) {
   const t = today(), y = E.addDays(t, -1);
   openSheet('مصروف يومي', `<form class="form" data-form="spend" novalidate>
     <div class="f"><label for="q_amt">كم صرفت؟</label><input class="in big" id="q_amt" name="amount" inputmode="decimal" autocomplete="off" placeholder="0">${(() => { const fa = frequentAmounts(); return fa.length ? `<div class="row q-amts" style="gap:6px">${fa.map((v) => `<button type="button" class="btn sm" data-act="q-amt" data-v="${v}">${nf(v)}</button>`).join('')}</div>` : ''; })()}</div>
+    <button type="button" class="btn sm ghost sms-link" data-act="sms">${icon('msg')} عندك رسالة من البنك؟ الصقها ونسجلها لك</button>
     <div class="f"><label for="q_note">ملاحظة (اختياري)</label><input class="in" id="q_note" name="note" placeholder="مثال: قهوة، غداء العمل"></div>
     <div class="f"><span class="lbl">على ماذا؟</span>${catChips('expense', dailyRecent()[0] || 'c_dining', true)}</div>
 
@@ -2735,6 +2883,112 @@ function submitSpend(form) {
     const b = E.budgetsReport(state, today()).find((x) => x.cat === it.categoryId);
     if (b && (b.status === 'over' || b.status === 'near')) toast(b.status === 'over' ? `سُجّل ✓ لكن تجاوزت حدك في ${cat.name}: ${nf(Math.round(b.spent), 0)} من ${nf(b.limit, 0)}` : `سُجّل ✓ قربت من حدك في ${cat.name}: باقي ${nf(Math.round(b.left), 0)} من ${nf(b.limit, 0)}`, { undo: true });
   } catch (e) { /* */ }
+}
+
+
+/* ───────── من رسالة البنك: لصق/مشاركة رسالة ← مراجعة ← إضافة بلمسة ───────── */
+let smsDraft = [], smsItems = null;
+const smsQ = () => { try { const q = JSON.parse(localStorage.getItem('mohasbak.smsq') || '[]'); return Array.isArray(q) ? q : []; } catch (e) { return []; } };
+const smsQSet = (q) => { try { if (q && q.length) localStorage.setItem('mohasbak.smsq', JSON.stringify(q.slice(-120))); else localStorage.removeItem('mohasbak.smsq'); } catch (e) { /* */ } };
+/** رسائل وصلت من الجوال (الوارد أو قائمة الانتظار): نضيفها للانتظار ونعرض بطاقة في الرئيسية */
+function smsEnqueue(list) {
+  const q = smsQ(), seen = new Set(q.map((m) => m.date + '|' + m.body));
+  (list || []).forEach((m) => { if (m && m.body && window.BankSMS && BankSMS.looksBank(m.body) && !seen.has(m.date + '|' + m.body)) { q.push({ body: String(m.body).slice(0, 1500), date: Number(m.date) || Date.now() }); seen.add(m.date + '|' + m.body); } });
+  smsQSet(q); return q.length;
+}
+const smsKey = (r) => { let h = 0; const s = `${r.amount}|${r.date}|${(r.raw || '').replace(/\s+/g, '')}`; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return 'sms' + (h >>> 0).toString(36); };
+function smsDup(r) {
+  const key = smsKey(r), live = state.items.filter((i) => !i.deletedAt);
+  if (live.some((i) => i.smsKey === key)) return 'أضفتها سابقاً';
+  const near = (a, b, n) => Math.abs((new Date(a) - new Date(b)) / 864e5) <= n;
+  if (r.kind === 'expense') {
+    const d = live.find((i) => i.type === 'daily' && Object.entries(i.ledger || {}).some(([dt, l]) => near(dt, r.date, 1) && Math.abs(Number(l.amount) - r.amount) < 0.01));
+    if (d) return `يبدو مسجلاً: «${d.name}»`;
+  }
+  if (r.kind === 'income' && r.category === 'c_salary' && live.some((i) => i.kind === 'income' && i.type === 'salary')) return 'هذا راتبك — محسوب عندك تلقائياً';
+  const from = E.addDays(r.date, -6), to = E.addDays(r.date, 7);
+  for (const it of live) {
+    if (it.kind !== r.kind || it.type === 'daily') continue;
+    let occ = []; try { occ = E.occurrences(it, from, to); } catch (e) { /* */ }
+    if (occ.some((o) => Math.abs(Number(o.amount) - r.amount) < 0.51)) return r.kind === 'income' ? `يطابق دخلك «${it.name}» — مسجّل عندك` : `يطابق التزامك «${it.name}» — علّمه مدفوعاً بدل إضافته`;
+  }
+  return '';
+}
+function smsSheet(text, items) {
+  smsItems = items && items.length ? items : null;
+  if (smsItems) {
+    openSheet('عمليات من رسائل البنك', `<div class="form sms-form"><p class="small muted">قرأنا رسائل البنك في جوالك (على الجهاز فقط). راجع المبالغ والفئات واضغط «أضف». العمليات المسجلة عندك من قبل غير محددة.</p><div id="sms-result" aria-live="polite"></div></div>`,
+      `<button class="btn" data-act="sms-clear">تجاهل الكل</button><button class="btn primary" data-act="sms-add" disabled>${icon('check')} أضف المحددة</button>`);
+    return smsRead();
+  }
+  openSheet('من رسالة البنك', `<div class="form sms-form">
+    <p class="small muted">انسخ رسالة البنك أو المحفظة (أو عدة رسائل مع بعض) والصقها هنا. نقرأ المبلغ والجهة ونقترح الفئة. القراءة على جوالك فقط، ولا تُرسل الرسالة لأي جهة.</p>
+    <div class="f"><label for="sms_txt">نص الرسالة</label><textarea class="in" id="sms_txt" rows="5" dir="auto" placeholder="مثال:&#10;شراء عبر نقاط البيع&#10;من: STARBUCKS&#10;مبلغ: SAR 23.00">${esc(text || '')}</textarea>
+      <div class="row" style="gap:6px">${navigator.clipboard && navigator.clipboard.readText ? `<button type="button" class="btn sm" data-act="sms-paste">${icon('download')} لصق من الحافظة</button>` : ''}<button type="button" class="btn sm primary" data-act="sms-read">${icon('search')} اقرأ الرسالة</button></div></div>
+    <div id="sms-result" aria-live="polite"></div>
+    <p class="xs muted">تلميح: في تطبيق الرسائل اضغط مطولاً على رسالة البنك ← مشاركة ← «محاسبك» وتفتح هنا مباشرة.</p>
+  </div>`, `<button class="btn" data-act="close">إغلاق</button><button class="btn primary" data-act="sms-add" disabled>${icon('check')} أضف المحددة</button>`);
+  if (text) smsRead(); else { const t = $('#sms_txt'); if (t) t.focus(); }
+}
+function smsRead() {
+  const ta = $('#sms_txt'), box = $('#sms-result'); if ((!ta && !smsItems) || !box) return;
+  const t = today(), min = E.addDays(t, -90);
+  const localDate = (ms) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  const parsed = !window.BankSMS ? [] : smsItems ? smsItems.map((m) => { const r = BankSMS.parse(m.body); if (r && !r.date) r.date = localDate(m.date); return r; }).filter(Boolean) : BankSMS.parseMany(ta.value);
+  const okCat = (id, kind) => state.categories.some((c) => c.id === id && c.kind === kind);
+  smsDraft = parsed.map((r) => {
+    const date = r.date && r.date <= t && r.date >= min ? r.date : t;
+    const category = okCat(r.category, r.kind) ? r.category : (r.kind === 'income' ? 'c_side' : 'c_other');
+    const x = { ...r, date, category }; x.dup = smsDup(x); x.on = !x.dup; return x;
+  }).filter((x) => !(smsItems && x.dup === 'أضفتها سابقاً'));
+  if (!smsDraft.length && smsItems) { smsQSet([]); box.innerHTML = `<div class="notice lvl-good">${icon('check')}<div><strong>كل عملياتك مسجلة</strong><span class="small">ما فيه عمليات جديدة من رسائل البنك.</span></div></div>`; return smsSync(); }
+  if (!smsDraft.length) {
+    box.innerHTML = `<div class="notice lvl-warn">${icon('info')}<div><strong>ما لقينا عملية في النص</strong><span class="small">تأكد أن الرسالة فيها مبلغ بالريال (مثل SAR 25 أو 25 ر.س). رسائل رمز التحقق والإعلانات والعمليات المرفوضة نتجاهلها.</span></div></div>`;
+    return smsSync();
+  }
+  const cats = (k) => state.categories.filter((c) => c.kind === k);
+  box.innerHTML = `<div class="sms-list">${smsDraft.map((r, i) => `<div class="sms-row ${r.kind}${r.dup ? ' dup' : ''}">
+      <label class="sms-chk"><input type="checkbox" data-sms="${i}" ${r.on ? 'checked' : ''}><span><strong>${esc(r.title)}</strong><span class="xs muted">${r.kind === 'income' ? 'دخل' : r.isAtm ? 'سحب نقدي' : r.isTransfer ? 'حوالة' : 'مصروف'} · ${dlabel(r.date)}</span></span></label>
+      <div class="sms-edit"><input class="in" inputmode="decimal" aria-label="المبلغ" data-sms-amt="${i}" value="${r.amount}"><select class="in" aria-label="الفئة" data-sms-cat="${i}">${cats(r.kind).map((c) => `<option value="${c.id}" ${c.id === r.category ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
+      ${r.dup ? `<div class="xs sms-dup">${icon('alert')} ${esc(r.dup)}</div>` : ''}
+    </div>`).join('')}</div>`;
+  smsSync();
+}
+async function smsInboxReview() {
+  const N = window.__nativeSms; if (!N) return;
+  const since = Math.max(Date.now() - 45 * 864e5, new Date(E.cycleRange(E.cycleOf(today(), state.settings), state.settings).start + 'T00:00:00').getTime() - 864e5);
+  const list = await N.inbox(since);
+  if (!list) return toast('تعذرت قراءة الرسائل — تأكد من السماح للتطبيق');
+  smsEnqueue(list);
+  const q = smsQ(); if (!q.length) return toast('ما لقينا رسائل بنك جديدة هذا الشهر');
+  smsSheet('', q);
+}
+function smsSync() {
+  $$('[data-sms]').forEach((c) => { const r = smsDraft[c.dataset.sms]; if (r) r.on = c.checked; });
+  $$('[data-sms-amt]').forEach((c) => { const r = smsDraft[c.dataset.smsAmt]; if (r) r.amount = num(c.value); });
+  $$('[data-sms-cat]').forEach((c) => { const r = smsDraft[c.dataset.smsCat]; if (r) r.category = c.value; });
+  const n = smsDraft.filter((r) => r.on).length, b = $('[data-act="sms-add"]');
+  if (b) { b.disabled = !n; b.innerHTML = `${icon('check')} ${n > 1 ? `أضف ${n} عمليات` : 'أضف'}`; }
+}
+function smsAdd() {
+  smsSync();
+  const sel = smsDraft.filter((r) => r.on);
+  const bad = sel.find((r) => !(r.amount > 0));
+  if (bad) return toast(`المبلغ غير صحيح في «${bad.title}»`);
+  if (!sel.length) return;
+  const at = nowISO(), made = sel.map((r) => {
+    const base = { name: String(r.title || '').slice(0, 40), categoryId: r.category, rule: { freq: 'once', date: r.date, start: r.date }, versions: [{ from: r.date, amount: r.amount }], ledger: { [r.date]: { status: 'paid', amount: r.amount, on: r.date, at } }, createdAt: at, smsKey: smsKey(r), note: 'من رسالة البنك' };
+    return r.kind === 'income' ? Seed.mk({ ...base, kind: 'income', type: 'once', amount: r.amount }) : Seed.mk({ ...base, kind: 'expense', type: 'daily', priority: 'flexible' });
+  });
+  const total = sel.filter((r) => r.kind === 'expense').reduce((s, r) => s + r.amount, 0);
+  if (smsItems) smsQSet([]);
+  closeSheet(); smsDraft = []; smsItems = null;
+  commit(made.length > 1 ? `أُضيفت ${made.length} عمليات من رسائل البنك` : `سُجّل ${moneyText(sel[0].amount)} على ${made[0].name}`, (st) => {
+    made.forEach((it) => st.items.push(it));
+    const cs = made.filter((m) => m.type === 'daily').map((m) => m.categoryId);
+    if (cs.length) st.recent = [...new Set(cs.concat(st.recent || []))].slice(0, 4);
+  }, { action: 'create', entity: 'item', id: made[0].id });
+  if (total > 0) try { const ov = E.budgetsReport(state, today()).find((b) => b.status === 'over' && sel.some((r) => r.category === b.cat)); if (ov) toast(`تنبيه: تجاوزت حدك في ${catOf(ov.cat).name}`); } catch (e) { /* */ }
 }
 
 /* ───────── ماذا لو؟ ───────── */
@@ -3282,7 +3536,7 @@ const ACT = {
   setdate: (el) => { const i = document.getElementById(el.dataset.target); if (!i) return; i.value = el.dataset.val; i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); if (el.dataset.target === 'n_first') { const d = document.getElementById('n_day'); if (d) d.value = E.parse(el.dataset.val).d; instPreview(); } },
   undo: () => undo(), close: () => closeSheet(), 'sheet-bg': (el, e) => { if (e.target === el) closeSheet(); },
   add: (el) => addChooser(el.dataset.date),
-  new: (el) => { const k = el.dataset.kind, date = el.dataset.date; closeSheet(); if (k === 'daily') return quickSpend(date); if (k === 'whatif') return whatIfSheet(); if (k === 'installment') return installmentForm(); if (k === 'income') return itemForm({ kind: 'income', type: 'other', date }); return itemForm({ kind: 'expense', type: k === 'expense' ? 'fixed' : k, date }); },
+  new: (el) => { const k = el.dataset.kind, date = el.dataset.date; closeSheet(); if (k === 'daily') return quickSpend(date); if (k === 'sms') return smsSheet(); if (k === 'whatif') return whatIfSheet(); if (k === 'installment') return installmentForm(); if (k === 'income') return itemForm({ kind: 'income', type: 'other', date }); return itemForm({ kind: 'expense', type: k === 'expense' ? 'fixed' : k, date }); },
   detail: (el) => openDetail(el.dataset.id),
   edit: (el) => { const it = state.items.find((x) => x.id === el.dataset.id); closeSheet(); if (it.type === 'installment') installmentForm(it); else itemForm({}, it); },
   pay: (el) => paySheet(el.dataset.id, el.dataset.date, Number(el.dataset.n) || null),
@@ -3329,6 +3583,26 @@ const ACT = {
   'toggle-hide': () => { state.settings.hideAmounts = !state.settings.hideAmounts; save(); render(); toast(state.settings.hideAmounts ? 'المبالغ مخفية. اضغط العين لإظهارها' : 'المبالغ ظاهرة'); },
   'show-daily-list': () => { ui.itemsFilter = 'daily'; go('items'); },
   budgets: () => budgetsSheet(),
+  sms: () => { closeSheet(); smsSheet(); },
+  'sms-read': () => smsRead(),
+  'sms-review': () => smsSheet('', smsQ()),
+  'sms-clear': () => { smsQSet([]); smsItems = null; closeSheet(); render(); toast('تم تجاهل رسائل البنك المعلّقة'); },
+  'sms-auto': async (el) => {
+    const N = window.__nativeSms; if (!N) return;
+    if (!el.checked) { await N.setAuto(false); commit('أُوقفت قراءة رسائل البنك', (st) => { st.settings.smsAuto = false; }); return; }
+    el.checked = false;
+    confirmSheet('قراءة رسائل البنك تلقائياً', 'يقرأ «محاسبك» رسائل البنوك والمحافظ في جوالك ويقترح عليك تسجيل كل عملية بلمسة. <b>القراءة على جوالك فقط</b>، ولا تُرسل أي رسالة أو بيانات لأي جهة، ونتجاهل رموز التحقق والرسائل الشخصية. تقدر توقفها في أي وقت من هنا.', 'موافق، فعّلها', async () => {
+      closeSheet();
+      const g = await N.request();
+      if (!g) return toast('ما تم السماح بقراءة الرسائل. فعّلها من إعدادات الجوال ← التطبيقات ← محاسبك ← الأذونات');
+      await N.setAuto(true);
+      commit('تم تفعيل قراءة رسائل البنك', (st) => { st.settings.smsAuto = true; });
+      smsInboxReview();
+    });
+  },
+  'sms-inbox': () => smsInboxReview(),
+  'sms-add': () => smsAdd(),
+  'sms-paste': async () => { try { const t = await navigator.clipboard.readText(); const ta = $('#sms_txt'); if (ta && t) { ta.value = t; smsRead(); } else toast('الحافظة فاضية — انسخ رسالة البنك أولاً'); } catch (e) { toast('اسمح بالوصول للحافظة، أو الصق يدوياً بالضغط المطوّل'); } },
   'more-cats': (el) => { const m = el.parentNode.querySelector('.chips-more'); if (m) m.hidden = false; el.remove(); },
   'q-amt': (el) => { const a = $('#q_amt'); if (a) { a.value = el.dataset.v; a.dispatchEvent(new Event('input', { bubbles: true })); } },
   'check-update': async () => { toast('جاري التحقق…'); if (isNativeApp() && window.__nativeCheckUpdate) { await window.__nativeCheckUpdate(); toast(ui.nativeUpdate ? 'يوجد تحديث جديد. اضغط «نزّل التحديث»' : 'عندك آخر إصدار'); return; } checkUpdate(true); },
@@ -3509,6 +3783,9 @@ document.addEventListener('change', (e) => {
   if (ch === 'import-json' && t.files[0]) importJSON(t.files[0]);
   if (ch === 'import-csv' && t.files[0]) importCSV(t.files[0]);
 });
+let smsT = 0;
+document.addEventListener('input', (e) => { const sx = e.target.dataset || {}; if (sx.sms != null || sx.smsAmt != null || sx.smsCat != null) smsSync(); if (e.target.id === 'sms_txt') { clearTimeout(smsT); smsT = setTimeout(smsRead, e.inputType === 'insertFromPaste' ? 0 : 700); } });
+document.addEventListener('change', (e) => { const sx = e.target.dataset || {}; if (sx.sms != null || sx.smsAmt != null || sx.smsCat != null) smsSync(); });
 document.addEventListener('input', (e) => { if (e.target.closest('form[data-form="inst"]')) instPreview(); if (e.target.id === 'w_n') e.target.dataset.touched = '1'; });
 document.addEventListener('keydown', (e) => {
   ui.lastActive = Date.now();
@@ -3578,6 +3855,10 @@ function installCard(compact) {
 }
 
 /* ───────── الإقلاع ───────── */
+function openShared(text) {
+  let n = 0; const go1 = () => { if (state && !ui.locked && !$('.sheet')) return smsSheet(String(text).slice(0, 5000)); if (++n < 240) setTimeout(go1, 500); };
+  go1();
+}
 function boot() {
   try { localStorage.setItem('mohasbak.probe', '1'); localStorage.removeItem('mohasbak.probe'); } catch (e) { storageOK = false; }
   const env = readLocal(); envCache = env;
@@ -3588,13 +3869,17 @@ function boot() {
   render();
   cloudInit();
   scheduleWebReminder();
+  try { // مشاركة رسالة من تطبيق الرسائل (share_target) ← تفتح «من رسالة البنك» مباشرة
+    const q = new URLSearchParams(location.search), shared = [q.get('text'), q.get('title')].filter(Boolean).join('\n');
+    if (q.has('share') || shared) { history.replaceState(history.state, '', location.pathname + location.hash); if (shared) openShared(shared); }
+  } catch (e) { /* */ }
   if ('serviceWorker' in navigator && window.__MOHASBAK_PWA__ && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
     setTimeout(checkUpdate, 3000); setInterval(checkUpdate, 30 * 60000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
   }
 }
-window.__app = { get state() { return state; }, ui, E, render, go, setToday: (d) => { ui.todayOverride = d; render(); } };
+window.__app = { openShared, get state() { return state; }, ui, E, render, go, setToday: (d) => { ui.todayOverride = d; render(); } };
 
 /* محاسبك المالي — نسخة Pro
  * المجاني: الكشف الشهري، مسموح اليوم، التسجيل السريع، التنبيهات، توقع 3 أشهر، حتى 12 التزاماً وهدف واحد، النسخ الاحتياطي.
@@ -3865,7 +4150,32 @@ if (Native.on) {
   /* ── إجراء من الودجت (زر +) ── */
   async function consumeAction() {
     if (!MN) return;
-    try { const r = await MN.consumeAction(); if (r && r.action === 'quick' && state && state.settings.onboarded && !ui.locked && !ui.bioLocked) { go('home'); quickSpend(); } } catch (e) { /* */ }
+    try {
+      const r = await MN.consumeAction();
+      if (r && r.share) openShared(r.share);
+      await smsPull(r && r.action === 'sms');
+      if (r && r.action === 'quick' && state && state.settings.onboarded && !ui.locked && !ui.bioLocked) { go('home'); quickSpend(); }
+    } catch (e) { /* */ }
+  }
+
+  window.__nativeConsume = () => consumeAction();
+  /* ── رسائل البنك (نسخة الاختبار فقط: الصلاحية غير موجودة في نسخة Google Play) ── */
+  const SMS = { available: false, granted: false };
+  SMS.request = async () => { try { const r = await MN.requestSms(); SMS.granted = !!(r && r.granted); } catch (e) { SMS.granted = false; } return SMS.granted; };
+  SMS.setAuto = async (on) => { try { await MN.smsAuto({ on: !!on }); } catch (e) { /* */ } };
+  SMS.inbox = async (since) => { try { return ((await MN.smsInbox({ since, limit: 400 })) || {}).messages || []; } catch (e) { return null; } };
+  async function smsPull(open) {
+    if (!MN || !MN.smsQueue) return;
+    try {
+      const st = await MN.smsStatus(); SMS.available = !!st.available; SMS.granted = !!st.granted;
+      if (SMS.available && !window.__nativeSms) { window.__nativeSms = SMS; if (state && ui.view === 'options') render(); }
+      if (!SMS.available) return;
+      if (state && state.settings.smsAuto) await SMS.setAuto(SMS.granted);
+      const q = ((await MN.smsQueue()) || {}).messages || [];
+      const n0 = smsQ().length, n = smsEnqueue(q);
+      if (open && n && state && !ui.locked && !ui.bioLocked) { go('home'); smsSheet('', smsQ()); }
+      else if (n !== n0 && state) render();
+    } catch (e) { /* */ }
   }
 
   /* ── قفل البصمة ── */

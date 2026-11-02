@@ -11,6 +11,14 @@
  "background_color": "#F2F5F4",
  "theme_color": "#3B43A6",
  "description": "خطة شهرية وتوقع مالي 12–24 شهراً",
+ "share_target": {
+  "action": "./",
+  "method": "GET",
+  "params": {
+   "title": "title",
+   "text": "text"
+  }
+ },
  "icons": [
   {
    "src": "icon-192.png",

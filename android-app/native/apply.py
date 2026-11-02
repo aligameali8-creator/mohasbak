@@ -32,7 +32,34 @@ if 'MohasbakWidget' not in s:
         </receiver>
     </application>'''
     s = s.replace('</application>', recv, 1)
+# مشاركة نص من تطبيق الرسائل ← التطبيق (للجميع، لا يحتاج أي صلاحية)
+if 'android.intent.action.SEND' not in s:
+    share = '''
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>'''
+    s = s.replace('</activity>', share, 1)
 mf.write_text(s, encoding='utf-8')
+
+# 3ب) قراءة رسائل البنك تلقائياً: في نسخة الاختبار (debug APK) فقط.
+# نسخة Google Play (bundleRelease) لا تحتوي صلاحيات SMS حتى نقدّم «نموذج إعلان الصلاحيات» وتوافق Google
+# (استثناء: إدارة الأموال المعتمدة على الرسائل القصيرة).
+dbg = APP / 'src' / 'debug'
+dbg.mkdir(parents=True, exist_ok=True)
+(dbg / 'AndroidManifest.xml').write_text('''<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <application>
+        <receiver android:name="com.mohasbak.app.SmsReceiver" android:exported="true" android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter android:priority="999"><action android:name="android.provider.Telephony.SMS_RECEIVED" /></intent-filter>
+        </receiver>
+    </application>
+</manifest>
+''', encoding='utf-8')
 
 # 4) build.gradle: مكتبة البصمة + توقيع ثابت لنسخ الاختبار
 bg = APP / 'build.gradle'
