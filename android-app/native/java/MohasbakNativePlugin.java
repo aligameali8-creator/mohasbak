@@ -329,4 +329,17 @@ public class MohasbakNativePlugin extends Plugin {
             } catch (Exception e) { call.reject("clipboard"); }
         });
     }
+
+    /** نسخ نص للحافظة (يستخدمه الاختبار الآلي) */
+    @PluginMethod
+    public void writeClipboard(PluginCall call) {
+        final String t = call.getString("text", "");
+        getActivity().runOnUiThread(() -> {
+            try {
+                ClipboardManager cm = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("mohasbak", t));
+                call.resolve();
+            } catch (Exception e) { call.reject("clipboard"); }
+        });
+    }
 }

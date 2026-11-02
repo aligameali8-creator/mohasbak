@@ -136,10 +136,11 @@ try:
     # رسائل البنك (1ب): نسخ الرسالة ثم فتح التطبيق ← تظهر للمراجعة مباشرة
     try:
         msg = 'شراء عبر نقاط البيع\\nمبلغ: SAR 33.50\\nمن: DUNKIN RIYADH'
-        pg.ev("(() => { const t = document.createElement('textarea'); t.value = '" + msg + "'; document.body.appendChild(t); t.select(); const ok = document.execCommand('copy'); t.remove(); return ok; })()")
-        pg.ev("navigator.clipboard && navigator.clipboard.writeText('" + msg.replace('\\n', '\\n') + "').catch(() => 0); 1"); time.sleep(1)
+        w = pg.ev("Capacitor.Plugins.MohasbakNative.writeClipboard({ text: '" + msg + "' }).then(() => 'ok').catch((e) => 'err ' + e.message)"); time.sleep(1)
+        rc = pg.ev("Capacitor.Plugins.MohasbakNative.readClipboard().then((r) => 'ok:' + r.text).catch((e) => 'err ' + e.message)")
+        open(f'{OUT}/clip-diag.txt', 'w').write(f'write={w}\nread={rc}\n')
         clip = pg.ev("window.__nativeClip()") or ''
-        check('قراءة الحافظة من الجهاز تعمل', 'DUNKIN' in clip, clip[:80])
+        check('قراءة الحافظة من الجهاز تعمل', 'DUNKIN' in clip, f'{w} | {rc}'[:200])
         sh('adb shell input keyevent KEYCODE_HOME'); time.sleep(2); launch(); time.sleep(4)
         got = pg.wait("(document.querySelector('#sms-result') || {}).innerText", 12) or ''
         check('نسخ رسالة البنك ثم فتح التطبيق يعرضها للتسجيل مباشرة', 'DUNKIN' in got and '33.5' in (pg.ev("(document.querySelector('[data-sms-amt]') || {}).value") or ''), got[:160]); shot('12b-clip-sms')

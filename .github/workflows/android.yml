@@ -75,4 +75,7 @@ jobs:
           cp android-app/android/app/build/outputs/apk/debug/app-debug.apk mohasbak.apk
           cp android-app/android/app/build/outputs/bundle/release/app-release.aab mohasbak-release-unsigned.aab
           gh release delete android-latest -y --cleanup-tag || true
-          gh release create android-latest mohasbak.apk mohasbak-release-unsigned.aab --title "محاسبك المالي — أندرويد (نسخة اختبار)" --notes "آخر نسخة أندرويد. نزّل mohasbak.apk وثبّته. التحديثات تُثبَّت فوق السابقة دون حذف بياناتك." --latest
+          V=$(grep -o '__BUILD__="[^"]*"' android-app/www/index.html | head -1 | cut -d'"' -f2)
+          echo "APK build: $V"
+          gh release create android-latest mohasbak.apk mohasbak-release-unsigned.aab --title "محاسبك المالي — أندرويد (نسخة اختبار)" --notes "آخر نسخة أندرويد. نزّل mohasbak.apk وثبّته. التحديثات تُثبَّت فوق السابقة دون حذف بياناتك.
+          build=$V" --latest
