@@ -1,0 +1,10 @@
+devices: List of devices attached
+emulator-5554	device
+
+
+pid: 5868
+
+focus:   mCurrentFocus=Window{9faa0d5 u0 com.mohasbak.app/com.mohasbak.app.MainActivity}
+  mFocusedApp=ActivityRecord{5c3343c u0 com.mohasbak.app/.MainActivity t9}
+
+sockets: 0000000000000000: 00000002 00000000 00010000 0001 01 68999 @webview_devtools_remote_5868

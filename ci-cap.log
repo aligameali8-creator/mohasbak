@@ -1,0 +1,28 @@
+✔ Adding native android project in android in 28.09ms
+✔ add in 28.36ms
+✔ Copying web assets from www to android/app/src/main/assets/public in 2.29ms
+✔ Creating capacitor.config.json in android/app/src/main/assets in 345.70μs
+✔ copy android in 7.44ms
+✔ Updating Android plugins in 561.93μs
+[info] Found 4 Capacitor plugins for android:
+       @capacitor/app@7.1.2
+       @capacitor/filesystem@7.1.9
+       @capacitor/local-notifications@7.0.7
+       @capacitor/share@7.0.4
+✔ update android in 16.12ms
+✔ Syncing Gradle in 140.89μs
+[success] android platform added!
+Follow the Developer Workflow guide to get building:
+https://capacitorjs.com/docs/basics/workflow
+applied native overlay
+✔ Copying web assets from www to android/app/src/main/assets/public in 4.92ms
+✔ Creating capacitor.config.json in android/app/src/main/assets in 706.97μs
+✔ copy android in 11.48ms
+✔ Updating Android plugins in 667.16μs
+[info] Found 4 Capacitor plugins for android:
+       @capacitor/app@7.1.2
+       @capacitor/filesystem@7.1.9
+       @capacitor/local-notifications@7.0.7
+       @capacitor/share@7.0.4
+✔ update android in 22.10ms
+[info] Sync finished in 0.046s

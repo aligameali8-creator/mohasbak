@@ -1,0 +1,4 @@
+write=ok
+read=ok:شراء عبر نقاط البيع
+مبلغ: SAR 33.50
+من: DUNKIN RIYADH
