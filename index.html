@@ -566,9 +566,12 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .li-main { min-width: 0; } .li-t, .li-s { overflow-wrap: anywhere; }
 .notif > div { min-width: 0; overflow-wrap: anywhere; }
 .today-tip { margin: 0; display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; background: var(--good-soft); font-size: var(--t-sm); line-height: 1.6; } .today-tip svg { width: 16px; height: 16px; flex: none; margin-top: 4px; color: var(--good); }
+.repeat-ask h2 svg { width: 18px; height: 18px; vertical-align: -3px; color: var(--accent); }
+.ra-list { display: grid; gap: 6px; } .ra-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.ra-t { display: grid; flex: 1; min-width: 0; } .ra-t b { overflow-wrap: anywhere; } .ra-t small { color: var(--muted); font-size: var(--t-xs); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="c17272071b";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="783cbe9a46";</script><script>
 const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><defs><linearGradient id=\"lg-bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A42B0\"/><stop offset=\"1\" stop-color=\"#171B57\"/></linearGradient></defs><rect width=\"512\" height=\"512\" rx=\"114\" fill=\"url(#lg-bg)\"/><path d=\"M266.6 83.3A173.0 173.0 0 0 1 333.2 101.2L312.7 142.3A127.0 127.0 0 0 0 263.8 129.2Z\" fill=\"#5FD39B\"/><path d=\"M351.5 111.7A173.0 173.0 0 0 1 400.3 160.5L361.9 185.9A127.0 127.0 0 0 0 326.1 150.1Z\" fill=\"#5FD39B\"/><path d=\"M410.8 178.8A173.0 173.0 0 0 1 428.7 245.4L382.8 248.2A127.0 127.0 0 0 0 369.7 199.3Z\" fill=\"#5FD39B\"/><path d=\"M428.7 266.6A173.0 173.0 0 0 1 410.8 333.2L369.7 312.7A127.0 127.0 0 0 0 382.8 263.8Z\" fill=\"#F5B94A\"/><path d=\"M400.3 351.5A173.0 173.0 0 0 1 351.5 400.3L326.1 361.9A127.0 127.0 0 0 0 361.9 326.1Z\" fill=\"#5FD39B\"/><path d=\"M333.2 410.8A173.0 173.0 0 0 1 266.6 428.7L263.8 382.8A127.0 127.0 0 0 0 312.7 369.7Z\" fill=\"#5FD39B\"/><path d=\"M245.4 428.7A173.0 173.0 0 0 1 178.8 410.8L199.3 369.7A127.0 127.0 0 0 0 248.2 382.8Z\" fill=\"#F2837A\"/><path d=\"M160.5 400.3A173.0 173.0 0 0 1 111.7 351.5L150.1 326.1A127.0 127.0 0 0 0 185.9 361.9Z\" fill=\"#5FD39B\"/><path d=\"M101.2 333.2A173.0 173.0 0 0 1 83.3 266.6L129.2 263.8A127.0 127.0 0 0 0 142.3 312.7Z\" fill=\"#5FD39B\"/><path d=\"M83.3 245.4A173.0 173.0 0 0 1 101.2 178.8L142.3 199.3A127.0 127.0 0 0 0 129.2 248.2Z\" fill=\"#F5B94A\"/><path d=\"M111.7 160.5A173.0 173.0 0 0 1 160.5 111.7L185.9 150.1A127.0 127.0 0 0 0 150.1 185.9Z\" fill=\"#5FD39B\"/><path d=\"M178.8 101.2A173.0 173.0 0 0 1 245.4 83.3L248.2 129.2A127.0 127.0 0 0 0 199.3 142.3Z\" fill=\"#5FD39B\"/><circle cx=\"256\" cy=\"256\" r=\"88\" fill=\"#F5C766\"/><circle cx=\"256\" cy=\"256\" r=\"64\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".7\" stroke-width=\"10\"/><path d=\"M226 270l30-32 30 32\" fill=\"none\" stroke=\"#fff\" stroke-width=\"20\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
@@ -2079,6 +2082,14 @@ function heroRing(ratio) {
 /** وين تروح فلوسك؟ أعلى 3 فئات من المصاريف اليومية (بدون الالتزامات)، تتحدث كل يوم */
 const timesAr = (n) => (n === 1 ? 'مرة واحدة' : n === 2 ? 'مرتين' : n <= 10 ? `${nf(n, 0)} مرات` : `${nf(n, 0)} مرة`);
 /** آخر العمليات: آخر المصاريف اليومية مجمّعة باليوم */
+/** التزامات سُجّلت «مرة واحدة» في هذا الراتب: نسأل هل تتكرر كل شهر (بلمسة) */
+function repeatAskCard() {
+  const ck = E.cycleOf(today(), state.settings), r = E.cycleRange(ck, state.settings);
+  const list = state.items.filter((i) => i.kind === 'expense' && !i.deletedAt && !i.repeatAsked && i.type !== 'daily' && i.type !== 'installment' && i.type !== 'emergency' && i.rule && i.rule.freq === 'once' && (i.rule.date || i.rule.start) >= r.start && (i.rule.date || i.rule.start) < r.end).slice(0, 5);
+  if (!list.length) return '';
+  return `<section class="card repeat-ask"><div class="card-h"><h2>${icon('repeat')} هل هذي تتكرر كل شهر؟</h2></div><p class="small muted">سجّلتها مرة واحدة. إذا تتكرر، حوّلها لالتزام شهري لتدخل في توقع الأشهر الجاية ومسموح اليوم.</p>
+    <div class="ra-list">${list.map((i) => `<div class="ra-row"><span class="ra-t"><b>${esc(i.name)}</b><small>${nf(Number(E.versionAt(i, i.rule.date || i.rule.start).amount) || Number(i.amount) || 0)} ${curSym()} · ${dlabel(i.rule.date || i.rule.start)}</small></span><button class="btn sm primary" data-act="make-monthly" data-id="${i.id}">شهري</button><button class="btn sm ghost" data-act="not-monthly" data-id="${i.id}">مرة واحدة</button></div>`).join('')}</div></section>`;
+}
 function recentCard() {
   const t = today(), list = state.items.filter((i) => i.type === 'daily' && !i.deletedAt && i.rule && i.rule.date <= t).sort((a, b) => (b.rule.date + (b.createdAt || '')).localeCompare(a.rule.date + (a.createdAt || ''))).slice(0, 6);
   if (!list.length) return '';
@@ -2255,6 +2266,7 @@ function viewHome() {
   return `${topbar(`${hi}${name}`)}${nativeUpd}${demoBar}${reminderCard()}${proHomeNotice()}${storageWarn}${saved}${installCard(true)}
   ${todayBox()}
   ${stmtCard(d, { tabs, cta: true })}
+  ${repeatAskCard()}
   ${wasteCard()}
   ${recentCard()}
   ${dedList(d)}
@@ -2991,6 +3003,7 @@ function detailBody(id) {
     ${history.length ? `<h3>آخر ما سُجّل فعلياً</h3><div class="list">${history.map(([dt, l]) => `<div class="li"><div class="li-ic">${icon(l.status === 'paid' ? 'check' : 'x')}</div><div class="li-main"><div class="li-t">${dlabel(dt, { year: true })}</div><div class="li-s">${l.status === 'paid' ? 'مدفوع' : 'متخطى'}</div></div><div class="li-end">${l.status === 'paid' ? money(l.amount) : ''}</div></div>`).join('')}</div>` : ''}
     ${audits.length ? `<details><summary class="small" style="cursor:pointer;min-height:36px">سجل التعديلات</summary>${audits.map((a) => `<p class="xs muted">${new Date(a.at).toLocaleString('ar-SA-u-nu-latn')} — ${esc(a.summary)}</p>`).join('')}</details>` : ''}
     <hr class="sep">
+    ${!it.deletedAt && it.kind === 'expense' && it.type !== 'daily' && it.type !== 'installment' && it.rule && it.rule.freq === 'once' ? `<div class="notice">${icon('repeat')}<div><strong>هل يتكرر كل شهر؟</strong><p class="small muted">إذا يتكرر، حوّله لالتزام شهري يوم ${nf(E.parse(it.rule.date || it.rule.start).d, 0)} ليدخل في توقع الأشهر الجاية ومسموح اليوم.</p><div class="row" style="margin-top:6px"><button class="btn sm primary" data-act="make-monthly" data-id="${id}">${icon('repeat')} اجعله شهرياً</button></div></div></div>` : ''}
     <div class="row">${!it.deletedAt ? `${it.type !== 'installment' ? `<button class="btn" data-act="edit" data-id="${id}">${icon('edit')} تعديل</button>` : ''}${st.k === 'paused' ? `<button class="btn" data-act="resume" data-id="${id}">${icon('play')} استئناف</button>` : it.type !== 'installment' ? `<button class="btn" data-act="pause" data-id="${id}">${icon('pause')} إيقاف مؤقت</button>` : ''}<button class="btn danger" data-act="delete" data-id="${id}">${icon('trash')} حذف</button>` : `<button class="btn" data-act="restore" data-id="${id}">${icon('undo')} استعادة البند</button>`}</div>
   </div>`;
 }
@@ -3277,6 +3290,12 @@ const ACT = {
   'log-confirm': () => { state.settings.logConfirmed = today(); save(); render(); toast('ممتاز! نذكّرك بكرة بنفس الوقت'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   'saving-quick': () => savingQuickSheet(),
+  'make-monthly': (el) => {
+    const it = state.items.find((x) => x.id === el.dataset.id); if (!it || !it.rule) return;
+    const d = it.rule.date || it.rule.start, day = E.parse(d).d; closeSheet();
+    commit(`«${it.name}» صار التزاماً شهرياً يوم ${nf(day, 0)}`, (st) => { const x = st.items.find((y) => y.id === it.id); x.rule = { freq: 'monthly', interval: 1, day, start: d }; x.repeatAsked = true; }, { action: 'edit', entity: 'item', id: it.id });
+  },
+  'not-monthly': (el) => { const it = state.items.find((x) => x.id === el.dataset.id); if (!it) return; it.repeatAsked = true; save(); render(); },
   'salary-shift': () => salaryShiftSheet(),
   'set-shift': (el) => { const on = el.dataset.v === '1'; const prim = state.items.find((i) => i.kind === 'income' && i.isPrimary && !i.deletedAt); if (!prim) return; closeSheet(); commit(on ? 'الراتب يُقدَّم للخميس إذا صادف إجازة' : `الراتب ينزل يوم ${nf(Number(prim.rule.day), 0)} دائماً`, (st) => { const x = st.items.find((i) => i.id === prim.id); if (x) x.shiftWeekend = on; }); },
   'toggle-hide': () => { state.settings.hideAmounts = !state.settings.hideAmounts; save(); render(); toast(state.settings.hideAmounts ? 'المبالغ مخفية. اضغط العين لإظهارها' : 'المبالغ ظاهرة'); },
