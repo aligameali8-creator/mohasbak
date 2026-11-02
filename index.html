@@ -569,9 +569,14 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .repeat-ask h2 svg { width: 18px; height: 18px; vertical-align: -3px; color: var(--accent); }
 .ra-list { display: grid; gap: 6px; } .ra-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .ra-t { display: grid; flex: 1; min-width: 0; } .ra-t b { overflow-wrap: anywhere; } .ra-t small { color: var(--muted); font-size: var(--t-xs); }
+.stmt-row.inc-later { font-size: var(--t-sm); color: var(--muted); } .dot.later { background: var(--good); opacity: .45; } .stmt-row.inc-later .amt { color: var(--good); opacity: .75; }
+
+.dur { font-weight: 600; } .dur-permanent { color: var(--calm); } .dur-limited { color: var(--warn); } .dur-done { color: var(--good); }
+.dur-card { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.dur-card svg { width: 18px; height: 18px; flex: none; margin-top: 3px; color: var(--accent); } .dur-card p { margin: 2px 0 6px; } .dur-card.dur-limited { background: var(--warn-soft); } .dur-card.dur-limited svg { color: var(--warn); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="783cbe9a46";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="cb678b3d9f";</script><script>
 const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><defs><linearGradient id=\"lg-bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A42B0\"/><stop offset=\"1\" stop-color=\"#171B57\"/></linearGradient></defs><rect width=\"512\" height=\"512\" rx=\"114\" fill=\"url(#lg-bg)\"/><path d=\"M266.6 83.3A173.0 173.0 0 0 1 333.2 101.2L312.7 142.3A127.0 127.0 0 0 0 263.8 129.2Z\" fill=\"#5FD39B\"/><path d=\"M351.5 111.7A173.0 173.0 0 0 1 400.3 160.5L361.9 185.9A127.0 127.0 0 0 0 326.1 150.1Z\" fill=\"#5FD39B\"/><path d=\"M410.8 178.8A173.0 173.0 0 0 1 428.7 245.4L382.8 248.2A127.0 127.0 0 0 0 369.7 199.3Z\" fill=\"#5FD39B\"/><path d=\"M428.7 266.6A173.0 173.0 0 0 1 410.8 333.2L369.7 312.7A127.0 127.0 0 0 0 382.8 263.8Z\" fill=\"#F5B94A\"/><path d=\"M400.3 351.5A173.0 173.0 0 0 1 351.5 400.3L326.1 361.9A127.0 127.0 0 0 0 361.9 326.1Z\" fill=\"#5FD39B\"/><path d=\"M333.2 410.8A173.0 173.0 0 0 1 266.6 428.7L263.8 382.8A127.0 127.0 0 0 0 312.7 369.7Z\" fill=\"#5FD39B\"/><path d=\"M245.4 428.7A173.0 173.0 0 0 1 178.8 410.8L199.3 369.7A127.0 127.0 0 0 0 248.2 382.8Z\" fill=\"#F2837A\"/><path d=\"M160.5 400.3A173.0 173.0 0 0 1 111.7 351.5L150.1 326.1A127.0 127.0 0 0 0 185.9 361.9Z\" fill=\"#5FD39B\"/><path d=\"M101.2 333.2A173.0 173.0 0 0 1 83.3 266.6L129.2 263.8A127.0 127.0 0 0 0 142.3 312.7Z\" fill=\"#5FD39B\"/><path d=\"M83.3 245.4A173.0 173.0 0 0 1 101.2 178.8L142.3 199.3A127.0 127.0 0 0 0 129.2 248.2Z\" fill=\"#F5B94A\"/><path d=\"M111.7 160.5A173.0 173.0 0 0 1 160.5 111.7L185.9 150.1A127.0 127.0 0 0 0 150.1 185.9Z\" fill=\"#5FD39B\"/><path d=\"M178.8 101.2A173.0 173.0 0 0 1 245.4 83.3L248.2 129.2A127.0 127.0 0 0 0 199.3 142.3Z\" fill=\"#5FD39B\"/><circle cx=\"256\" cy=\"256\" r=\"88\" fill=\"#F5C766\"/><circle cx=\"256\" cy=\"256\" r=\"64\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".7\" stroke-width=\"10\"/><path d=\"M226 270l30-32 30 32\" fill=\"none\" stroke=\"#fff\" stroke-width=\"20\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
@@ -1205,15 +1210,17 @@ const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 51
     const planned = r2(Math.max(0, (db.income - db.commitments - db.saving) / cycleLen));
     const freeLeft = r2(db.income - db.commitments - db.dailyTotal);          // لمصاريف باقي الشهر (قبل الادخار)
     const deficit = freeLeft < 0 ? r2(-freeLeft) : 0;
-    const cash = r2(db.income - sum(fixed.filter((o) => o.date <= today), (o) => o.amount) - db.dailyTotal); // معك الآن تقريباً
+    const incs = cycleOccurrences(state, db.key).filter((o) => o.kind === 'income' && o.status !== 'skipped');
+    const cash = r2(sum(incs.filter((o) => o.date <= today), (o) => o.amount) - sum(fixed.filter((o) => o.date <= today), (o) => o.amount) - db.dailyTotal); // معك الآن فعلياً (بدون دخل لم ينزل)
+    const incomeBy = (d) => sum(incs.filter((o) => o.date > today && o.date <= d), (o) => o.amount);   // دخل ينزل قبل تاريخ معيّن
     const upcoming = fixed.filter((o) => o.date > today);
     const daysAfterToday = Math.max(0, diffDays(today, r.end) - 1);
     // التزام لن يُغطّى حتى لو توقفت عن الصرف
     let need = 0, atRiskNow = null;
-    for (const o of upcoming) { need = r2(need + o.amount); if (cash < need) { atRiskNow = { name: o.item.name, date: o.date, amount: o.amount, gap: r2(need - cash) }; break; } }
+    for (const o of upcoming) { need = r2(need + o.amount); const avail = r2(cash + incomeBy(o.date)); if (avail < need) { atRiskNow = { name: o.item.name, date: o.date, amount: o.amount, gap: r2(need - avail) }; break; } }
     // التزام لن يُغطّى إذا استمر نفس المعدل
     let atRiskPace = null; need = 0;
-    if (!atRiskNow && avg > 0) for (const o of upcoming) { need = r2(need + o.amount); const left = cash - avg * Math.max(0, diffDays(today, o.date) - 1); if (left < need) { atRiskPace = { name: o.item.name, date: o.date, amount: o.amount }; break; } }
+    if (!atRiskNow && avg > 0) for (const o of upcoming) { need = r2(need + o.amount); const left = cash + incomeBy(o.date) - avg * Math.max(0, diffDays(today, o.date) - 1); if (left < need) { atRiskPace = { name: o.item.name, date: o.date, amount: o.amount }; break; } }
     // يوم النفاد بنفس المعدل
     let runOut = null, shortDays = 0;
     if (freeLeft <= 0) { runOut = addDays(today, 1); shortDays = daysAfterToday; }
@@ -1327,9 +1334,10 @@ const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 51
     const todayLeft = r2(perDay - spentToday);
     const committedDone = sum(fixed.filter((o) => o.status === 'paid' || o.date <= today), (o) => o.amount);
     const spentPct = income > 0 ? (committedDone + dailyTotal) / income : 0;
-    const remainingNow = r2(income - committedDone - dailyTotal);
+    const incomeLater = sum(inc.filter((o) => o.date > today), (o) => o.amount);
+    const remainingNow = r2(income - incomeLater - committedDone - dailyTotal);
     return { key, start: r.start, endExclusive: r.end, income, commitments, saving, dailyBefore, spentToday, dailyTotal, daysLeft, pool, perDay, todayLeft,
-      afterAll: r2(income - commitments - saving - dailyTotal), spentPct, remainingNow, todayCount: daily.filter((o) => o.date === today).length };
+      afterAll: r2(income - commitments - saving - dailyTotal), spentPct, remainingNow, incomeLater, todayCount: daily.filter((o) => o.date === today).length };
   }
 
   /* ───────────── ماذا لو؟ ─────────────
@@ -1955,6 +1963,23 @@ function cycleTitle(key) {
   const r = E.cycleRange(key, state.settings);
   return (Number(state.settings.cycleStartDay) || 1) <= 1 ? `شهر ${E.cycleName(key)}` : `راتب ${dlabel(r.start)}`;
 }
+/** مدة البند: دائم، أو باقي كم دفعة ومتى آخرها */
+function durationInfo(it) {
+  const t = today();
+  const freqWord = (r) => r.freq === 'monthly' ? (Number(r.interval) > 1 ? `كل ${nf(r.interval, 0)} أشهر` : 'كل شهر') : r.freq === 'weekly' ? 'كل أسبوع' : r.freq === 'yearly' ? 'كل سنة' : r.freq === 'months' ? 'في أشهر محددة' : '';
+  if (it.type === 'installment' && it.plan) {
+    const ps = E.planStatus(it.plan), rest = it.plan.payments.filter((p) => p.status !== 'paid'), last = rest.length ? rest[rest.length - 1].due : null;
+    if (!rest.length) return { kind: 'done', short: 'انتهى', text: 'القسط انتهى، كل الدفعات مدفوعة.' };
+    return { kind: 'limited', left: rest.length, last, short: rest.length === 1 ? 'آخر دفعة' : `باقي ${nf(rest.length, 0)}`, text: `قسط: باقي <b>${nf(rest.length, 0)}</b> من ${nf(ps.count || it.plan.payments.length, 0)} دفعات، آخرها <b>${dlabel(last, { year: true })}</b>${rest.length === 1 ? ' (هذي آخر دفعة)' : ''}.` };
+  }
+  const r = it.rule; if (!r) return null;
+  if (r.freq === 'once') return { kind: 'once', short: 'مرة واحدة', text: `مرة واحدة فقط (${dlabel(r.date || r.start, { year: true })}).` };
+  if (!r.end && !r.count) return { kind: 'permanent', short: 'دائم', text: `<b>دائم</b>: ${freqWord(r)}${r.freq === 'monthly' ? ` يوم ${nf(Number(r.day) || E.parse(r.start).d, 0)}` : ''}، بدون تاريخ نهاية.` };
+  const rest = E.occurrences(it, t, E.addDays(r.end || '2100-01-01', 1)).filter((o) => o.status !== 'skipped' && o.date >= t).slice(0, 600);
+  if (!rest.length) return { kind: 'done', short: 'انتهى', text: 'انتهى، ما فيه دفعات قادمة.' };
+  const last = rest[rest.length - 1].date;
+  return { kind: 'limited', left: rest.length, last, short: rest.length === 1 ? 'آخر دفعة' : `باقي ${nf(rest.length, 0)}`, text: `${freqWord(r)} لمدة محددة: باقي <b>${nf(rest.length, 0)}</b> ${rest.length === 1 ? 'دفعة' : rest.length === 2 ? 'دفعتان' : 'دفعات'}، آخرها <b>${dlabel(last, { year: true })}</b>${rest.length === 1 ? ' (هذي آخر دفعة)' : ''}.` };
+}
 function stmtData(key) {
   const s = E.summarizeCycle(state, key), t = today();
   const inc = s.incomes.filter((o) => o.status !== 'skipped'), exp = s.expenses.filter((o) => o.status !== 'skipped');
@@ -1965,7 +1990,8 @@ function stmtData(key) {
   const income = E.sum(inc, (o) => o.amount), deducted = E.r2(E.sum(done, (o) => o.amount) + dailyTotal), pending = E.sum(next, (o) => o.amount);
   const left = E.r2(income - deducted - pending);
   const isCur = t >= s.start && t <= s.end, isPast = t > s.end;
-  return { key, s, inc, done, next, daily, dailyTotal, income, deducted, pending, left, leftNow: E.r2(income - deducted), isCur, isPast, daysLeft: isCur ? E.diffDays(t, s.endExclusive) : null,
+  const incLater = isCur ? inc.filter((o) => o.date > t) : [], incomeLater = E.sum(incLater, (o) => o.amount), incomeIn = E.r2(income - incomeLater);
+  return { key, s, inc, done, next, daily, dailyTotal, income, deducted, pending, left, leftNow: E.r2(incomeIn - deducted), incLater, incomeLater, incomeIn, isCur, isPast, daysLeft: isCur ? E.diffDays(t, s.endExclusive) : null,
     skipped: s.expenses.filter((o) => o.status === 'skipped') };
 }
 function stmtCard(d, opts) {
@@ -1983,11 +2009,12 @@ function stmtCard(d, opts) {
       ${(() => { const prim = state.items.find((i) => i.kind === 'income' && i.isPrimary && !i.deletedAt) || state.items.find((i) => i.kind === 'income' && !i.deletedAt);
         return prim ? `<button type="button" class="stmt-row stmt-edit" data-act="detail" data-id="${prim.id}" aria-label="تعديل الراتب"><span>${d.inc.length > 1 ? 'الراتب والدخل' : 'الراتب'} <small class="muted">${icon('edit')} تعديل</small></span><b class="pos amt">+${nf(d.income)}</b></button>`
           : `<div class="stmt-row"><span>الراتب</span><b class="pos amt">+${nf(d.income)}</b></div>`; })()}
+      ${d.incomeLater > 0 ? `<div class="stmt-row inc-later"><span><i class="dot later"></i>منها باقي ما نزل <small>(${d.incLater.map((o) => `${esc(o.item.name)} ${dlabel(o.date)}`).join('، ')})</small></span><b class="amt soft">${nf(d.incomeLater)}</b></div>` : ''}
       ${d.isCur || d.isPast ? `<div class="stmt-row"><span><i class="dot done"></i>انخصم ${d.isCur ? 'حتى اليوم' : ''} <small>(${itemsWord(d.done.length + d.daily.length)})</small></span><b class="neg amt">−${nf(d.deducted)}</b></div>` : ''}
       <div class="stmt-row"><span><i class="dot next"></i>${futureWord} ${d.next.length ? `<small>(${itemsWord(d.next.length)})</small>` : ''}</span>${d.next.length ? `<b class="neg amt soft">−${nf(d.pending)}</b>` : '<b class="muted" style="font-size:var(--t-md)">لا شيء</b>'}</div>
     </div>
     <div class="stmt-left ${over ? 'over' : ''}"><span>${over ? 'العجز في هذا الراتب' : d.isCur ? 'يتبقى لك من الراتب' : 'سيتبقى لك'}</span><strong class="amt hero-num">${over ? '−' : ''}${nf(Math.abs(d.left))} <span class="cur">${curSym()}</span></strong></div>
-    ${d.isCur && d.pending > 0 ? `<p class="small muted">معك الآن من الراتب ${money(d.leftNow)}، احتفظ منها بـ ${money(d.pending)} للخصميات الباقية.</p>` : ''}
+    ${d.isCur && (d.pending > 0 || d.incomeLater > 0) ? `<p class="small muted">معك الآن فعلياً ${money(d.leftNow)}${d.pending > 0 ? `، احتفظ منها بـ ${money(d.pending)} للخصميات الباقية` : ''}.${d.incomeLater > 0 ? ` وبينزل لك ${money(d.incomeLater)} (${d.incLater.map((o) => `${esc(o.item.name)} ${dlabel(o.date)}`).join('، ')}).` : ''}</p>` : ''}
     ${target > 0 && !over ? `<p class="small muted">إذا ادخرت ${money(Math.round(target))} كما خططت، يبقى ${money(Math.round(Math.max(0, d.left - target)))} للمصاريف اليومية.</p>` : ''}
     ${opts.cta ? `<button class="cta-month" data-act="open-cycle" data-key="${d.key}"><span><strong>مصاريفك هذا الشهر</strong><span class="small">كل الخصميات والتفاصيل والادخار</span></span>${icon('chevL')}</button>` : ''}
     ${over ? `<p class="small" style="color:var(--risk)">الخصميات أكثر من الدخل بـ ${money(-d.left)}. افتح الخصميات لترى ما يمكن تأجيله أو إيقافه.</p>` : ''}
@@ -2035,7 +2062,7 @@ function todayBox() {
     : `<div class="today-save"><span class="xs">تبي تدخر للراتب الجاي؟ اختر المبلغ:</span><div class="row" style="gap:6px">${[250, 500, 1000].filter((v) => v < freePool).map((v) => `<button type="button" class="btn sm" data-act="set-saving" data-v="${v}">${nf(v, 0)} <small class="muted">← ${nf(perDayIf(v), 0)} يومياً</small></button>`).join('')}<button type="button" class="btn sm ghost" data-act="saving-quick">مبلغ آخر</button></div></div>`;
   const leftLine = freePool - db.spentToday < 0
     ? `<b class="neg">عجز ${nf(Math.round(db.spentToday - freePool), 0)} ${curSym()}</b> بعد الالتزامات حتى الراتب`
-    : `يتبقى لك <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب (${dlabel(mismatch ? db.endExclusive : nextSal, { wd: true })})`;
+    : `يتبقى لك <b>${nf(freeLeft, 0)} ${curSym()}</b> لـ ${dw(db.daysLeft)} حتى الراتب (${dlabel(mismatch ? db.endExclusive : nextSal, { wd: true })})${db.incomeLater > 0 ? `، منها ${nf(Math.round(db.incomeLater), 0)} ما نزلت بعد` : ''}`;
   const urgentIf = db.daysLeft <= 3 || bigBecauseNear;
   const spendStart = Math.max(1, db.income - db.commitments - db.saving);
   const leftAfterSave = Math.max(0, db.pool - db.spentToday);
@@ -2177,7 +2204,7 @@ function dedRow(o) {
   const it = o.item, cat = catOf(it.categoryId), done = isDone(o), p = E.parse(o.date);
   return `<button class="ded ${done ? 'is-done' : ''}" data-act="detail" data-id="${it.id}" style="--cc:var(--${cat.color})">
     <span class="ded-day"><b>${nf(p.d, 0)}</b><small>${E.MONTHS_AR[p.m - 1].slice(0, 5)}</small></span>
-    <span class="ded-main"><span class="ded-t">${esc(it.name)}${o.n && o.of ? ` <small>(${nf(o.n, 0)}/${nf(o.of, 0)})</small>` : ''}</span><span class="ded-s">${esc(cat.name)}${it.type === 'installment' ? ' · ' + esc(it.plan.provider) : ''}${done ? ` · ${icon('check')} انخصم` : ` · ${relDay(o.date)}`}${o.status === 'paid' && o.actual !== o.planned ? ` · بدل ${nf(o.planned)}` : ''}</span></span>
+    <span class="ded-main"><span class="ded-t">${esc(it.name)}${o.n && o.of ? ` <small>(${nf(o.n, 0)}/${nf(o.of, 0)})</small>` : ''}</span><span class="ded-s">${esc(cat.name)}${it.type === 'installment' ? ' · ' + esc(it.plan.provider) : ''}${(() => { const du = it.kind === 'expense' ? durationInfo(it) : null; return du && du.kind !== 'once' ? ` · <span class="dur dur-${du.kind}">${du.short}</span>` : ''; })()}${done ? ` · ${icon('check')} انخصم` : ` · ${relDay(o.date)}`}${o.status === 'paid' && o.actual !== o.planned ? ` · بدل ${nf(o.planned)}` : ''}</span></span>
     <span class="ded-amt amt">−${nf(o.amount)}</span></button>`;
 }
 function dedList(d, opts) {
@@ -2996,6 +3023,7 @@ function detailBody(id) {
   return `<div class="stack">
     <div class="row"><span class="chip">${it.kind === 'income' ? 'دخل' : E.EXPENSE_TYPES[it.type]}</span><span class="chip">${esc(cat.name)}</span>${it.kind === 'expense' ? `<span class="chip">${E.PRIORITIES[it.priority]}</span>` : ''}<span class="chip">${st.t}</span>${it.isPrimary ? '<span class="chip">الراتب الأساسي</span>' : ''}</div>
     ${nearBlock}
+    ${(() => { const du = durationInfo(it); if (!du) return ''; return `<div class="dur-card dur-${du.kind}">${icon(du.kind === 'permanent' ? 'repeat' : du.kind === 'limited' ? 'calendar' : 'check')}<div><b>${it.kind === 'income' ? 'المدة' : 'كم يستمر هذا الخصم؟'}</b><p class="small">${du.text}</p>${du.kind === 'permanent' && it.type !== 'installment' ? `<button class="btn sm ghost" data-act="edit" data-id="${it.id}">حدّد متى ينتهي</button>` : ''}</div></div>`; })()}
     <dl class="kv"><dt>المبلغ الحالي</dt><dd>${money(it.type === 'installment' ? E.planStatus(it.plan).monthly : E.versionAt(it, t).amount)}</dd><dt>النمط</dt><dd>${ruleText(it)}</dd><dt>الحساب</dt><dd>${esc(accOf(it.accountId).name)}</dd>${it.note ? `<dt>ملاحظة</dt><dd>${esc(it.note)}</dd>` : ''}${it.prevId ? '<dt>أصل البند</dt><dd>نسخة جديدة بعد تغيير النمط</dd>' : ''}</dl>
     ${plan}
     ${next.length ? `<h3>الاستحقاقات القادمة</h3><div class="list">${next.map((o) => `<div class="li"><div class="li-ic">${icon('calendar')}</div><div class="li-main"><div class="li-t">${dlabel(o.date, { wd: true, year: true })}</div><div class="li-s">دورة ${E.cycleName(E.cycleOf(o.date, state.settings))} · ${relDay(o.date)}</div></div><div class="li-end">${money(o.amount)}</div></div>`).join('')}</div>` : ''}
