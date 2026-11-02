@@ -139,7 +139,7 @@ try:
         check('نسخة الاختبار: القراءة التلقائية متاحة', '"available":true' in st, st)
         sh(f'adb shell pm grant {PKG} android.permission.READ_SMS'); sh(f'adb shell pm grant {PKG} android.permission.RECEIVE_SMS')
         pg.ev("Capacitor.Plugins.MohasbakNative.smsAuto({ on: true }).then(() => { window.__app.state.settings.smsAuto = true; return 1; })")
-        sh('adb emu sms send 0500000000 "شراء عبر نقاط البيع مبلغ: SAR 45.00 من: JAHEZ"', 30); time.sleep(6)
+        sh('adb emu sms send 0500000000 "شراء عبر نقاط البيع مبلغ: SAR 47.25 من: JAHEZ"', 30); time.sleep(6)
         dn = sh('adb shell dumpsys notification --noredact')
         check('إشعار «وصلت عملية من البنك»', 'mohasbak_sms' in dn or 'عملية من البنك' in dn, dn[-300:])
         sh('adb emu sms send 0500000001 "رمز التحقق 123456 لعملية بمبلغ 50 SAR لا تشارك الرمز"', 30); time.sleep(3)
