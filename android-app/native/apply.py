@@ -47,9 +47,12 @@ mf.write_text(s, encoding='utf-8')
 # 3ب) قراءة رسائل البنك تلقائياً: في نسخة الاختبار (debug APK) فقط.
 # نسخة Google Play (bundleRelease) لا تحتوي صلاحيات SMS حتى نقدّم «نموذج إعلان الصلاحيات» وتوافق Google
 # (استثناء: إدارة الأموال المعتمدة على الرسائل القصيرة).
+# ملاحظة: «حماية Play» تحظر أي تطبيق مثبت من خارج المتجر يطلب صلاحية الرسائل، لذلك لا تُضاف
+# إلا عند الطلب الصريح (MOHASBAK_SMS=1) — مثلاً لنسخة تُرفع لمسار اختبار داخل Google Play بعد الموافقة.
 dbg = APP / 'src' / 'debug'
-dbg.mkdir(parents=True, exist_ok=True)
-(dbg / 'AndroidManifest.xml').write_text('''<?xml version="1.0" encoding="utf-8"?>
+if os.environ.get('MOHASBAK_SMS') == '1':
+  dbg.mkdir(parents=True, exist_ok=True)
+  (dbg / 'AndroidManifest.xml').write_text('''<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />

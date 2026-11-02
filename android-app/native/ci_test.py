@@ -133,27 +133,14 @@ try:
         check('مشاركة رسالة بنك للتطبيق تفتح «من رسالة البنك»', 'ALDREES' in got, got[:160]); shot('12-share-sms')
         pg.ev("document.querySelector('.sheet-foot [data-act=close]') && document.querySelector('.sheet-foot [data-act=close]').click(); true"); time.sleep(1)
     except Exception as e: check('مشاركة رسالة بنك', False, repr(e))
-    # رسائل البنك (2): نسخة الاختبار فيها القراءة التلقائية؛ رسالة حقيقية تصل للمحاكي ← قائمة الانتظار ← بطاقة في الرئيسية
+    # رسائل البنك (2): نسخة الاختبار بلا صلاحية رسائل (حماية Play تحظر التثبيت لو طلبتها) — والخيار مخفي
     try:
         st = pg.ev("Capacitor.Plugins.MohasbakNative.smsStatus().then((r) => JSON.stringify(r))") or ''
-        check('نسخة الاختبار: القراءة التلقائية متاحة', '"available":true' in st, st)
-        sh(f'adb shell pm grant {PKG} android.permission.READ_SMS'); sh(f'adb shell pm grant {PKG} android.permission.RECEIVE_SMS')
-        pg.ev("Capacitor.Plugins.MohasbakNative.smsAuto({ on: true }).then(() => { window.__app.state.settings.smsAuto = true; return 1; })")
-        sh('adb emu sms send 0500000000 "شراء عبر نقاط البيع مبلغ: SAR 47.25 من: JAHEZ"', 30); time.sleep(6)
-        dn = sh('adb shell dumpsys notification --noredact')
-        check('إشعار «وصلت عملية من البنك»', 'mohasbak_sms' in dn or 'عملية من البنك' in dn, dn[-300:])
-        sh('adb emu sms send 0500000001 "رمز التحقق 123456 لعملية بمبلغ 50 SAR لا تشارك الرمز"', 30); time.sleep(3)
-        pg.ev("window.__nativeCheckUpdate && 1"); sh('adb shell input keyevent KEYCODE_HOME'); time.sleep(2); launch(); time.sleep(4)
-        q = pg.wait("(() => { const q = JSON.parse(localStorage.getItem('mohasbak.smsq') || '[]'); return q.length ? JSON.stringify(q) : ''; })()", 15) or ''
-        check('الرسالة وصلت لقائمة الانتظار (ورمز التحقق تُجوهل)', 'JAHEZ' in q and '123456' not in q, q[:200])
-        pg.ev("window.__app.go('home'); true"); time.sleep(1)
-        check('بطاقة «بانتظار تأكيدك» في الرئيسية', 'بانتظار تأكيدك' in (pg.ev("document.querySelector('#main').innerText") or '')); shot('13-sms-pending')
-        inbox = pg.ev("window.__nativeSms ? window.__nativeSms.inbox(Date.now() - 864e5).then((m) => JSON.stringify((m || []).length)) : 'none'")
-        check('قراءة صندوق الوارد تعمل بعد السماح', inbox not in (None, 'none', 'null') and int(inbox) >= 1, inbox)
-        pg.ev("document.querySelector('[data-act=sms-review]').click(); true"); time.sleep(1.5)
-        pg.ev("document.querySelector('.sheet-foot [data-act=sms-add]').click(); true"); time.sleep(1.5)
-        check('تأكيد العملية يضيفها للمصروفات', pg.ev("!!window.__app.state.items.find((i) => i.name === 'JAHEZ' && i.smsKey)") is True); shot('14-sms-added')
-    except Exception as e: check('قراءة رسائل البنك تلقائياً', False, repr(e))
+        check('لا صلاحية رسائل في النسخة (تثبيت بدون حظر حماية Play)', '"available":false' in st and 'READ_SMS' not in sh(f'adb shell dumpsys package {PKG} | grep -i "permission"'), st)
+        pg.ev("window.__app.go('options'); true"); time.sleep(1)
+        check('الإعدادات: «الصق رسالة بنك» ظاهر وخيار القراءة التلقائية مخفي', pg.ev("!!document.querySelector('#main [data-act=sms]') && !document.querySelector('[data-act=sms-auto]')") is True)
+        pg.ev("window.__app.go('home'); true")
+    except Exception as e: check('رسائل البنك بدون صلاحية', False, repr(e))
     # الاشتراك Pro عبر Google Play (المحاكي بلا متجر: يجب أن يرد بخطأ مفهوم بدون انهيار)
     bp = pg.ev("Capacitor.Plugins.MohasbakNative.billingProducts().then((r) => 'ok:' + JSON.stringify(r)).catch((e) => 'err:' + (e.code || '') + ' ' + e.message)")
     check('مكتبة Google Play Billing تستجيب (نجاح أو رفض مفهوم)', isinstance(bp, str) and (bp.startswith('ok:') or bp.startswith('err:')), bp)
