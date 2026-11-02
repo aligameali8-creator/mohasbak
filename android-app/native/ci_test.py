@@ -133,6 +133,21 @@ try:
         check('مشاركة رسالة بنك للتطبيق تفتح «من رسالة البنك»', 'ALDREES' in got, got[:160]); shot('12-share-sms')
         pg.ev("document.querySelector('.sheet-foot [data-act=close]') && document.querySelector('.sheet-foot [data-act=close]').click(); true"); time.sleep(1)
     except Exception as e: check('مشاركة رسالة بنك', False, repr(e))
+    # رسائل البنك (1ب): نسخ الرسالة ثم فتح التطبيق ← تظهر للمراجعة مباشرة
+    try:
+        msg = 'شراء عبر نقاط البيع\\nمبلغ: SAR 33.50\\nمن: DUNKIN RIYADH'
+        pg.ev("(() => { const t = document.createElement('textarea'); t.value = '" + msg + "'; document.body.appendChild(t); t.select(); const ok = document.execCommand('copy'); t.remove(); return ok; })()")
+        pg.ev("navigator.clipboard && navigator.clipboard.writeText('" + msg.replace('\\n', '\\n') + "').catch(() => 0); 1"); time.sleep(1)
+        clip = pg.ev("window.__nativeClip()") or ''
+        check('قراءة الحافظة من الجهاز تعمل', 'DUNKIN' in clip, clip[:80])
+        sh('adb shell input keyevent KEYCODE_HOME'); time.sleep(2); launch(); time.sleep(4)
+        got = pg.wait("(document.querySelector('#sms-result') || {}).innerText", 12) or ''
+        check('نسخ رسالة البنك ثم فتح التطبيق يعرضها للتسجيل مباشرة', 'DUNKIN' in got and '33.5' in (pg.ev("(document.querySelector('[data-sms-amt]') || {}).value") or ''), got[:160]); shot('12b-clip-sms')
+        pg.ev("document.querySelector('.sheet-foot [data-act=sms-add]').click(); true"); time.sleep(1.5)
+        check('تسجيلها بلمسة', pg.ev("!!window.__app.state.items.find((i) => i.name === 'DUNKIN RIYADH' && i.smsKey)") is True)
+        sh('adb shell input keyevent KEYCODE_HOME'); time.sleep(2); launch(); time.sleep(4)
+        check('نفس الرسالة المنسوخة لا تُعرض مرة ثانية', not pg.ev("!!document.querySelector('#sms-result')"))
+    except Exception as e: check('نسخ رسالة البنك', False, repr(e))
     # رسائل البنك (2): نسخة الاختبار بلا صلاحية رسائل (حماية Play تحظر التثبيت لو طلبتها) — والخيار مخفي
     try:
         st = pg.ev("Capacitor.Plugins.MohasbakNative.smsStatus().then((r) => JSON.stringify(r))") or ''

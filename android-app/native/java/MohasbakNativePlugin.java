@@ -28,6 +28,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import org.json.JSONArray;
+import android.content.ClipboardManager;
+import android.content.ClipData;
 
 @CapacitorPlugin(name = "MohasbakNative", permissions = {
     @Permission(alias = "sms", strings = { Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS })
@@ -308,5 +310,23 @@ public class MohasbakNativePlugin extends Plugin {
     public void smsAuto(PluginCall call) {
         getContext().getSharedPreferences(MohasbakWidget.PREFS, Context.MODE_PRIVATE).edit().putBoolean("sms_auto", call.getBoolean("on", false)).apply();
         call.resolve();
+    }
+
+    /** نص الحافظة (رسالة بنك نسخها المستخدم) — يُقرأ فقط والتطبيق ظاهر أمامه */
+    @PluginMethod
+    public void readClipboard(PluginCall call) {
+        getActivity().runOnUiThread(() -> {
+            try {
+                ClipboardManager cm = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                String t = "";
+                if (cm != null && cm.hasPrimaryClip()) {
+                    ClipData cd = cm.getPrimaryClip();
+                    if (cd != null && cd.getItemCount() > 0) { CharSequence cs = cd.getItemAt(0).coerceToText(getContext()); if (cs != null) t = cs.toString(); }
+                }
+                JSObject r = new JSObject();
+                r.put("text", t.length() > 5000 ? t.substring(0, 5000) : t);
+                call.resolve(r);
+            } catch (Exception e) { call.reject("clipboard"); }
+        });
     }
 }

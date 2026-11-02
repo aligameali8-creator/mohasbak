@@ -593,7 +593,7 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .sms-dup svg { width: 14px; height: 14px; flex: none; }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="b6b0c067b7";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="a6d911131b";</script><script>
 const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><defs><linearGradient id=\"lg-bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A42B0\"/><stop offset=\"1\" stop-color=\"#171B57\"/></linearGradient></defs><rect width=\"512\" height=\"512\" rx=\"114\" fill=\"url(#lg-bg)\"/><path d=\"M266.6 83.3A173.0 173.0 0 0 1 333.2 101.2L312.7 142.3A127.0 127.0 0 0 0 263.8 129.2Z\" fill=\"#5FD39B\"/><path d=\"M351.5 111.7A173.0 173.0 0 0 1 400.3 160.5L361.9 185.9A127.0 127.0 0 0 0 326.1 150.1Z\" fill=\"#5FD39B\"/><path d=\"M410.8 178.8A173.0 173.0 0 0 1 428.7 245.4L382.8 248.2A127.0 127.0 0 0 0 369.7 199.3Z\" fill=\"#5FD39B\"/><path d=\"M428.7 266.6A173.0 173.0 0 0 1 410.8 333.2L369.7 312.7A127.0 127.0 0 0 0 382.8 263.8Z\" fill=\"#F5B94A\"/><path d=\"M400.3 351.5A173.0 173.0 0 0 1 351.5 400.3L326.1 361.9A127.0 127.0 0 0 0 361.9 326.1Z\" fill=\"#5FD39B\"/><path d=\"M333.2 410.8A173.0 173.0 0 0 1 266.6 428.7L263.8 382.8A127.0 127.0 0 0 0 312.7 369.7Z\" fill=\"#5FD39B\"/><path d=\"M245.4 428.7A173.0 173.0 0 0 1 178.8 410.8L199.3 369.7A127.0 127.0 0 0 0 248.2 382.8Z\" fill=\"#F2837A\"/><path d=\"M160.5 400.3A173.0 173.0 0 0 1 111.7 351.5L150.1 326.1A127.0 127.0 0 0 0 185.9 361.9Z\" fill=\"#5FD39B\"/><path d=\"M101.2 333.2A173.0 173.0 0 0 1 83.3 266.6L129.2 263.8A127.0 127.0 0 0 0 142.3 312.7Z\" fill=\"#5FD39B\"/><path d=\"M83.3 245.4A173.0 173.0 0 0 1 101.2 178.8L142.3 199.3A127.0 127.0 0 0 0 129.2 248.2Z\" fill=\"#F5B94A\"/><path d=\"M111.7 160.5A173.0 173.0 0 0 1 160.5 111.7L185.9 150.1A127.0 127.0 0 0 0 150.1 185.9Z\" fill=\"#5FD39B\"/><path d=\"M178.8 101.2A173.0 173.0 0 0 1 245.4 83.3L248.2 129.2A127.0 127.0 0 0 0 199.3 142.3Z\" fill=\"#5FD39B\"/><circle cx=\"256\" cy=\"256\" r=\"88\" fill=\"#F5C766\"/><circle cx=\"256\" cy=\"256\" r=\"64\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".7\" stroke-width=\"10\"/><path d=\"M226 270l30-32 30 32\" fill=\"none\" stroke=\"#fff\" stroke-width=\"20\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
@@ -2701,7 +2701,7 @@ function viewOptions() {
     <p class="xs muted">لإضافة الودجت: اضغط مطولاً على مكان فارغ في الشاشة الرئيسية ← الأدوات (Widgets) ← محاسبك المالي.</p>
   </section>` : ''}
   <section class="card form"><h2>رسائل البنك</h2>
-    <p class="small muted">بدل الكتابة: الصق رسالة الخصم من البنك أو شاركها للتطبيق من تطبيق الرسائل، ونقرأ المبلغ والجهة ونقترح الفئة. كل القراءة على جوالك.</p>
+    <p class="small muted">بدل الكتابة: في تطبيق الرسائل اضغط مطولاً على رسالة البنك ← «نسخ»${window.__nativeClip ? '، ثم افتح محاسبك ونعرضها لك مباشرة' : '، ثم الصقها هنا'}. نقرأ المبلغ والجهة ونقترح الفئة، وكل القراءة على جوالك.</p>
     <button class="btn" data-act="sms">${icon('msg')} الصق رسالة بنك</button>
     ${window.__nativeSms && window.__nativeSms.available ? `<hr class="sep"><label class="check"><input type="checkbox" data-act="sms-auto" ${s.smsAuto && window.__nativeSms.granted ? 'checked' : ''}> اقرأ رسائل البنك تلقائياً واقترح تسجيلها (نسخة الاختبار)</label>
     ${s.smsAuto && window.__nativeSms.granted ? `<button class="btn sm" data-act="sms-inbox">${icon('search')} راجع رسائل هذا الشهر</button>` : ''}
@@ -2924,9 +2924,9 @@ function smsSheet(text, items) {
   openSheet('من رسالة البنك', `<div class="form sms-form">
     <p class="small muted">انسخ رسالة البنك أو المحفظة (أو عدة رسائل مع بعض) والصقها هنا. نقرأ المبلغ والجهة ونقترح الفئة. القراءة على جوالك فقط، ولا تُرسل الرسالة لأي جهة.</p>
     <div class="f"><label for="sms_txt">نص الرسالة</label><textarea class="in" id="sms_txt" rows="5" dir="auto" placeholder="مثال:&#10;شراء عبر نقاط البيع&#10;من: STARBUCKS&#10;مبلغ: SAR 23.00">${esc(text || '')}</textarea>
-      <div class="row" style="gap:6px">${navigator.clipboard && navigator.clipboard.readText ? `<button type="button" class="btn sm" data-act="sms-paste">${icon('download')} لصق من الحافظة</button>` : ''}<button type="button" class="btn sm primary" data-act="sms-read">${icon('search')} اقرأ الرسالة</button></div></div>
+      <div class="row" style="gap:6px">${window.__nativeClip || (navigator.clipboard && navigator.clipboard.readText) ? `<button type="button" class="btn sm" data-act="sms-paste">${icon('download')} لصق من الحافظة</button>` : ''}<button type="button" class="btn sm primary" data-act="sms-read">${icon('search')} اقرأ الرسالة</button></div></div>
     <div id="sms-result" aria-live="polite"></div>
-    <p class="xs muted">تلميح: في تطبيق الرسائل اضغط مطولاً على رسالة البنك ← مشاركة ← «محاسبك» وتفتح هنا مباشرة.</p>
+    <p class="xs muted">${window.__nativeClip ? 'أسهل طريقة: في تطبيق الرسائل اضغط مطولاً على رسالة البنك ← «نسخ»، ثم افتح محاسبك — نلتقط الرسالة ونعرضها لك مباشرة.' : 'تلميح: في تطبيق الرسائل اضغط مطولاً على رسالة البنك ← «نسخ»، ثم ارجع هنا واضغط «لصق من الحافظة».'}</p>
   </div>`, `<button class="btn" data-act="close">إغلاق</button><button class="btn primary" data-act="sms-add" disabled>${icon('check')} أضف المحددة</button>`);
   if (text) smsRead(); else { const t = $('#sms_txt'); if (t) t.focus(); }
 }
@@ -3602,7 +3602,7 @@ const ACT = {
   },
   'sms-inbox': () => smsInboxReview(),
   'sms-add': () => smsAdd(),
-  'sms-paste': async () => { try { const t = await navigator.clipboard.readText(); const ta = $('#sms_txt'); if (ta && t) { ta.value = t; smsRead(); } else toast('الحافظة فاضية — انسخ رسالة البنك أولاً'); } catch (e) { toast('اسمح بالوصول للحافظة، أو الصق يدوياً بالضغط المطوّل'); } },
+  'sms-paste': async () => { try { const t = window.__nativeClip ? await window.__nativeClip() : await navigator.clipboard.readText(); const ta = $('#sms_txt'); if (ta && t) { ta.value = t; smsRead(); } else toast('الحافظة فاضية — انسخ رسالة البنك أولاً'); } catch (e) { toast('اسمح بالوصول للحافظة، أو الصق يدوياً بالضغط المطوّل'); } },
   'more-cats': (el) => { const m = el.parentNode.querySelector('.chips-more'); if (m) m.hidden = false; el.remove(); },
   'q-amt': (el) => { const a = $('#q_amt'); if (a) { a.value = el.dataset.v; a.dispatchEvent(new Event('input', { bubbles: true })); } },
   'check-update': async () => { toast('جاري التحقق…'); if (isNativeApp() && window.__nativeCheckUpdate) { await window.__nativeCheckUpdate(); toast(ui.nativeUpdate ? 'يوجد تحديث جديد. اضغط «نزّل التحديث»' : 'عندك آخر إصدار'); return; } checkUpdate(true); },
@@ -4159,6 +4159,19 @@ if (Native.on) {
   }
 
   window.__nativeConsume = () => consumeAction();
+  /* ── رسالة بنك منسوخة: المستخدم ينسخ الرسالة ويفتح التطبيق ← نعرضها للتسجيل مباشرة ── */
+  window.__nativeClip = async () => { try { return ((await MN.readClipboard()) || {}).text || ''; } catch (e) { return ''; } };
+  async function clipCheck() {
+    if (!MN || !MN.readClipboard || !state || !state.settings.onboarded || ui.locked || ui.bioLocked || !window.BankSMS) return;
+    const t = (await window.__nativeClip()).trim();
+    if (!t || !BankSMS.parse(t)) return;
+    let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0;
+    const key = String(h >>> 0);
+    try { if (localStorage.getItem('mohasbak.clipseen') === key) return; localStorage.setItem('mohasbak.clipseen', key); } catch (e) { return; }
+    if ($('.sheet')) { const ta = $('#sms_txt'); if (ta && !ta.value.trim()) { ta.value = t; smsRead(); } return; }
+    go('home'); smsSheet(t);
+  }
+  window.__clipCheck = clipCheck;
   /* ── رسائل البنك (نسخة الاختبار فقط: الصلاحية غير موجودة في نسخة Google Play) ── */
   const SMS = { available: false, granted: false };
   SMS.request = async () => { try { const r = await MN.requestSms(); SMS.granted = !!(r && r.granted); } catch (e) { SMS.granted = false; } return SMS.granted; };
@@ -4201,7 +4214,7 @@ if (Native.on) {
       if (!isActive) { hiddenAt = Date.now(); if (state) save(true); return; }
       if (needBio() && hiddenAt && Date.now() - hiddenAt > (Number(state.settings.lockMinutes) || 5) * 60000) { ui.bioLocked = true; render(); bioUnlock(); return; }
       if (state) { render(); window.__nativeSync(); }
-      consumeAction(); checkNativeUpdate();
+      consumeAction(); checkNativeUpdate(); setTimeout(clipCheck, 700);
     });
   }
 
@@ -4238,6 +4251,7 @@ if (Native.on) {
   window.__APK_URL = 'https://github.com/aligameali8-creator/mohasbak/releases/download/android-latest/mohasbak.apk';
   setTimeout(checkNativeUpdate, 2500);
   setTimeout(() => { if (state) window.__nativeSync(); consumeAction(); }, 800);
+  setTimeout(clipCheck, 1500);
 }
 
 </script></body></html>
