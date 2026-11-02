@@ -1,4 +1,4 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style><title>محاسبك المالي</title>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style><title>محاسبك المالي</title>
 <meta name="theme-color" content="#3B43A6">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -565,9 +565,10 @@ hr.sep { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 .li-end { white-space: nowrap; } .li-end .cur, .li-end small { white-space: nowrap; }
 .li-main { min-width: 0; } .li-t, .li-s { overflow-wrap: anywhere; }
 .notif > div { min-width: 0; overflow-wrap: anywhere; }
+.today-tip { margin: 0; display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; background: var(--good-soft); font-size: var(--t-sm); line-height: 1.6; } .today-tip svg { width: 16px; height: 16px; flex: none; margin-top: 4px; color: var(--good); }
 </style>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script></head><body><div id="root" dir="rtl"><div class="center-screen"><p class="muted">جارٍ تحميل محاسبك المالي…</p></div></div><noscript>يحتاج التطبيق إلى تفعيل JavaScript.</noscript>
-<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="6b8d97b8c9";</script><script>
+<script>window.__MOHASBAK_PWA__=true;window.__BUILD__="502c822e0c";</script><script>
 const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><defs><linearGradient id=\"lg-bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A42B0\"/><stop offset=\"1\" stop-color=\"#171B57\"/></linearGradient></defs><rect width=\"512\" height=\"512\" rx=\"114\" fill=\"url(#lg-bg)\"/><path d=\"M266.6 83.3A173.0 173.0 0 0 1 333.2 101.2L312.7 142.3A127.0 127.0 0 0 0 263.8 129.2Z\" fill=\"#5FD39B\"/><path d=\"M351.5 111.7A173.0 173.0 0 0 1 400.3 160.5L361.9 185.9A127.0 127.0 0 0 0 326.1 150.1Z\" fill=\"#5FD39B\"/><path d=\"M410.8 178.8A173.0 173.0 0 0 1 428.7 245.4L382.8 248.2A127.0 127.0 0 0 0 369.7 199.3Z\" fill=\"#5FD39B\"/><path d=\"M428.7 266.6A173.0 173.0 0 0 1 410.8 333.2L369.7 312.7A127.0 127.0 0 0 0 382.8 263.8Z\" fill=\"#F5B94A\"/><path d=\"M400.3 351.5A173.0 173.0 0 0 1 351.5 400.3L326.1 361.9A127.0 127.0 0 0 0 361.9 326.1Z\" fill=\"#5FD39B\"/><path d=\"M333.2 410.8A173.0 173.0 0 0 1 266.6 428.7L263.8 382.8A127.0 127.0 0 0 0 312.7 369.7Z\" fill=\"#5FD39B\"/><path d=\"M245.4 428.7A173.0 173.0 0 0 1 178.8 410.8L199.3 369.7A127.0 127.0 0 0 0 248.2 382.8Z\" fill=\"#F2837A\"/><path d=\"M160.5 400.3A173.0 173.0 0 0 1 111.7 351.5L150.1 326.1A127.0 127.0 0 0 0 185.9 361.9Z\" fill=\"#5FD39B\"/><path d=\"M101.2 333.2A173.0 173.0 0 0 1 83.3 266.6L129.2 263.8A127.0 127.0 0 0 0 142.3 312.7Z\" fill=\"#5FD39B\"/><path d=\"M83.3 245.4A173.0 173.0 0 0 1 101.2 178.8L142.3 199.3A127.0 127.0 0 0 0 129.2 248.2Z\" fill=\"#F5B94A\"/><path d=\"M111.7 160.5A173.0 173.0 0 0 1 160.5 111.7L185.9 150.1A127.0 127.0 0 0 0 150.1 185.9Z\" fill=\"#5FD39B\"/><path d=\"M178.8 101.2A173.0 173.0 0 0 1 245.4 83.3L248.2 129.2A127.0 127.0 0 0 0 199.3 142.3Z\" fill=\"#5FD39B\"/><circle cx=\"256\" cy=\"256\" r=\"88\" fill=\"#F5C766\"/><circle cx=\"256\" cy=\"256\" r=\"64\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".7\" stroke-width=\"10\"/><path d=\"M226 270l30-32 30 32\" fill=\"none\" stroke=\"#fff\" stroke-width=\"20\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
 /* محاسبك المالي — محرك الحسابات (Pure, no DOM)
  * يعمل في المتصفح (window.FinEngine) وفي Node (module.exports).
@@ -1145,7 +1146,7 @@ const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 51
       if (pct >= 90) out.push({ key: `spent:${db.key}:90`, level: 'risk', title: `صرفت ${pct}% من راتبك`, body: `وباقي ${db.daysLeft} يوماً على الراتب القادم. المتبقي ${Math.round(db.remainingNow)} ر.س.` });
       else if (pct >= 70) out.push({ key: `spent:${db.key}:70`, level: 'warn', title: `صرفت ${pct}% من راتبك`, body: `وباقي ${db.daysLeft} يوماً على الراتب القادم. المتبقي ${Math.round(db.remainingNow)} ر.س.` });
     }
-    if (db.spentToday > 0 && db.todayLeft < 0) { const nextPer = Math.max(0, (db.pool - db.spentToday) / Math.max(1, db.daysLeft - 1)); out.push({ key: `over:${today}`, level: 'warn', title: 'تجاوزت مسموح اليوم', body: db.perDay < 1 ? `صرفت ${mny(db.spentToday)} ر.س وما كان لك مسموح اليوم. كل ريال الآن يُخصم من التزاماتك أو ادخارك.` : nextPer < 1 ? `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. ما بقي لك مسموح للمصاريف حتى الراتب.` : `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. مسموحك من بكرة نزل إلى ${mny(nextPer)} ر.س يومياً (كان ${mny(db.perDay)}).` }); }
+    if (db.spentToday > 0 && db.todayLeft < 0) { const nextPer = Math.max(0, (db.pool - db.spentToday) / Math.max(1, db.daysLeft - 1)); out.push({ key: `over:${today}`, level: 'warn', title: 'تجاوزت مسموح اليوم', body: db.perDay < 1 ? `صرفت ${mny(db.spentToday)} ر.س وما كان لك مسموح اليوم. كل ريال الآن يُخصم من التزاماتك أو ادخارك.` : nextPer < 1 ? `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. ما بقي لك مسموح للمصاريف حتى الراتب.` : `صرفت ${mny(db.spentToday)} من ${mny(db.perDay)} ر.س. مسموحك من بكرة نزل إلى ${mny(nextPer)} ر.س يومياً (كان ${mny(db.perDay)}).${(() => { const cl = Math.max(1, diffDays(cycleRange(db.key, state.settings).start, db.endExclusive)), normal = (db.income - db.commitments - db.saving) / cl, n = noSpendDays(db.pool - db.spentToday, db.daysLeft - 1, normal); return n ? ` أو: ${daysAr(n)} بدون صرف وترجع لمعدلك الطبيعي ${mny(normal)} يومياً.` : ''; })()}` }); }
     out.unshift(...paceMessages(state, today));
     try {
       const catName = (id) => ((state.categories || []).find((c) => c.id === id) || { name: 'أخرى' }).name, ck = cycleOf(today, state.settings);
@@ -1182,6 +1183,13 @@ const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 51
 
   /* ───────────── وتيرة الصرف: هل يكفي الراتب حتى الراتب القادم؟ ─────────────
    * يقارن معدل صرفك اليومي الفعلي بالمخطط، ويتوقع يوم نفاد فلوس المصاريف، ويكشف الالتزامات القادمة التي لن تُغطّى. */
+  /** أيام بدون أي مصروف تكفي لترجع بعدها لمعدلك الطبيعي حتى الراتب (نصيحة ثانوية) */
+  function noSpendDays(left, days, normal) {
+    if (!(normal > 0) || !(left > 0) || days < 2) return 0;
+    if (left / days >= normal) return 0;                 // ما تحتاج توقف: معدلك الطبيعي ما زال ممكناً
+    const n = Math.ceil(days - left / normal);
+    return n >= 1 && n < days ? n : 0;
+  }
   function spendingPace(state, today) { return memo('pace', state, String(today), () => spendingPaceRaw(state, today)); }
   function spendingPaceRaw(state, today) {
     const s = state.settings; today = today || todayIn(s.timezone);
@@ -1213,13 +1221,16 @@ const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 51
     const rescue = r2(Math.max(0, (freeLeft - db.saving) / Math.max(1, daysAfterToday)));      // لتكمل للراتب مع الادخار
     const rescueNoSave = r2(Math.max(0, freeLeft / Math.max(1, daysAfterToday)));             // لتكمل للراتب بدون ادخار
     const status = deficit > 0 || atRiskNow ? 'deficit' : runOut && fast ? (shortDays >= 5 ? 'risk' : 'warn') : savingAtRisk ? 'saving' : 'ok';
-    return { status, avg, planned, freeLeft, deficit, cash, runOut, shortDays, atRiskNow, atRiskPace, saving: db.saving, savingLeft, savingAtRisk, rescue, rescueNoSave, daysAfterToday, nextSalary: r.end, elapsed };
+    const breakDays = noSpendDays(freeLeft, daysAfterToday, planned);
+    return { status, avg, planned, freeLeft, deficit, cash, runOut, shortDays, atRiskNow, atRiskPace, saving: db.saving, savingLeft, savingAtRisk, rescue, rescueNoSave, daysAfterToday, nextSalary: r.end, elapsed, breakDays };
   }
   /* ───────────── وين تروح فلوسك؟ أعلى فئات المصاريف اليومية (بدون الالتزامات) ───────────── */
+  // فئات الالتزامات (أقساط، إيجار، قروض، فواتير…) ليست «تضييعاً» حتى لو سُجّلت كمصروف سريع
+  const COMMIT_CATS = ['c_bnpl', 'c_debt', 'c_rent', 'c_insurance', 'c_school', 'c_utils', 'c_telecom', 'c_subs', 'c_salary', 'c_side'];
   function dailyByCategory(state, from, toIncl) {
     const by = {}, end = addDays(toIncl, 1);
     for (const it of activeItems(state)) {
-      if (it.kind !== 'expense' || it.type !== 'daily') continue;
+      if (it.kind !== 'expense' || it.type !== 'daily' || COMMIT_CATS.includes(it.categoryId)) continue;
       for (const o of occurrences(it, from, end)) {
         if (o.status === 'skipped') continue;
         const c = it.categoryId || 'c_other', x = by[c] || (by[c] = { cat: c, amount: 0, count: 0, largest: 0, entries: [] });
@@ -1278,7 +1289,7 @@ const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 51
     if (!p || p.status === 'none') return out;
     if (p.deficit > 0) out.push({ key: `deficit:${p.nextSalary}:${Math.ceil(p.deficit / 500)}`, level: 'risk', title: `عجز ${mny(p.deficit)} ر.س هذا الشهر`, body: `مصاريفك مع الالتزامات الباقية أكثر من راتبك حتى الراتب القادم (${dLabel(p.nextSalary)}). أي مصروف إضافي يزيد العجز ويصير ديناً أو سحباً من مدخراتك.` });
     if (p.atRiskNow) out.push({ key: `cover:${p.atRiskNow.name}:${p.atRiskNow.date}`, level: 'risk', title: `فلوسك ما تكفي ${p.atRiskNow.name}`, body: `يستحق ${dLabel(p.atRiskNow.date)} بمبلغ ${mny(p.atRiskNow.amount)} ر.س، وينقصك ${mny(p.atRiskNow.gap)} ر.س حتى لو ما صرفت شيئاً بعد اليوم.` });
-    if (!p.deficit && p.runOut && (p.status === 'risk' || p.status === 'warn')) out.push({ key: `pace:${p.nextSalary}:${p.runOut}`, level: p.status === 'risk' ? 'risk' : 'warn', title: `بهذا المعدل تخلص فلوسك يوم ${dLabel(p.runOut)}`, body: `تصرف ${mny(p.avg)} ر.س يومياً بدل ${mny(p.planned)}، فتبقى ${daysAr(p.shortDays)} بلا مصروف قبل الراتب. لتكمل للراتب: لا تتجاوز ${mny(p.rescueNoSave)} ر.س يومياً.` });
+    if (!p.deficit && p.runOut && (p.status === 'risk' || p.status === 'warn')) out.push({ key: `pace:${p.nextSalary}:${p.runOut}`, level: p.status === 'risk' ? 'risk' : 'warn', title: `بهذا المعدل تخلص فلوسك يوم ${dLabel(p.runOut)}`, body: `تصرف ${mny(p.avg)} ر.س يومياً بدل ${mny(p.planned)}، فتبقى ${daysAr(p.shortDays)} بلا مصروف قبل الراتب. لتكمل للراتب: لا تتجاوز ${mny(p.rescueNoSave)} ر.س يومياً.${p.breakDays ? ` أو حل ثاني: ${daysAr(p.breakDays)} بدون أي صرف، وبعدها ترجع لمعدلك الطبيعي ${mny(p.planned)} ر.س يومياً.` : ''}` });
     if (!p.atRiskNow && p.atRiskPace && p.status !== 'ok') out.push({ key: `covpace:${p.atRiskPace.name}:${p.atRiskPace.date}`, level: 'warn', title: `انتبه: ${p.atRiskPace.name} يوم ${dLabel(p.atRiskPace.date)}`, body: `إذا استمر صرفك بنفس المعدل ما يبقى ما يكفي ${mny(p.atRiskPace.amount)} ر.س لهذا الالتزام.` });
     if (p.status === 'saving') out.push({ key: `savrisk:${p.nextSalary}`, level: 'warn', title: 'ادخار هذا الشهر في خطر', body: `خطتك تدخر ${mny(p.saving)} ر.س، وبهذا المعدل ${p.savingLeft > 0 ? `يبقى منها ${mny(p.savingLeft)} فقط` : 'ما يبقى منها شيء'}. لتحافظ عليها: ${mny(p.rescue)} ر.س يومياً.` });
     return out;
@@ -1370,7 +1381,7 @@ const LOGO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 51
     // core
     cycleRange, cycleOf, cycleName, versionAt, setVersion, ruleDates, occurrences, cycleOccurrences,
     buildInstallmentPlan, planStatus, payInstallment, unpayInstallment, earlyPayoff, postponeInstallment,
-    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, spendingPace, paceMessages, wasteReport, budgetsReport, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
+    summarizeCycle, savingTarget, isPending, forecast, batch, dailyBudget, spendingPace, noSpendDays, paceMessages, wasteReport, budgetsReport, simulate, shiftWeekend, classify, safeToSpend, insights, suggestCuts, notifications, upcoming, planVsActual, validateItem
   };
 });
 
@@ -2025,7 +2036,7 @@ function todayBox() {
         ${heroRing(ratio)}
       </div>
       <div class="hero-tiles">
-        <div class="ht"><small>${icon('calendar')} الراتب القادم</small><b>بعد ${dw(db.daysLeft)}</b><small>${dlabel(mismatch ? db.endExclusive : nextSal)}</small></div>
+        <button type="button" class="ht ht-btn" data-act="salary-shift"><small>${icon('calendar')} الراتب القادم</small><b>${(() => { const k = Math.max(0, E.diffDays(today(), mismatch ? db.endExclusive : nextSal)); return k === 0 ? 'اليوم' : k === 1 ? 'بكرة' : `بعد ${dw(k)}`; })()}</b><small>${dlabel(mismatch ? db.endExclusive : nextSal)}${!mismatch && prim && prim.shiftWeekend && E.parse(nextSal).d !== Number(prim.rule.day) ? ` · قُدّم من ${nf(Number(prim.rule.day), 0)}` : ''}</small></button>
         <div class="ht"><small>${icon('receipt')} خصميات باقية</small><b class="amt">${pendingC > 0 ? nf(Math.round(pendingC), 0) : 'لا شيء'}</b><small>حتى الراتب</small></div>
         <button type="button" class="ht ht-btn" data-act="saving-quick"><small>${icon('target')} ادخار الشهر</small><b class="amt">${db.saving ? nf(Math.round(db.saving), 0) : 'حدّده'}</b><small>${db.saving ? 'للراتب الجاي' : 'اختياري'}</small></button>
       </div>
@@ -2037,6 +2048,7 @@ function todayBox() {
     </section>
     ${paceHtml}${warnCfg}
     <p class="today-left">${leftLine}</p>
+    ${(() => { const nrm = spendStart / cycleLen, n = E.noSpendDays(db.pool - db.spentToday, db.daysLeft - 1, nrm); return n && !paceMsgs.some((m) => /بدون أي صرف/.test(m.body)) && (over || paceMsgs.length || db.perDay < nrm * 0.85) ? `<p class="today-tip">${icon('spark')} <span><b>نصيحة:</b> ${n === 1 ? 'يوم واحد' : n === 2 ? 'يومين' : `${nf(n, 0)} ${n <= 10 ? 'أيام' : 'يوماً'}`} بدون أي صرف، وبعدها ترجع لمعدلك الطبيعي <b>${nf(Math.round(nrm), 0)} ${curSym()}</b> يومياً حتى الراتب.</span></p>` : ''; })()}
     ${urgentIf ? ifSpent : ''}
     ${cmp}
     <details class="today-more"><summary>كيف انحسب المبلغ؟</summary>
@@ -2070,7 +2082,7 @@ function recentCard() {
 /** دائرة توزيع المصاريف اليومية: أعلى 5 فئات + «أخرى»، والمجموع في الوسط */
 function donutSvg(w) {
   const top = w.cats.slice(0, 5), restAmt = w.cats.slice(5).reduce((a, x) => a + x.amount, 0);
-  const parts = top.map((x) => ({ v: x.amount, col: `var(--${catOf(x.cat).color})`, n: catOf(x.cat).name })).concat(restAmt > 0 ? [{ v: restAmt, col: 'var(--muted)', n: 'أخرى' }] : []);
+  const parts = top.map((x) => ({ v: x.amount, col: `var(--${catOf(x.cat).color})`, n: catOf(x.cat).name })).concat(restAmt > 0 ? [{ v: restAmt, col: 'var(--muted)', n: 'باقي الفئات' }] : []);
   const total = parts.reduce((a, x) => a + x.v, 0) || 1, r = 42, c = 2 * Math.PI * r;
   let off = 0;
   const arcs = parts.map((x) => { const len = (x.v / total) * c, gap = parts.length > 1 ? Math.min(2.5, len * 0.3) : 0; const el = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${x.col}" stroke-width="16" stroke-dasharray="${Math.max(0, len - gap).toFixed(2)} ${c.toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 60 60)"><title>${esc(x.n)}: ${nf(Math.round(x.v), 0)}</title></circle>`; off += len; return el; }).join('');
@@ -2113,7 +2125,7 @@ function wasteCard() {
     <div class="w-list">${rows}</div>${budRows}
     <button type="button" class="btn sm" data-act="budgets">${icon('target')} ${Object.keys(state.settings.catBudgets || {}).length ? 'تعديل حدود الصرف' : 'حدّد سقفاً شهرياً لكل فئة'}</button>
     ${rest.length ? `<p class="xs muted">${rest.length === 1 ? 'وفئة واحدة أخرى' : rest.length === 2 ? 'وفئتان أخريان' : `و${nf(rest.length, 0)} ${rest.length <= 10 ? 'فئات أخرى' : 'فئة أخرى'}`} بمجموع ${nf(Math.round(restSum), 0)} ${curSym()}: ${rest.slice(0, 4).map((x) => esc(name(x.cat))).join('، ')}${rest.length > 4 ? '…' : ''}</p>` : ''}
-    <p class="xs muted">الأرقام من مصاريفك اليومية فقط (بدون الإيجار والأقساط والفواتير)، وتتحدث مع كل مصروف تسجله.</p></section>`;
+    <p class="xs muted">الأرقام من مصاريفك اليومية فقط. الأقساط والإيجار والفواتير والقروض لا تدخل هنا حتى لو سجّلتها كمصروف سريع، لأنها التزامات وليست تضييعاً. تتحدث مع كل مصروف تسجله.</p></section>`;
 }
 function wasteCatSheet(cat) {
   const w = E.wasteReport(state, today(), ui.wasteRange || 'cycle'), x = w.cats.find((c) => c.cat === cat); if (!x) return;
@@ -2531,8 +2543,13 @@ function syncViewport() {
   const h = v ? v.height : window.innerHeight, t = v ? v.offsetTop : 0;
   de.style.setProperty('--vvh', Math.round(h) + 'px'); de.style.setProperty('--vvt', Math.round(t) + 'px');
   const a = document.activeElement;
-  if (a && a.closest && a.closest('.sheet-body') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) setTimeout(() => { try { a.scrollIntoView({ block: 'nearest' }); } catch (e) { /* */ } }, 60);
+  if (a && a.closest && a.closest('.sheet-body') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) setTimeout(() => { try { a.scrollIntoView({ block: 'center' }); } catch (e) { /* */ } }, 60);
 }
+document.addEventListener('focusin', (e) => {
+  const a = e.target;
+  if (!a || !a.closest || !a.closest('.sheet-body') || !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || /radio|checkbox|date/.test(a.type || '')) return;
+  [120, 400, 700].forEach((ms) => setTimeout(() => { if (document.activeElement === a) { try { a.scrollIntoView({ block: 'center', behavior: ms === 120 ? 'auto' : 'smooth' }); } catch (x) { /* */ } } }, ms));
+});
 if (window.visualViewport) { visualViewport.addEventListener('resize', syncViewport); visualViewport.addEventListener('scroll', syncViewport); }
 window.addEventListener('resize', syncViewport); window.addEventListener('orientationchange', () => setTimeout(syncViewport, 250));
 syncViewport();
@@ -2643,8 +2660,9 @@ function quickSpend(date) {
   const t = today(), y = E.addDays(t, -1);
   openSheet('مصروف يومي', `<form class="form" data-form="spend" novalidate>
     <div class="f"><label for="q_amt">كم صرفت؟</label><input class="in big" id="q_amt" name="amount" inputmode="decimal" autocomplete="off" placeholder="0">${(() => { const fa = frequentAmounts(); return fa.length ? `<div class="row q-amts" style="gap:6px">${fa.map((v) => `<button type="button" class="btn sm" data-act="q-amt" data-v="${v}">${nf(v)}</button>`).join('')}</div>` : ''; })()}</div>
-    <div class="f"><span class="lbl">على ماذا؟</span>${catChips('expense', dailyRecent()[0] || 'c_dining', true)}</div>
     <div class="f"><label for="q_note">ملاحظة (اختياري)</label><input class="in" id="q_note" name="note" placeholder="مثال: قهوة، غداء العمل"></div>
+    <div class="f"><span class="lbl">على ماذا؟</span>${catChips('expense', dailyRecent()[0] || 'c_dining', true)}</div>
+
     <div class="f"><label for="q_date">التاريخ</label><input class="in" type="date" id="q_date" name="date" value="${date || t}" max="${t}">
       <div class="row" style="gap:6px"><button type="button" class="btn sm" data-act="setdate" data-target="q_date" data-val="${t}">اليوم</button><button type="button" class="btn sm" data-act="setdate" data-target="q_date" data-val="${y}">أمس</button></div></div>
   </form>`, `<button class="btn" data-act="close">إلغاء</button><button class="btn primary" data-act="submit-form" data-form="spend">${icon('check')} سجّل</button>`);
@@ -3047,7 +3065,7 @@ function wizardScreen() {
   const w = ui.wizardData || (ui.wizardData = { salary: '', payday: 27, otherIncomes: [], balance: '', savingsBalance: '', savingMonthly: '', savingYearly: '', reserveMin: '', members: '', cycleStartDay: null, cycleLabel: 'end', style: 'balanced', name: '' });
   const s = ui.wizardStep;
   let body = '';
-  if (s === 0) body = `<div class="f"><label for="w_name">اسمك (اختياري)</label><input class="in" id="w_name" name="name" maxlength="40" value="${esc(w.name)}"></div><div class="f"><label for="w_sal">صافي الراتب الشهري</label><input class="in big" id="w_sal" name="salary" inputmode="decimal" value="${esc(w.salary)}" placeholder="0" autofocus></div><div class="f"><label for="w_pd">يوم نزول الراتب</label><input class="in" type="number" min="1" max="31" id="w_pd" name="payday" value="${w.payday}"><span class="hint">في السعودية غالباً يوم 27</span></div>`;
+  if (s === 0) body = `<div class="f"><label for="w_name">اسمك (اختياري)</label><input class="in" id="w_name" name="name" maxlength="40" value="${esc(w.name)}"></div><div class="f"><label for="w_sal">صافي الراتب الشهري</label><input class="in big" id="w_sal" name="salary" inputmode="decimal" value="${esc(w.salary)}" placeholder="0" autofocus></div><div class="f"><label for="w_pd">يوم نزول الراتب</label><input class="in" type="number" min="1" max="31" id="w_pd" name="payday" value="${w.payday}"><span class="hint">في السعودية غالباً يوم 27</span></div><label class="check"><input type="checkbox" id="w_shift" name="shift" ${w.shift === false ? '' : 'checked'}> إذا صادف يوم الراتب جمعة أو سبت، ينزل قبلها (الخميس)</label><span class="hint">ألغِ الصح إذا راتبك ينزل في نفس التاريخ دائماً حتى لو كان إجازة.</span>`;
   if (s === 1) body = `<p class="small muted">بدل سكن منفصل، عمل حر، إيجار، مكافأة… أضف ما تعرفه الآن والباقي لاحقاً.</p><div class="list">${w.otherIncomes.map((x, i) => `<div class="li"><div class="li-ic" style="--cc:var(--good)">${icon('wallet')}</div><div class="li-main"><div class="li-t">${esc(x.name)}</div><div class="li-s">${{ monthly: 'شهري', interval: `كل ${x.interval} أشهر`, months: 'موسمي', once: 'مرة واحدة' }[x.freq]}${x.date ? ' · ' + x.date : ''}</div></div><div class="li-end">${money(x.amount)}<button class="btn sm ghost" data-act="wiz-rm" data-i="${i}">حذف</button></div></div>`).join('')}</div>
     <div class="card" style="background:var(--surface-2);border:0"><div class="form"><div class="f2"><div class="f"><label for="wo_n">الاسم</label><input class="in" id="wo_n" name="oname"></div><div class="f"><label for="wo_a">المبلغ</label><input class="in" id="wo_a" name="oamount" inputmode="decimal"></div>
     <div class="f"><label for="wo_f">التكرار</label><select id="wo_f" name="ofreq"><option value="monthly">شهري</option><option value="interval">كل عدة أشهر</option><option value="months">موسمي (أشهر محددة)</option><option value="once">مرة واحدة</option></select></div>
@@ -3071,6 +3089,7 @@ function wizardScreen() {
 function wizardCollect(form) {
   const d = fdata(form), w = ui.wizardData;
   ['name', 'salary', 'payday', 'balance', 'savingsBalance', 'savingMonthly', 'savingYearly', 'reserveMin', 'members', 'cycleStartDay', 'cycleLabel', 'style'].forEach((k) => { if (d[k] !== undefined) w[k] = d[k]; });
+  if ($('#w_shift', form)) w.shift = $('#w_shift', form).checked;
   return d;
 }
 async function wizardFinish(pin) {
@@ -3086,7 +3105,7 @@ async function wizardFinish(pin) {
     // أول استحقاق للراتب: يوم الراتب في الشهر الحالي (قد يكون ماضياً فينعكس في الرصيد)
     const p = E.parse(t); let first = E.clampDate(p.y, p.m, payday);
     if (first > t) { const pm = E.addMonthsYM(p.y, p.m, -1); first = E.clampDate(pm.y, pm.m, payday); } // آخر راتب نزل (منعكس في الرصيد)
-    st.items.push(Seed.mk({ kind: 'income', name: 'الراتب', categoryId: 'c_salary', type: 'salary', isPrimary: true, shiftWeekend: true, priority: 'essential', amount: n(w.salary), rule: { freq: 'monthly', interval: 1, day: payday, start: first }, versions: [{ from: first, amount: n(w.salary) }], createdAt: nowISO() }));
+    st.items.push(Seed.mk({ kind: 'income', name: 'الراتب', categoryId: 'c_salary', type: 'salary', isPrimary: true, shiftWeekend: w.shift !== false, priority: 'essential', amount: n(w.salary), rule: { freq: 'monthly', interval: 1, day: payday, start: first }, versions: [{ from: first, amount: n(w.salary) }], createdAt: nowISO() }));
   }
   w.otherIncomes.forEach((x) => {
     const rule = x.freq === 'once' ? { freq: 'once', date: x.date, start: x.date } : x.freq === 'months' ? { freq: 'months', months: x.months, day: E.parse(x.date).d, start: x.date } : { freq: 'monthly', interval: x.freq === 'interval' ? x.interval : 1, day: E.parse(x.date).d, start: x.date };
@@ -3241,6 +3260,8 @@ const ACT = {
   'log-confirm': () => { state.settings.logConfirmed = today(); save(); render(); toast('ممتاز! نذكّرك بكرة بنفس الوقت'); },
   'bio-lock': async (el) => { if (el.checked && !(await window.__nativeCanBio())) { el.checked = false; return toast('لا توجد بصمة أو رمز قفل مفعّل على الجوال'); } state.settings.bioLock = el.checked; save(); toast(el.checked ? 'سيُقفل التطبيق بالبصمة' : 'أُلغي قفل البصمة'); },
   'saving-quick': () => savingQuickSheet(),
+  'salary-shift': () => salaryShiftSheet(),
+  'set-shift': (el) => { const on = el.dataset.v === '1'; const prim = state.items.find((i) => i.kind === 'income' && i.isPrimary && !i.deletedAt); if (!prim) return; closeSheet(); commit(on ? 'الراتب يُقدَّم للخميس إذا صادف إجازة' : `الراتب ينزل يوم ${nf(Number(prim.rule.day), 0)} دائماً`, (st) => { const x = st.items.find((i) => i.id === prim.id); if (x) x.shiftWeekend = on; }); },
   'toggle-hide': () => { state.settings.hideAmounts = !state.settings.hideAmounts; save(); render(); toast(state.settings.hideAmounts ? 'المبالغ مخفية. اضغط العين لإظهارها' : 'المبالغ ظاهرة'); },
   'show-daily-list': () => { ui.itemsFilter = 'daily'; go('items'); },
   budgets: () => budgetsSheet(),
@@ -3351,6 +3372,14 @@ function budgetsSheet() {
     <div class="bud-list">${ids.map((id) => { const c = catOf(id), x = w.cats.find((k) => k.cat === id), pv = Math.round(prevW[id] || 0);
       return `<div class="bud-row" style="--cc:var(--${c.color})"><span class="w-ic">${icon(c.icon)}</span><div class="bud-t"><b>${esc(c.name)}</b><small>هذا الشهر ${nf(Math.round(x ? x.amount : 0), 0)}${pv ? ` · الشهر الماضي ${nf(pv, 0)}` : ''}</small></div><input class="in" name="b_${id}" inputmode="decimal" aria-label="حد ${esc(c.name)}" placeholder="${pv ? nf(Math.round(pv * 0.8 / 50) * 50 || 50, 0) : 'بلا حد'}" value="${lim[id] ? lim[id] : ''}"></div>`; }).join('')}</div>
   </form>`, '<button class="btn" data-act="close">إلغاء</button><button class="btn primary" data-act="submit-form" data-form="budgets">حفظ الحدود</button>');
+}
+function salaryShiftSheet() {
+  const prim = state.items.find((i) => i.kind === 'income' && i.isPrimary && !i.deletedAt); if (!prim || !prim.rule) return;
+  const day = Number(prim.rule.day) || 27, ck = E.cycleOf(today(), state.settings);
+  const nxt = E.cycleOccurrences(state, E.keyAdd(ck, 1)).concat(E.cycleOccurrences(state, ck)).filter((o) => o.itemId === prim.id && o.date >= today()).map((o) => o.date).sort()[0];
+  let sched = nxt; for (let k = 0; k <= 2 && sched; k++) { const c = E.addDays(nxt, k); if (E.parse(c).d === Math.min(day, 31)) { sched = c; break; } }
+  openSheet('موعد نزول الراتب', `<p>راتبك يوم <b>${nf(day, 0)}</b> من كل شهر${sched && sched !== nxt ? `. الشهر هذا ${dlabel(sched, { wd: true })} يوم إجازة، فالتطبيق حاسبه ينزل <b>${dlabel(nxt, { wd: true })}</b>` : ''}.</p><p class="small muted">بعض الجهات تقدّم الراتب لآخر يوم عمل إذا صادف جمعة أو سبت، وبعضها تصرفه في نفس التاريخ. اختر اللي يصير معك:</p>
+    <div class="save-opts"><button type="button" class="save-opt ${prim.shiftWeekend ? 'on' : ''}" data-act="set-shift" data-v="1"><b>يُقدَّم للخميس</b><small>إذا صادف جمعة أو سبت</small></button><button type="button" class="save-opt ${prim.shiftWeekend ? '' : 'on'}" data-act="set-shift" data-v="0"><b>في يوم ${nf(day, 0)} دائماً</b><small>حتى لو كان إجازة</small></button></div>`, '<button class="btn" data-act="close">إغلاق</button>');
 }
 /** يضبط مجموع الادخار من الراتب (العام + الأهداف): نغيّر الجزء العام فقط */
 function setSavingTotal(total) {
